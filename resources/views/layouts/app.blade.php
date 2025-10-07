@@ -21,6 +21,9 @@
                     <a class="nav-link" href="{{ route('films.index') }}">
                         <i class="fas fa-film me-1"></i>Films
                     </a>
+                    <a class="nav-link" href="{{ route('inventories.index') }}">
+                        <i class="fas fa-boxes me-1"></i>Inventory
+                    </a>
                     <a class="nav-link" href="{{ route('categories.index') }}">
                         <i class="fas fa-tags me-1"></i>Categories
                     </a>

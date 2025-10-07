@@ -52,6 +52,17 @@ Route::get('films-decade/{decade}', [FilmController::class, 'byDecade'])->name('
 Route::get('films-recent', [FilmController::class, 'recent'])->name('films.recent');
 Route::get('films-statistics', [FilmController::class, 'statistics'])->name('films.statistics');
 
+// Inventory routes
+Route::resource('inventories', InventoryController::class);
+// Special routes for inventories
+Route::get('inventories-film/{film}', [InventoryController::class, 'byFilm'])->name('inventories.by-film');
+Route::get('inventories-store/{store}', [InventoryController::class, 'byStore'])->name('inventories.by-store');
+Route::get('inventories-recent', [InventoryController::class, 'recent'])->name('inventories.recent');
+Route::get('inventories-high-value', [InventoryController::class, 'highValue'])->name('inventories.high-value');
+Route::get('inventories-statistics', [InventoryController::class, 'statistics'])->name('inventories.statistics');
+Route::get('inventories-bulk-create', [InventoryController::class, 'bulkCreate'])->name('inventories.bulk-create');
+Route::post('inventories-bulk-store', [InventoryController::class, 'bulkStore'])->name('inventories.bulk-store');
+
 // Route::resource('inventories', InventoryController::class);
 // Route::resource('actors', ActorController::class);
 // Route::resource('films', FilmController::class);
