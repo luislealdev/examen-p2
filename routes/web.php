@@ -14,7 +14,7 @@ use App\Http\Controllers\CategoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('films.index');
 });
 
 // Ruta de login solo para diseño (sin funcionalidad)
@@ -41,6 +41,17 @@ Route::resource('categories', CategoryController::class);
 // Special routes for categories
 Route::get('categories-alphabetical', [CategoryController::class, 'alphabetical'])->name('categories.alphabetical');
 Route::get('categories-popular', [CategoryController::class, 'popular'])->name('categories.popular');
+
+// Films routes
+Route::resource('films', FilmController::class);
+// Special routes for films
+Route::get('films-category/{category}', [FilmController::class, 'byCategory'])->name('films.by-category');
+Route::get('films-language/{language}', [FilmController::class, 'byLanguage'])->name('films.by-language');
+Route::get('films-rating/{rating}', [FilmController::class, 'byRating'])->name('films.by-rating');
+Route::get('films-decade/{decade}', [FilmController::class, 'byDecade'])->name('films.by-decade');
+Route::get('films-recent', [FilmController::class, 'recent'])->name('films.recent');
+Route::get('films-statistics', [FilmController::class, 'statistics'])->name('films.statistics');
+
 // Route::resource('inventories', InventoryController::class);
 // Route::resource('actors', ActorController::class);
 // Route::resource('films', FilmController::class);

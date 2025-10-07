@@ -10,10 +10,38 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="{{ route('stores.index') }}">Store Management</a>
-            <div class="navbar-nav">
-                <a class="nav-link" href="{{ route('stores.index') }}">Stores</a>
-                <a class="nav-link" href="{{ route('stores.create') }}">Add Store</a>
+            <a class="navbar-brand" href="{{ route('films.index') }}">
+                <i class="fas fa-film me-2"></i>Sakila Movies
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-nav me-auto">
+                    <a class="nav-link" href="{{ route('films.index') }}">
+                        <i class="fas fa-film me-1"></i>Films
+                    </a>
+                    <a class="nav-link" href="{{ route('categories.index') }}">
+                        <i class="fas fa-tags me-1"></i>Categories
+                    </a>
+                    <a class="nav-link" href="{{ route('languages.index') }}">
+                        <i class="fas fa-language me-1"></i>Languages
+                    </a>
+                    <a class="nav-link" href="{{ route('stores.index') }}">
+                        <i class="fas fa-store me-1"></i>Stores
+                    </a>
+                    <a class="nav-link" href="{{ route('customers.index') }}">
+                        <i class="fas fa-users me-1"></i>Customers
+                    </a>
+                    <a class="nav-link" href="{{ route('staff.index') }}">
+                        <i class="fas fa-user-tie me-1"></i>Staff
+                    </a>
+                </div>
+                <div class="navbar-nav">
+                    <a class="nav-link" href="{{ route('films.statistics') }}">
+                        <i class="fas fa-chart-bar me-1"></i>Statistics
+                    </a>
+                </div>
             </div>
         </div>
     </nav>
