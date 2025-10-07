@@ -49,7 +49,6 @@ class Staff extends Model
     protected $casts = [
         'active' => 'boolean',
         'last_update' => 'datetime',
-        'picture' => 'binary',
     ];
 
     /**
@@ -135,5 +134,25 @@ class Staff extends Model
     public function getInitialsAttribute(): string
     {
         return strtoupper(substr($this->first_name, 0, 1) . substr($this->last_name, 0, 1));
+    }
+
+    /**
+     * Get picture as base64 data URL for display.
+     */
+    public function getPictureUrlAttribute(): ?string
+    {
+        if (!$this->picture) {
+            return null;
+        }
+        
+        return 'data:image/jpeg;base64,' . base64_encode($this->picture);
+    }
+
+    /**
+     * Check if staff has a picture.
+     */
+    public function getHasPictureAttribute(): bool
+    {
+        return !empty($this->picture);
     }
 }
