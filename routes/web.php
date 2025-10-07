@@ -27,10 +27,12 @@ Route::get('/login', function () {
 // Route::resource('rentals', RentalController::class);
 
 // Nuevas rutas CRUD para Sakila
-// Route::resource('stores', StoreController::class);
+Route::resource('stores', StoreController::class);
+Route::resource('customers', CustomerController::class);
+Route::resource('staff', StaffController::class);
+// Special route for staff pictures
+Route::get('staff/{staff}/picture', [StaffController::class, 'picture'])->name('staff.picture');
 // Route::resource('inventories', InventoryController::class);
-// Route::resource('staff', StaffController::class);
-// Route::resource('customers', CustomerController::class);
 // Route::resource('actors', ActorController::class);
 // Route::resource('films', FilmController::class);
 // Route::resource('rentals', RentalController::class);
