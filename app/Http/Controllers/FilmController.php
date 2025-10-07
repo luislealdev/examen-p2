@@ -17,7 +17,7 @@ class FilmController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = Film::with(['language', 'originalLanguage', 'categories']);
+        $query = Film::with(['language', 'originalLanguage', 'category']);
 
         // Search functionality
         if ($request->filled('search')) {
@@ -142,8 +142,7 @@ class FilmController extends Controller
             'rating' => ['required', Rule::in(Film::RATINGS)],
             'special_features' => 'nullable|array',
             'special_features.*' => Rule::in(Film::SPECIAL_FEATURES),
-            'categories' => 'nullable|array',
-            'categories.*' => 'exists:category,category_id',
+            'category_id' => 'nullable|exists:category,category_id',
         ]);
 
         // Clean and format data
@@ -152,11 +151,6 @@ class FilmController extends Controller
 
         // Create the film
         $film = Film::create($validated);
-
-        // Attach categories if provided
-        if (isset($validated['categories'])) {
-            $film->categories()->sync($validated['categories']);
-        }
 
         return redirect()->route('films.index')
             ->with('success', "Film '{$validated['title']}' created successfully!");
@@ -167,7 +161,7 @@ class FilmController extends Controller
      */
     public function show(Film $film): View
     {
-        $film->load(['language', 'originalLanguage', 'categories']);
+        $film->load(['language', 'originalLanguage', 'category']);
         
         return view('films.show', compact('film'));
     }
@@ -177,7 +171,7 @@ class FilmController extends Controller
      */
     public function edit(Film $film): View
     {
-        $film->load(['categories']);
+        $film->load(['category']);
         $languages = Language::alphabetical()->get();
         $categories = Category::alphabetical()->get();
         $ratings = Film::RATINGS;
@@ -204,8 +198,7 @@ class FilmController extends Controller
             'rating' => ['required', Rule::in(Film::RATINGS)],
             'special_features' => 'nullable|array',
             'special_features.*' => Rule::in(Film::SPECIAL_FEATURES),
-            'categories' => 'nullable|array',
-            'categories.*' => 'exists:category,category_id',
+            'category_id' => 'nullable|exists:category,category_id',
         ]);
 
         // Clean and format data
@@ -214,13 +207,6 @@ class FilmController extends Controller
 
         // Update the film
         $film->update($validated);
-
-        // Sync categories
-        if (isset($validated['categories'])) {
-            $film->categories()->sync($validated['categories']);
-        } else {
-            $film->categories()->detach();
-        }
 
         return redirect()->route('films.index')
             ->with('success', "Film '{$validated['title']}' updated successfully!");
@@ -233,9 +219,6 @@ class FilmController extends Controller
     {
         $filmTitle = $film->title;
         
-        // Detach all categories
-        $film->categories()->detach();
-        
         $film->delete();
 
         return redirect()->route('films.index')
@@ -247,7 +230,7 @@ class FilmController extends Controller
      */
     public function byCategory(Category $category): View
     {
-        $films = Film::with(['language', 'originalLanguage', 'categories'])
+        $films = Film::with(['language', 'originalLanguage', 'category'])
             ->byCategory($category->category_id)
             ->alphabetical()
             ->paginate(20);

@@ -322,16 +322,14 @@
                                 </div>
                             </div>
 
-                            <!-- Categories -->
-                            @if($film->categories->count() > 0)
+                            <!-- Category -->
+                            @if($film->category)
                                 <div class="mt-3">
                                     <div class="d-flex flex-wrap gap-1">
-                                        @foreach($film->categories as $category)
-                                            <a href="{{ route('films.by-category', $category) }}" 
-                                               class="badge bg-primary text-decoration-none">
-                                                {{ $category->name }}
-                                            </a>
-                                        @endforeach
+                                        <a href="{{ route('films.by-category', $film->category) }}" 
+                                           class="badge bg-primary text-decoration-none">
+                                            {{ $film->category->name }}
+                                        </a>
                                     </div>
                                 </div>
                             @endif

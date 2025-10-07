@@ -98,22 +98,20 @@
                 </div>
             </div>
 
-            <!-- Categories Card -->
-            @if($film->categories->count() > 0)
+            <!-- Category Card -->
+            @if($film->category)
             <div class="card shadow-lg border-0 mb-4">
                 <div class="card-header bg-gradient-info text-white">
                     <h5 class="mb-0">
-                        <i class="fas fa-tags me-2"></i>Categories
+                        <i class="fas fa-tag me-2"></i>Category
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="d-flex flex-wrap gap-2">
-                        @foreach($film->categories as $category)
-                            <a href="{{ route('films.by-category', $category) }}" 
-                               class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-tag me-1"></i>{{ $category->name }}
-                            </a>
-                        @endforeach
+                        <a href="{{ route('films.by-category', $film->category) }}" 
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-tag me-1"></i>{{ $film->category->name }}
+                        </a>
                     </div>
                 </div>
             </div>
@@ -234,8 +232,8 @@
                         
                         <div class="col-6">
                             <div class="border rounded p-2">
-                                <div class="fw-bold text-success">Categories</div>
-                                <div class="h6 mb-0">{{ $film->categories->count() }}</div>
+                                <div class="fw-bold text-success">Category</div>
+                                <div class="h6 mb-0">{{ $film->category ? $film->category->name : 'None' }}</div>
                             </div>
                         </div>
                         

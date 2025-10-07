@@ -41,6 +41,7 @@ class Film extends Model
         'replacement_cost',
         'rating',
         'special_features',
+        'category_id',
     ];
 
     /**
