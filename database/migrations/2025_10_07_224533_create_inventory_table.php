@@ -12,14 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         // Check if tables exist before creating foreign keys
-        if (Schema::hasTable('film') && Schema::hasTable('stores')) {
-            Schema::create('inventories', function (Blueprint $table) {
+        if (Schema::hasTable('film') && Schema::hasTable('store')) {
+            Schema::create('inventory', function (Blueprint $table) {
                 // Primary key
-                $table->id('inventory_id');
+                $table->unsignedSmallInteger('inventory_id')->autoIncrement()->primary();
                 
                 // Foreign keys
-                $table->unsignedBigInteger('film_id');
-                $table->unsignedBigInteger('store_id');
+                $table->unsignedSmallInteger('film_id');
+                $table->unsignedTinyInteger('store_id');
                 
                 // Timestamp
                 $table->timestamp('last_update')->useCurrent()->useCurrentOnUpdate();
@@ -33,7 +33,7 @@ return new class extends Migration
                       
                 $table->foreign('store_id')
                       ->references('store_id')
-                      ->on('stores')
+                      ->on('store')
                       ->onDelete('restrict')
                       ->onUpdate('cascade');
                 
@@ -44,7 +44,7 @@ return new class extends Migration
                 $table->index('last_update');
             });
         } else {
-            throw new Exception('Required tables (film, stores) do not exist. Please run their migrations first.');
+            throw new Exception('Required tables (film, store) do not exist. Please run their migrations first.');
         }
     }
 
@@ -53,6 +53,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('inventories');
+        Schema::dropIfExists('inventory');
     }
 };

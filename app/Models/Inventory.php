@@ -12,7 +12,7 @@ class Inventory extends Model
     /**
      * The table associated with the model.
      */
-    protected $table = 'inventory';
+    protected $table = 'inventories';
 
     /**
      * The primary key associated with the table.
@@ -148,9 +148,9 @@ class Inventory extends Model
      */
     public function scopeAlphabetical(Builder $query): Builder
     {
-        return $query->join('film', 'inventory.film_id', '=', 'film.film_id')
+        return $query->join('film', 'inventories.film_id', '=', 'film.film_id')
                     ->orderBy('film.title', 'asc')
-                    ->select('inventory.*');
+                    ->select('inventories.*');
     }
 
     /**
@@ -274,13 +274,13 @@ class Inventory extends Model
                             ->mapWithKeys(fn($item) => [
                                 $item->store->store_id ?? 'Unknown' => $item->count
                             ]),
-            'by_rating' => self::join('film', 'inventory.film_id', '=', 'film.film_id')
+            'by_rating' => self::join('film', 'inventories.film_id', '=', 'film.film_id')
                              ->selectRaw('film.rating, COUNT(*) as count')
                              ->groupBy('film.rating')
                              ->get()
                              ->mapWithKeys(fn($item) => [$item->rating => $item->count]),
             'recent_additions' => self::recent(7)->count(),
-            'avg_rental_rate' => self::join('film', 'inventory.film_id', '=', 'film.film_id')
+            'avg_rental_rate' => self::join('film', 'inventories.film_id', '=', 'film.film_id')
                                    ->avg('film.rental_rate'),
             'high_value_items' => self::highValue()->count(),
         ];

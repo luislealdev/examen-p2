@@ -43,7 +43,7 @@
                                     data-rating="{{ $film->rating }}"
                                     data-language="{{ $film->language->name ?? 'N/A' }}"
                                     data-rental-rate="{{ $film->rental_rate }}"
-                                    data-categories="{{ $film->categories->pluck('name')->implode(', ') }}">
+                                    data-category="{{ $film->category->name ?? 'N/A' }}">
                                 {{ $film->title }} 
                                 @if($film->release_year)
                                     ({{ $film->release_year }})
@@ -107,8 +107,8 @@
                                     <span id="film-rental-rate" class="text-success fw-bold"></span>
                                 </div>
                                 <div class="col-md-3">
-                                    <strong>Categories:</strong>
-                                    <span id="film-categories" class="small"></span>
+                                    <strong>Category:</strong>
+                                    <span id="film-category" class="small"></span>
                                 </div>
                             </div>
                         </div>
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const filmRating = document.getElementById('film-rating');
     const filmLanguage = document.getElementById('film-language');
     const filmRentalRate = document.getElementById('film-rental-rate');
-    const filmCategories = document.getElementById('film-categories');
+    const filmCategory = document.getElementById('film-category');
 
     filmSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
@@ -183,14 +183,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const rating = selectedOption.dataset.rating;
             const language = selectedOption.dataset.language;
             const rentalRate = selectedOption.dataset.rentalRate;
-            const categories = selectedOption.dataset.categories;
+            const category = selectedOption.dataset.category;
             
             filmRating.textContent = rating;
             filmRating.className = 'badge bg-' + getRatingColor(rating);
             
             filmLanguage.textContent = language;
             filmRentalRate.textContent = '$' + parseFloat(rentalRate).toFixed(2);
-            filmCategories.textContent = categories || 'No categories';
+            filmCategory.textContent = category || 'No category';
         } else {
             // Hide film details
             filmDetails.style.display = 'none';

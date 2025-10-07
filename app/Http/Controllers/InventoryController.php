@@ -18,7 +18,7 @@ class InventoryController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = Inventory::with(['film.language', 'film.categories', 'store']);
+        $query = Inventory::with(['film.language', 'film.category', 'store']);
 
         // Search functionality
         if ($request->filled('search')) {

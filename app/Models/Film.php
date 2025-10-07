@@ -108,11 +108,11 @@ class Film extends Model
     }
 
     /**
-     * Get the categories for the film (Many-to-Many).
+     * Get the category for the film.
      */
-    public function categories(): BelongsToMany
+    public function category(): BelongsTo
     {
-        return $this->belongsToMany(Category::class, 'film_category', 'film_id', 'category_id');
+        return $this->belongsTo(Category::class, 'category_id', 'category_id');
     }
 
     /**
@@ -159,9 +159,7 @@ class Film extends Model
      */
     public function scopeByCategory(Builder $query, int $categoryId): Builder
     {
-        return $query->whereHas('categories', function ($q) use ($categoryId) {
-            $q->where('category_id', $categoryId);
-        });
+        return $query->where('category_id', $categoryId);
     }
 
     /**

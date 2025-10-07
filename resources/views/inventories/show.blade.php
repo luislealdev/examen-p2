@@ -159,22 +159,13 @@
                         </div>
                     </div>
 
-                    <!-- Categories -->
-                    @if($inventory->film->categories->count() > 0)
-                        <div class="mt-3">
-                            <strong>Categories:</strong><br>
-                            <div class="d-flex flex-wrap gap-1 mt-2">
-                                @foreach($inventory->film->categories as $category)
-                                    <a href="{{ route('inventories.index') }}?category_id={{ $category->category_id }}" 
-                                       class="badge bg-primary text-decoration-none">
-                                        {{ $category->name }}
-                                    </a>
-                                @endforeach
-                            </div>
+                    <!-- Category -->
+                    @if($inventory->film->category)
+                        <div class="mb-2">
+                            <strong>Category:</strong><br>
+                            <span class="badge bg-secondary">{{ $inventory->film->category->name }}</span>
                         </div>
-                    @endif
-
-                    <!-- Special Features -->
+                    @endif                    <!-- Special Features -->
                     @if($inventory->film->special_features && count($inventory->film->special_features) > 0)
                         <div class="mt-3">
                             <strong>Special Features:</strong><br>
