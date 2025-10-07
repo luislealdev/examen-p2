@@ -9,6 +9,8 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\CategoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -32,6 +34,13 @@ Route::resource('customers', CustomerController::class);
 Route::resource('staff', StaffController::class);
 // Special route for staff pictures
 Route::get('staff/{staff}/picture', [StaffController::class, 'picture'])->name('staff.picture');
+Route::resource('languages', LanguageController::class);
+// Special route for languages alphabetical view
+Route::get('languages-alphabetical', [LanguageController::class, 'alphabetical'])->name('languages.alphabetical');
+Route::resource('categories', CategoryController::class);
+// Special routes for categories
+Route::get('categories-alphabetical', [CategoryController::class, 'alphabetical'])->name('categories.alphabetical');
+Route::get('categories-popular', [CategoryController::class, 'popular'])->name('categories.popular');
 // Route::resource('inventories', InventoryController::class);
 // Route::resource('actors', ActorController::class);
 // Route::resource('films', FilmController::class);
