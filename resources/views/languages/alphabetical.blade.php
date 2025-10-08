@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Languages Alphabetical View')
+@section('title', 'Vista Alfabética de Idiomas')
 
 @section('content')
 <div class="container">
@@ -9,16 +9,16 @@
             <div class="d-flex justify-content-between align-items-center">
                 <h2 class="mb-0">
                     <i class="fas fa-sort-alpha-down me-2"></i>
-                    Languages - Alphabetical View
+                    Idiomas - Vista Alfabética
                 </h2>
                 <div class="d-flex gap-2">
                     <a href="{{ route('languages.index') }}" class="btn btn-outline-primary">
                         <i class="fas fa-list me-1"></i>
-                        List View
+                        Vista de Lista
                     </a>
                     <a href="{{ route('languages.create') }}" class="btn btn-primary">
                         <i class="fas fa-plus me-1"></i>
-                        Add Language
+                        Agregar Idioma
                     </a>
                 </div>
             </div>
@@ -47,7 +47,7 @@
                 <div class="card-header">
                     <h4 class="mb-0">
                         <span class="badge bg-primary me-2" style="font-size: 1.2em;">{{ strtoupper($letter) }}</span>
-                        Languages starting with "{{ strtoupper($letter) }}"
+                        Idiomas que empiezan por "{{ strtoupper($letter) }}"
                         <span class="badge bg-secondary ms-2">{{ $languageGroups[$letter]->count() }}</span>
                     </h4>
                 </div>
@@ -72,12 +72,12 @@
                                                 <div class="btn-group btn-group-sm" role="group">
                                                     <a href="{{ route('languages.show', $language) }}" 
                                                        class="btn btn-outline-info" 
-                                                       title="View Details">
+                                                       title="Ver Detalles">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
                                                     <a href="{{ route('languages.edit', $language) }}" 
                                                        class="btn btn-outline-warning" 
-                                                       title="Edit Language">
+                                                       title="Editar Idioma">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                 </div>
@@ -96,7 +96,7 @@
         <div class="text-center mb-4">
             <a href="#" class="btn btn-outline-secondary" onclick="window.scrollTo(0,0); return false;">
                 <i class="fas fa-arrow-up me-1"></i>
-                Back to Top
+                Volver Arriba
             </a>
         </div>
     @else
@@ -104,11 +104,11 @@
         <div class="card">
             <div class="card-body text-center py-5">
                 <i class="fas fa-language fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">No Languages Available</h5>
-                <p class="text-muted">Start by adding your first language to see the alphabetical view.</p>
+                <h5 class="text-muted">No Hay Idiomas Disponibles</h5>
+                <p class="text-muted">Comienza agregando tu primer idioma para ver la vista alfabética.</p>
                 <a href="{{ route('languages.create') }}" class="btn btn-primary">
                     <i class="fas fa-plus me-1"></i>
-                    Add First Language
+                    Agregar Primer Idioma
                 </a>
             </div>
         </div>
@@ -120,26 +120,26 @@
             <div class="card-header">
                 <h6 class="mb-0">
                     <i class="fas fa-chart-bar me-2"></i>
-                    Summary Statistics
+                    Estadísticas de Resumen
                 </h6>
             </div>
             <div class="card-body">
                 <div class="row text-center">
                     <div class="col-md-3">
                         <h4 class="text-primary">{{ $languageGroups->sum(function($group) { return $group->count(); }) }}</h4>
-                        <small class="text-muted">Total Languages</small>
+                        <small class="text-muted">Total de Idiomas</small>
                     </div>
                     <div class="col-md-3">
                         <h4 class="text-success">{{ $languageGroups->count() }}</h4>
-                        <small class="text-muted">Letter Groups</small>
+                        <small class="text-muted">Grupos de Letras</small>
                     </div>
                     <div class="col-md-3">
                         <h4 class="text-info">{{ $languageGroups->max(function($group) { return $group->count(); }) }}</h4>
-                        <small class="text-muted">Largest Group</small>
+                        <small class="text-muted">Grupo Más Grande</small>
                     </div>
                     <div class="col-md-3">
                         <h4 class="text-warning">{{ round($languageGroups->avg(function($group) { return $group->count(); }), 1) }}</h4>
-                        <small class="text-muted">Average per Letter</small>
+                        <small class="text-muted">Promedio por Letra</small>
                     </div>
                 </div>
             </div>

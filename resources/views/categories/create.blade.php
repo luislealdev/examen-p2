@@ -1,26 +1,26 @@
 @extends('layouts.app')
 
-@section('title', 'Add New Category')
+@section('title', 'Agregar Nueva Categoría')
 
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
+            <div class="card shadow-custom border-0">
+                <div class="card-header bg-gradient-primary text-white">
                     <h4 class="mb-0">
                         <i class="fas fa-plus-circle me-2"></i>
-                        Add New Category
+                        Agregar Nueva Categoría
                     </h4>
                 </div>
                 <div class="card-body">
                     <form method="POST" action="{{ route('categories.store') }}">
                         @csrf
 
-                        <!-- Name Field -->
+                        <!-- Campo Nombre -->
                         <div class="mb-3">
-                            <label for="name" class="form-label">
-                                Category Name <span class="text-danger">*</span>
+                            <label for="name" class="form-label fw-bold">
+                                Nombre de la Categoría <span class="text-danger">*</span>
                             </label>
                             <input type="text" 
                                    class="form-control @error('name') is-invalid @enderror" 
@@ -28,7 +28,7 @@
                                    name="name" 
                                    value="{{ old('name') }}" 
                                    maxlength="25"
-                                   placeholder="Enter category name (e.g., Action, Comedy, Drama...)"
+                                   placeholder="Ingrese el nombre de la categoría (ej: Acción, Comedia, Drama...)"
                                    required>
                             @error('name')
                                 <div class="invalid-feedback">
@@ -37,37 +37,37 @@
                             @enderror
                             <div class="form-text">
                                 <i class="fas fa-info-circle me-1"></i>
-                                Maximum 25 characters. Category name must be unique.
+                                Máximo 25 caracteres. El nombre de la categoría debe ser único.
                             </div>
                         </div>
 
-                        <!-- Common Categories Examples -->
+                        <!-- Ejemplos de Categorías Comunes -->
                         <div class="mb-4">
-                            <label class="form-label text-muted">Popular Movie Categories:</label>
+                            <label class="form-label text-muted fw-bold">Categorías Populares de Películas:</label>
                             <div class="d-flex flex-wrap gap-2 mb-3">
-                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="setCategory('Action')">Action</button>
-                                <button type="button" class="btn btn-outline-success btn-sm" onclick="setCategory('Adventure')">Adventure</button>
-                                <button type="button" class="btn btn-outline-warning btn-sm" onclick="setCategory('Comedy')">Comedy</button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="setCategory('Acción')">Acción</button>
+                                <button type="button" class="btn btn-outline-success btn-sm" onclick="setCategory('Aventura')">Aventura</button>
+                                <button type="button" class="btn btn-outline-warning btn-sm" onclick="setCategory('Comedia')">Comedia</button>
                                 <button type="button" class="btn btn-outline-danger btn-sm" onclick="setCategory('Drama')">Drama</button>
-                                <button type="button" class="btn btn-outline-info btn-sm" onclick="setCategory('Horror')">Horror</button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setCategory('Thriller')">Thriller</button>
+                                <button type="button" class="btn btn-outline-info btn-sm" onclick="setCategory('Terror')">Terror</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setCategory('Suspenso')">Suspenso</button>
                             </div>
                             <div class="d-flex flex-wrap gap-2">
                                 <button type="button" class="btn btn-outline-dark btn-sm" onclick="setCategory('Romance')">Romance</button>
-                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="setCategory('Sci-Fi')">Sci-Fi</button>
-                                <button type="button" class="btn btn-outline-success btn-sm" onclick="setCategory('Fantasy')">Fantasy</button>
-                                <button type="button" class="btn btn-outline-warning btn-sm" onclick="setCategory('Animation')">Animation</button>
-                                <button type="button" class="btn btn-outline-info btn-sm" onclick="setCategory('Documentary')">Documentary</button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setCategory('Family')">Family</button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="setCategory('Ciencia Ficción')">Ciencia Ficción</button>
+                                <button type="button" class="btn btn-outline-success btn-sm" onclick="setCategory('Fantasía')">Fantasía</button>
+                                <button type="button" class="btn btn-outline-warning btn-sm" onclick="setCategory('Animación')">Animación</button>
+                                <button type="button" class="btn btn-outline-info btn-sm" onclick="setCategory('Documental')">Documental</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setCategory('Familia')">Familia</button>
                             </div>
                         </div>
 
-                        <!-- Category Preview -->
+                        <!-- Vista Previa de Categoría -->
                         <div class="card bg-light mb-4" id="categoryPreview" style="display: none;">
                             <div class="card-body">
                                 <h6 class="card-title">
                                     <i class="fas fa-eye me-2"></i>
-                                    Category Preview
+                                    Vista Previa de Categoría
                                 </h6>
                                 <div class="d-flex align-items-center">
                                     <div class="me-3">
@@ -77,28 +77,28 @@
                                         </div>
                                     </div>
                                     <div>
-                                        <strong id="previewName">Category Name</strong>
+                                        <strong id="previewName">Nombre de Categoría</strong>
                                         <br>
-                                        <small class="text-muted" id="previewSlug">category-slug</small>
+                                        <small class="text-muted" id="previewSlug">categoria-slug</small>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Action Buttons -->
+                        <!-- Botones de Acción -->
                         <div class="d-flex justify-content-between">
                             <a href="{{ route('categories.index') }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-arrow-left me-1"></i>
-                                Back to Categories
+                                Volver a Categorías
                             </a>
                             <div>
                                 <button type="reset" class="btn btn-outline-warning me-2" onclick="resetForm()">
                                     <i class="fas fa-undo me-1"></i>
-                                    Reset
+                                    Restablecer
                                 </button>
-                                <button type="submit" class="btn btn-primary">
+                                <button type="submit" class="btn btn-gradient-primary">
                                     <i class="fas fa-save me-1"></i>
-                                    Save Category
+                                    Guardar Categoría
                                 </button>
                             </div>
                         </div>
@@ -106,40 +106,40 @@
                 </div>
             </div>
 
-            <!-- Help Card -->
-            <div class="card mt-4">
-                <div class="card-header">
+            <!-- Tarjeta de Ayuda -->
+            <div class="card shadow-custom border-0 mt-4">
+                <div class="card-header bg-gradient-info text-white">
                     <h6 class="mb-0">
                         <i class="fas fa-question-circle me-2"></i>
-                        Category Guidelines
+                        Guías para Categorías
                     </h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <h6><i class="fas fa-check-circle text-success me-1"></i> Good Examples:</h6>
+                            <h6><i class="fas fa-check-circle text-success me-1"></i> Buenos Ejemplos:</h6>
                             <ul class="list-unstyled">
-                                <li><i class="fas fa-chevron-right text-muted me-2"></i> Action</li>
-                                <li><i class="fas fa-chevron-right text-muted me-2"></i> Comedy</li>
-                                <li><i class="fas fa-chevron-right text-muted me-2"></i> Sci-Fi</li>
-                                <li><i class="fas fa-chevron-right text-muted me-2"></i> Documentary</li>
-                                <li><i class="fas fa-chevron-right text-muted me-2"></i> Children & Family</li>
+                                <li><i class="fas fa-chevron-right text-muted me-2"></i> Acción</li>
+                                <li><i class="fas fa-chevron-right text-muted me-2"></i> Comedia</li>
+                                <li><i class="fas fa-chevron-right text-muted me-2"></i> Ciencia Ficción</li>
+                                <li><i class="fas fa-chevron-right text-muted me-2"></i> Documental</li>
+                                <li><i class="fas fa-chevron-right text-muted me-2"></i> Infantil y Familia</li>
                             </ul>
                         </div>
                         <div class="col-md-6">
-                            <h6><i class="fas fa-times-circle text-danger me-1"></i> Avoid:</h6>
+                            <h6><i class="fas fa-times-circle text-danger me-1"></i> Evitar:</h6>
                             <ul class="list-unstyled">
-                                <li><i class="fas fa-chevron-right text-muted me-2"></i> Vague names (e.g., "Good Movies")</li>
-                                <li><i class="fas fa-chevron-right text-muted me-2"></i> Too specific (e.g., "90s Action")</li>
-                                <li><i class="fas fa-chevron-right text-muted me-2"></i> Special characters</li>
-                                <li><i class="fas fa-chevron-right text-muted me-2"></i> Very long names</li>
-                                <li><i class="fas fa-chevron-right text-muted me-2"></i> Duplicate categories</li>
+                                <li><i class="fas fa-chevron-right text-muted me-2"></i> Nombres vagos (ej: "Buenas Películas")</li>
+                                <li><i class="fas fa-chevron-right text-muted me-2"></i> Muy específicos (ej: "Acción de los 90s")</li>
+                                <li><i class="fas fa-chevron-right text-muted me-2"></i> Caracteres especiales</li>
+                                <li><i class="fas fa-chevron-right text-muted me-2"></i> Nombres muy largos</li>
+                                <li><i class="fas fa-chevron-right text-muted me-2"></i> Categorías duplicadas</li>
                             </ul>
                         </div>
                     </div>
                     <div class="alert alert-info mt-3">
                         <i class="fas fa-lightbulb me-2"></i>
-                        <strong>Tip:</strong> Think about how customers will browse movies. Use standard genre names that are widely recognized.
+                        <strong>Consejo:</strong> Piensa en cómo los clientes navegarán las películas. Usa nombres de géneros estándar ampliamente reconocidos.
                     </div>
                 </div>
             </div>

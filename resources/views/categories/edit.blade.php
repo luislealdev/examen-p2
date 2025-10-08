@@ -1,20 +1,20 @@
 @extends('layouts.app')
 
-@section('title', "Edit Category: {$category->name}")
+@section('title', "Editar Categoría: {$category->name}")
 
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
+            <div class="card shadow-custom border-0">
+                <div class="card-header bg-gradient-primary text-white">
                     <h4 class="mb-0">
                         <i class="fas fa-edit me-2"></i>
-                        Edit Category: <strong>{{ $category->name }}</strong>
+                        Editar Categoría: <strong>{{ $category->name }}</strong>
                     </h4>
                 </div>
                 <div class="card-body">
-                    <!-- Current Category Info -->
+                    <!-- Información Actual de la Categoría -->
                     <div class="alert alert-info">
                         <div class="row align-items-center">
                             <div class="col-md-2 text-center">
@@ -24,11 +24,11 @@
                                 </div>
                             </div>
                             <div class="col-md-10">
-                                <h6 class="mb-1">Current Category Information</h6>
-                                <p class="mb-1"><strong>Name:</strong> {{ $category->name }}</p>
+                                <h6 class="mb-1">Información Actual de la Categoría</h6>
+                                <p class="mb-1"><strong>Nombre:</strong> {{ $category->name }}</p>
                                 <p class="mb-1"><strong>Slug:</strong> {{ $category->slug }}</p>
                                 <p class="mb-0"><strong>ID:</strong> {{ $category->category_id }} | 
-                                   <strong>Last Updated:</strong> {{ $category->last_update?->format('M j, Y') ?? 'N/A' }}</p>
+                                   <strong>Última Actualización:</strong> {{ $category->last_update?->format('M j, Y') ?? 'N/A' }}</p>
                             </div>
                         </div>
                     </div>
@@ -37,10 +37,10 @@
                         @csrf
                         @method('PUT')
 
-                        <!-- Name Field -->
+                        <!-- Campo Nombre -->
                         <div class="mb-3">
-                            <label for="name" class="form-label">
-                                Category Name <span class="text-danger">*</span>
+                            <label for="name" class="form-label fw-bold">
+                                Nombre de la Categoría <span class="text-danger">*</span>
                             </label>
                             <input type="text" 
                                    class="form-control @error('name') is-invalid @enderror" 
@@ -48,7 +48,7 @@
                                    name="name" 
                                    value="{{ old('name', $category->name) }}" 
                                    maxlength="25"
-                                   placeholder="Enter category name (e.g., Action, Comedy, Drama...)"
+                                   placeholder="Ingrese el nombre de la categoría (ej: Acción, Comedia, Drama...)"
                                    required>
                             @error('name')
                                 <div class="invalid-feedback">
@@ -57,41 +57,41 @@
                             @enderror
                             <div class="form-text">
                                 <i class="fas fa-info-circle me-1"></i>
-                                Maximum 25 characters. Category name must be unique.
+                                Máximo 25 caracteres. El nombre de la categoría debe ser único.
                             </div>
                         </div>
 
-                        <!-- Common Categories Examples -->
+                        <!-- Ejemplos de Categorías Comunes -->
                         <div class="mb-4">
-                            <label class="form-label text-muted">Popular Movie Categories:</label>
+                            <label class="form-label text-muted fw-bold">Categorías Populares de Películas:</label>
                             <div class="d-flex flex-wrap gap-2 mb-3">
-                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="setCategory('Action')">Action</button>
-                                <button type="button" class="btn btn-outline-success btn-sm" onclick="setCategory('Adventure')">Adventure</button>
-                                <button type="button" class="btn btn-outline-warning btn-sm" onclick="setCategory('Comedy')">Comedy</button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="setCategory('Acción')">Acción</button>
+                                <button type="button" class="btn btn-outline-success btn-sm" onclick="setCategory('Aventura')">Aventura</button>
+                                <button type="button" class="btn btn-outline-warning btn-sm" onclick="setCategory('Comedia')">Comedia</button>
                                 <button type="button" class="btn btn-outline-danger btn-sm" onclick="setCategory('Drama')">Drama</button>
-                                <button type="button" class="btn btn-outline-info btn-sm" onclick="setCategory('Horror')">Horror</button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setCategory('Thriller')">Thriller</button>
+                                <button type="button" class="btn btn-outline-info btn-sm" onclick="setCategory('Terror')">Terror</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setCategory('Suspenso')">Suspenso</button>
                             </div>
                             <div class="d-flex flex-wrap gap-2">
                                 <button type="button" class="btn btn-outline-dark btn-sm" onclick="setCategory('Romance')">Romance</button>
-                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="setCategory('Sci-Fi')">Sci-Fi</button>
-                                <button type="button" class="btn btn-outline-success btn-sm" onclick="setCategory('Fantasy')">Fantasy</button>
-                                <button type="button" class="btn btn-outline-warning btn-sm" onclick="setCategory('Animation')">Animation</button>
-                                <button type="button" class="btn btn-outline-info btn-sm" onclick="setCategory('Documentary')">Documentary</button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setCategory('Family')">Family</button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="setCategory('Ciencia Ficción')">Ciencia Ficción</button>
+                                <button type="button" class="btn btn-outline-success btn-sm" onclick="setCategory('Fantasía')">Fantasía</button>
+                                <button type="button" class="btn btn-outline-warning btn-sm" onclick="setCategory('Animación')">Animación</button>
+                                <button type="button" class="btn btn-outline-info btn-sm" onclick="setCategory('Documental')">Documental</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setCategory('Familia')">Familia</button>
                             </div>
                         </div>
 
-                        <!-- Change Preview -->
+                        <!-- Vista Previa de Cambios -->
                         <div class="card bg-light mb-4" id="changePreview" style="display: none;">
                             <div class="card-body">
                                 <h6 class="card-title">
                                     <i class="fas fa-eye me-2"></i>
-                                    Change Preview
+                                    Vista Previa de Cambios
                                 </h6>
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <p class="mb-1"><strong>Current:</strong></p>
+                                        <p class="mb-1"><strong>Actual:</strong></p>
                                         <div class="d-flex align-items-center">
                                             <div class="me-2">
                                                 <div class="category-icon bg-secondary text-white d-flex align-items-center justify-content-center" 
@@ -107,7 +107,7 @@
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <p class="mb-1"><strong>New:</strong></p>
+                                        <p class="mb-1"><strong>Nuevo:</strong></p>
                                         <div class="d-flex align-items-center">
                                             <div class="me-2">
                                                 <div class="category-icon bg-primary text-white d-flex align-items-center justify-content-center" 
@@ -126,26 +126,26 @@
                             </div>
                         </div>
 
-                        <!-- Action Buttons -->
+                        <!-- Botones de Acción -->
                         <div class="d-flex justify-content-between">
                             <div>
                                 <a href="{{ route('categories.show', $category) }}" class="btn btn-outline-info me-2">
                                     <i class="fas fa-eye me-1"></i>
-                                    View Details
+                                    Ver Detalles
                                 </a>
                                 <a href="{{ route('categories.index') }}" class="btn btn-outline-secondary">
                                     <i class="fas fa-arrow-left me-1"></i>
-                                    Back to Categories
+                                    Volver a Categorías
                                 </a>
                             </div>
                             <div>
                                 <button type="reset" class="btn btn-outline-warning me-2" onclick="resetForm()">
                                     <i class="fas fa-undo me-1"></i>
-                                    Reset
+                                    Restablecer
                                 </button>
-                                <button type="submit" class="btn btn-primary" id="updateButton">
+                                <button type="submit" class="btn btn-gradient-primary" id="updateButton">
                                     <i class="fas fa-save me-1"></i>
-                                    Update Category
+                                    Actualizar Categoría
                                 </button>
                             </div>
                         </div>

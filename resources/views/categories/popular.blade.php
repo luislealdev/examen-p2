@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Popular Categories')
+@section('title', 'Categorías Populares')
 
 @section('content')
 <div class="container">
@@ -9,20 +9,20 @@
             <div class="d-flex justify-content-between align-items-center">
                 <h2 class="mb-0">
                     <i class="fas fa-star me-2"></i>
-                    Popular Categories
+                    Categorías Populares
                 </h2>
                 <div class="d-flex gap-2">
                     <a href="{{ route('categories.index') }}" class="btn btn-outline-primary">
                         <i class="fas fa-list me-1"></i>
-                        List View
+                        Vista de Lista
                     </a>
                     <a href="{{ route('categories.alphabetical') }}" class="btn btn-outline-info">
                         <i class="fas fa-sort-alpha-down me-1"></i>
-                        Alphabetical View
+                        Vista Alfabética
                     </a>
-                    <a href="{{ route('categories.create') }}" class="btn btn-primary">
+                    <a href="{{ route('categories.create') }}" class="btn btn-gradient-primary">
                         <i class="fas fa-plus me-1"></i>
-                        Add Category
+                        Agregar Categoría
                     </a>
                 </div>
             </div>
@@ -32,8 +32,8 @@
     <!-- Info Alert -->
     <div class="alert alert-info">
         <i class="fas fa-info-circle me-2"></i>
-        <strong>Coming Soon:</strong> Category popularity rankings will be available when the Film model is implemented. 
-        Currently showing all categories in alphabetical order.
+        <strong>Próximamente:</strong> Las clasificaciones de popularidad de categorías estarán disponibles cuando se implemente el modelo de Películas. 
+        Actualmente mostrando todas las categorías en orden alfabético.
     </div>
 
     @if($categories->count() > 0)
@@ -53,9 +53,9 @@
                                 <div class="flex-grow-1">
                                     <h5 class="card-title mb-1">{{ $category->formatted_name }}</h5>
                                     <p class="text-muted mb-0">
-                                        <small>Category ID: {{ $category->category_id }}</small>
+                                        <small>ID de Categoría: {{ $category->category_id }}</small>
                                         @if($category->is_recent)
-                                            <span class="badge bg-success ms-1">New</span>
+                                            <span class="badge bg-success ms-1">Nuevo</span>
                                         @endif
                                     </p>
                                 </div>
@@ -77,7 +77,7 @@
                                                 {{-- {{ $category->films_count ?? 0 }} --}}
                                                 <span class="text-muted">0</span>
                                             </h6>
-                                            <small class="text-muted">Films</small>
+                                            <small class="text-muted">Películas</small>
                                         </div>
                                     </div>
                                     <div class="col-6">
@@ -86,7 +86,7 @@
                                                 {{-- {{ $category->popularity_score ?? 'N/A' }} --}}
                                                 <span class="text-muted">N/A</span>
                                             </h6>
-                                            <small class="text-muted">Score</small>
+                                            <small class="text-muted">Puntuación</small>
                                         </div>
                                     </div>
                                 </div>
@@ -99,7 +99,7 @@
                                     <code class="small">{{ $category->slug }}</code>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-muted">Updated:</span>
+                                    <span class="text-muted">Actualizado:</span>
                                     <small class="text-muted">{{ $category->last_update?->diffForHumans() ?? 'N/A' }}</small>
                                 </div>
                             </div>
@@ -109,12 +109,12 @@
                                 <a href="{{ route('categories.show', $category) }}" 
                                    class="btn btn-outline-info btn-sm flex-fill">
                                     <i class="fas fa-eye me-1"></i>
-                                    View
+                                    Ver
                                 </a>
                                 <a href="{{ route('categories.edit', $category) }}" 
                                    class="btn btn-outline-warning btn-sm flex-fill">
                                     <i class="fas fa-edit me-1"></i>
-                                    Edit
+                                    Editar
                                 </a>
                                 {{-- Future: View films in category
                                 <a href="{{ route('films.index', ['category' => $category->category_id]) }}" 
@@ -142,28 +142,28 @@
             <div class="card-header bg-info text-white">
                 <h6 class="mb-0">
                     <i class="fas fa-rocket me-2"></i>
-                    Upcoming Features
+                    Próximas Funcionalidades
                 </h6>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <h6><i class="fas fa-chart-line text-primary me-2"></i>Film Count Ranking</h6>
-                        <p class="text-muted">Categories will be ranked by the number of films in each category.</p>
+                        <h6><i class="fas fa-chart-line text-primary me-2"></i>Clasificación por Cantidad de Películas</h6>
+                        <p class="text-muted">Las categorías se clasificarán por el número de películas en cada categoría.</p>
                     </div>
                     <div class="col-md-6">
-                        <h6><i class="fas fa-thumbs-up text-success me-2"></i>Popularity Score</h6>
-                        <p class="text-muted">Advanced scoring based on rentals, ratings, and user preferences.</p>
+                        <h6><i class="fas fa-thumbs-up text-success me-2"></i>Puntuación de Popularidad</h6>
+                        <p class="text-muted">Puntuación avanzada basada en alquileres, calificaciones y preferencias del usuario.</p>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <h6><i class="fas fa-fire text-danger me-2"></i>Trending Categories</h6>
-                        <p class="text-muted">Categories with the most recent activity and engagement.</p>
+                        <h6><i class="fas fa-fire text-danger me-2"></i>Categorías en Tendencia</h6>
+                        <p class="text-muted">Categorías con la mayor actividad y participación reciente.</p>
                     </div>
                     <div class="col-md-6">
-                        <h6><i class="fas fa-filter text-warning me-2"></i>Advanced Filtering</h6>
-                        <p class="text-muted">Filter by film count, rating, release date ranges, and more.</p>
+                        <h6><i class="fas fa-filter text-warning me-2"></i>Filtros Avanzados</h6>
+                        <p class="text-muted">Filtrar por cantidad de películas, calificación, rangos de fechas de lanzamiento y más.</p>
                     </div>
                 </div>
             </div>
@@ -173,11 +173,11 @@
         <div class="card">
             <div class="card-body text-center py-5">
                 <i class="fas fa-star fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">No Categories Available</h5>
-                <p class="text-muted">Start by adding your first category to see popularity rankings.</p>
+                <h5 class="text-muted">No Hay Categorías Disponibles</h5>
+                <p class="text-muted">Comienza agregando tu primera categoría para ver las clasificaciones de popularidad.</p>
                 <a href="{{ route('categories.create') }}" class="btn btn-primary">
                     <i class="fas fa-plus me-1"></i>
-                    Add First Category
+                    Agregar Primera Categoría
                 </a>
             </div>
         </div>

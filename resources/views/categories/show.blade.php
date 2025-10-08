@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', "Category: {$category->name}")
+@section('title', "Categoría: {$category->name}")
 
 @section('content')
 <div class="container">
@@ -10,7 +10,7 @@
                 <div class="card-header">
                     <h4 class="mb-0">
                         <i class="fas fa-tag me-2"></i>
-                        Category Details
+                        Detalles de la Categoría
                     </h4>
                 </div>
                 <div class="card-body">
@@ -34,7 +34,7 @@
                             </p>
                             <p class="text-muted mb-0">
                                 <i class="fas fa-clock me-1"></i>
-                                Last Updated: <strong>{{ $category->last_update?->format('F j, Y \a\t g:i A') ?? 'Not available' }}</strong>
+                                Última Actualización: <strong>{{ $category->last_update?->format('F j, Y \a\t g:i A') ?? 'No disponible' }}</strong>
                                 @if($category->is_recent)
                                     <span class="badge bg-success ms-2">Recently Added</span>
                                 @endif
@@ -53,13 +53,13 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class="fw-bold text-muted">Category Name:</td>
+                                    <td class="fw-bold text-muted">Nombre de Categoría:</td>
                                     <td>
                                         <strong>{{ $category->name }}</strong>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class="fw-bold text-muted">Formatted Name:</td>
+                                    <td class="fw-bold text-muted">Nombre Formateado:</td>
                                     <td>{{ $category->formatted_name }}</td>
                                 </tr>
                                 <tr>
@@ -75,13 +75,13 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class="fw-bold text-muted">Uppercase Name:</td>
+                                    <td class="fw-bold text-muted">Nombre en Mayúsculas:</td>
                                     <td>
                                         <span class="fw-bold">{{ $category->upper_name }}</span>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class="fw-bold text-muted">Last Updated:</td>
+                                    <td class="fw-bold text-muted">Última Actualización:</td>
                                     <td>
                                         @if($category->last_update)
                                             {{ $category->last_update->format('F j, Y \a\t g:i A') }}
@@ -133,22 +133,22 @@
                     <div class="d-flex justify-content-between">
                         <a href="{{ route('categories.index') }}" class="btn btn-outline-secondary">
                             <i class="fas fa-arrow-left me-1"></i>
-                            Back to Categories
+                            Volver a Categorías
                         </a>
                         <div>
                             <a href="{{ route('categories.edit', $category) }}" class="btn btn-warning me-2">
                                 <i class="fas fa-edit me-1"></i>
-                                Edit Category
+                                Editar Categoría
                             </a>
                             <form method="POST" 
                                   action="{{ route('categories.destroy', $category) }}" 
                                   class="d-inline" 
-                                  onsubmit="return confirm('Are you sure you want to delete the category \'{{ $category->name }}\'? This action cannot be undone.')">
+                                  onsubmit="return confirm('¿Está seguro de que desea eliminar la categoría \'{{ $category->name }}\'? Esta acción no se puede deshacer.')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-danger">
                                     <i class="fas fa-trash me-1"></i>
-                                    Delete Category
+                                    Eliminar Categoría
                                 </button>
                             </form>
                         </div>

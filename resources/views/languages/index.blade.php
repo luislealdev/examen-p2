@@ -1,24 +1,24 @@
 @extends('layouts.app')
 
-@section('title', 'Languages')
+@section('title', 'Idiomas')
 
 @section('content')
 <div class="container">
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="d-flex justify-content-between align-items-center">
-                <h2 class="mb-0">
+                <h2 class="mb-0 text-primary">
                     <i class="fas fa-language me-2"></i>
-                    Languages Management
+                    Gestión de Idiomas
                 </h2>
                 <div class="d-flex gap-2">
                     <a href="{{ route('languages.alphabetical') }}" class="btn btn-outline-primary">
                         <i class="fas fa-sort-alpha-down me-1"></i>
-                        Alphabetical View
+                        Vista Alfabética
                     </a>
-                    <a href="{{ route('languages.create') }}" class="btn btn-primary">
+                    <a href="{{ route('languages.create') }}" class="btn btn-gradient-primary">
                         <i class="fas fa-plus me-1"></i>
-                        Add Language
+                        Agregar Idioma
                     </a>
                 </div>
             </div>
@@ -28,11 +28,11 @@
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-md-6">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
+            <div class="card shadow-custom border-0">
+                <div class="card-header bg-gradient-primary text-white border-0">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <h6 class="card-title mb-0">Total Languages</h6>
+                            <h6 class="card-title mb-0">Total de Idiomas</h6>
                             <h3 class="mt-2">{{ $totalLanguages }}</h3>
                         </div>
                         <div class="align-self-center">
@@ -43,11 +43,11 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card bg-success text-white">
-                <div class="card-body">
+            <div class="card shadow-custom border-0">
+                <div class="card-header bg-gradient-success text-white border-0">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <h6 class="card-title mb-0">Added This Month</h6>
+                            <h6 class="card-title mb-0">Agregados Este Mes</h6>
                             <h3 class="mt-2">{{ $recentlyAdded }}</h3>
                         </div>
                         <div class="align-self-center">
@@ -64,38 +64,38 @@
         <div class="card-body">
             <form method="GET" action="{{ route('languages.index') }}" class="row g-3">
                 <div class="col-md-4">
-                    <label for="search" class="form-label">Search Language</label>
+                    <label for="search" class="form-label">Buscar Idioma</label>
                     <div class="input-group">
                         <input type="text" 
                                class="form-control" 
                                id="search" 
                                name="search" 
                                value="{{ request('search') }}" 
-                               placeholder="Enter language name...">
+                               placeholder="Ingresa el nombre del idioma...">
                         <button class="btn btn-outline-secondary" type="submit">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <label for="sort" class="form-label">Sort By</label>
+                    <label for="sort" class="form-label">Ordenar Por</label>
                     <select class="form-select" id="sort" name="sort">
-                        <option value="name" {{ request('sort') == 'name' ? 'selected' : '' }}>Name</option>
+                        <option value="name" {{ request('sort') == 'name' ? 'selected' : '' }}>Nombre</option>
                         <option value="language_id" {{ request('sort') == 'language_id' ? 'selected' : '' }}>ID</option>
-                        <option value="last_update" {{ request('sort') == 'last_update' ? 'selected' : '' }}>Last Update</option>
+                        <option value="last_update" {{ request('sort') == 'last_update' ? 'selected' : '' }}>Última Actualización</option>
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label for="direction" class="form-label">Direction</label>
+                    <label for="direction" class="form-label">Dirección</label>
                     <select class="form-select" id="direction" name="direction">
-                        <option value="asc" {{ request('direction') == 'asc' ? 'selected' : '' }}>Ascending</option>
-                        <option value="desc" {{ request('direction') == 'desc' ? 'selected' : '' }}>Descending</option>
+                        <option value="asc" {{ request('direction') == 'asc' ? 'selected' : '' }}>Ascendente</option>
+                        <option value="desc" {{ request('direction') == 'desc' ? 'selected' : '' }}>Descendente</option>
                     </select>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">
+                    <button type="submit" class="btn btn-gradient-primary w-100">
                         <i class="fas fa-filter me-1"></i>
-                        Filter
+                        Filtrar
                     </button>
                 </div>
             </form>
@@ -103,7 +103,7 @@
                 <div class="mt-3">
                     <a href="{{ route('languages.index') }}" class="btn btn-outline-secondary btn-sm">
                         <i class="fas fa-times me-1"></i>
-                        Clear Filters
+                        Limpiar Filtros
                     </a>
                 </div>
             @endif
@@ -114,9 +114,9 @@
     @if(request('search') || request()->hasAny(['sort', 'direction']))
         <div class="alert alert-info">
             <i class="fas fa-info-circle me-2"></i>
-            Showing {{ $languages->count() }} of {{ $languages->total() }} languages
+            Mostrando {{ $languages->count() }} de {{ $languages->total() }} idiomas
             @if(request('search'))
-                matching "<strong>{{ request('search') }}</strong>"
+                que coinciden con "<strong>{{ request('search') }}</strong>"
             @endif
         </div>
     @endif
@@ -126,7 +126,7 @@
         <div class="card-header">
             <h5 class="card-title mb-0">
                 <i class="fas fa-list me-2"></i>
-                Languages List
+                Lista de Idiomas
                 <span class="badge bg-secondary ms-2">{{ $languages->total() }}</span>
             </h5>
         </div>
@@ -150,7 +150,7 @@
                                 <th>
                                     <a href="{{ request()->fullUrlWithQuery(['sort' => 'name', 'direction' => request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
                                        class="text-decoration-none text-dark">
-                                        Name
+                                        Nombre
                                         @if(request('sort') == 'name' || !request('sort'))
                                             <i class="fas fa-sort-{{ request('direction') === 'desc' ? 'down' : 'up' }}"></i>
                                         @else
@@ -161,7 +161,7 @@
                                 <th>
                                     <a href="{{ request()->fullUrlWithQuery(['sort' => 'last_update', 'direction' => request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
                                        class="text-decoration-none text-dark">
-                                        Last Update
+                                        Última Actualización
                                         @if(request('sort') == 'last_update')
                                             <i class="fas fa-sort-{{ request('direction') === 'asc' ? 'up' : 'down' }}"></i>
                                         @else
@@ -169,7 +169,7 @@
                                         @endif
                                     </a>
                                 </th>
-                                <th width="200" class="text-center">Actions</th>
+                                <th width="200" class="text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -196,32 +196,32 @@
                                     <td>
                                         <span class="text-muted">{{ $language->last_update?->format('M d, Y H:i') ?? 'N/A' }}</span>
                                         @if($language->last_update && $language->last_update->isToday())
-                                            <span class="badge bg-success ms-1">Today</span>
+                                            <span class="badge bg-success ms-1">Hoy</span>
                                         @elseif($language->last_update && $language->last_update->isYesterday())
-                                            <span class="badge bg-warning ms-1">Yesterday</span>
+                                            <span class="badge bg-warning ms-1">Ayer</span>
                                         @endif
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group" role="group">
                                             <a href="{{ route('languages.show', $language) }}" 
                                                class="btn btn-sm btn-outline-info" 
-                                               title="View Details">
+                                               title="Ver Detalles">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             <a href="{{ route('languages.edit', $language) }}" 
                                                class="btn btn-sm btn-outline-warning" 
-                                               title="Edit Language">
+                                               title="Editar Idioma">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             <form method="POST" 
                                                   action="{{ route('languages.destroy', $language) }}" 
                                                   class="d-inline" 
-                                                  onsubmit="return confirm('Are you sure you want to delete the language \'{{ $language->name }}\'?')">
+                                                  onsubmit="return confirm('¿Estás seguro de que quieres eliminar el idioma \'{{ $language->name }}\'?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" 
                                                         class="btn btn-sm btn-outline-danger" 
-                                                        title="Delete Language">
+                                                        title="Eliminar Idioma">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
@@ -235,18 +235,18 @@
             @else
                 <div class="text-center py-5">
                     <i class="fas fa-language fa-3x text-muted mb-3"></i>
-                    <h5 class="text-muted">No languages found</h5>
+                    <h5 class="text-muted">No se encontraron idiomas</h5>
                     <p class="text-muted">
                         @if(request('search'))
-                            No languages match your search criteria.
+                            No hay idiomas que coincidan con tus criterios de búsqueda.
                         @else
-                            Start by adding your first language.
+                            Comienza agregando tu primer idioma.
                         @endif
                     </p>
                     @if(request('search'))
-                        <a href="{{ route('languages.index') }}" class="btn btn-outline-primary">Clear Search</a>
+                        <a href="{{ route('languages.index') }}" class="btn btn-outline-primary">Limpiar Búsqueda</a>
                     @else
-                        <a href="{{ route('languages.create') }}" class="btn btn-primary">Add First Language</a>
+                        <a href="{{ route('languages.create') }}" class="btn btn-gradient-primary">Agregar Primer Idioma</a>
                     @endif
                 </div>
             @endif
@@ -257,7 +257,7 @@
                 <div class="row align-items-center">
                     <div class="col-md-6">
                         <span class="text-muted">
-                            Showing {{ $languages->firstItem() }} to {{ $languages->lastItem() }} of {{ $languages->total() }} results
+                            Mostrando {{ $languages->firstItem() }} a {{ $languages->lastItem() }} de {{ $languages->total() }} resultados
                         </span>
                     </div>
                     <div class="col-md-6">

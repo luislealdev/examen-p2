@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Categories Alphabetical View')
+@section('title', 'Vista Alfabética de Categorías')
 
 @section('content')
 <div class="container">
@@ -9,20 +9,20 @@
             <div class="d-flex justify-content-between align-items-center">
                 <h2 class="mb-0">
                     <i class="fas fa-sort-alpha-down me-2"></i>
-                    Categories - Alphabetical View
+                    Categorías - Vista Alfabética
                 </h2>
                 <div class="d-flex gap-2">
                     <a href="{{ route('categories.index') }}" class="btn btn-outline-primary">
                         <i class="fas fa-list me-1"></i>
-                        List View
+                        Vista de Lista
                     </a>
                     <a href="{{ route('categories.popular') }}" class="btn btn-outline-success">
                         <i class="fas fa-star me-1"></i>
-                        Popular Categories
+                        Categorías Populares
                     </a>
-                    <a href="{{ route('categories.create') }}" class="btn btn-primary">
+                    <a href="{{ route('categories.create') }}" class="btn btn-gradient-primary">
                         <i class="fas fa-plus me-1"></i>
-                        Add Category
+                        Agregar Categoría
                     </a>
                 </div>
             </div>
@@ -33,7 +33,7 @@
         <!-- Quick Navigation -->
         <div class="card mb-4">
             <div class="card-body">
-                <h6 class="card-title">Quick Navigation</h6>
+                <h6 class="card-title">Navegación Rápida</h6>
                 <div class="d-flex flex-wrap gap-2">
                     @foreach($categoryGroups->keys()->sort() as $letter)
                         <a href="#letter-{{ $letter }}" class="btn btn-outline-secondary btn-sm">
@@ -51,7 +51,7 @@
                 <div class="card-header">
                     <h4 class="mb-0">
                         <span class="badge bg-primary me-2" style="font-size: 1.2em;">{{ strtoupper($letter) }}</span>
-                        Categories starting with "{{ strtoupper($letter) }}"
+                                                Categorías que empiezan por "{{ strtoupper($letter) }}"
                         <span class="badge bg-secondary ms-2">{{ $categoryGroups[$letter]->count() }}</span>
                     </h4>
                 </div>
@@ -74,19 +74,19 @@
                                                     <small>
                                                         ID: {{ $category->category_id }}
                                                         @if($category->is_recent)
-                                                            <span class="badge bg-success ms-1">New</span>
+                                                            <span class="badge bg-success ms-1">Nuevo</span>
                                                         @endif
                                                     </small>
                                                 </p>
                                                 <div class="btn-group btn-group-sm" role="group">
                                                     <a href="{{ route('categories.show', $category) }}" 
                                                        class="btn btn-outline-info" 
-                                                       title="View Details">
+                                                       title="Ver Detalles">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
                                                     <a href="{{ route('categories.edit', $category) }}" 
                                                        class="btn btn-outline-warning" 
-                                                       title="Edit Category">
+                                                       title="Editar Categoría">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                 </div>
@@ -105,7 +105,7 @@
         <div class="text-center mb-4">
             <a href="#" class="btn btn-outline-secondary" onclick="window.scrollTo(0,0); return false;">
                 <i class="fas fa-arrow-up me-1"></i>
-                Back to Top
+                Volver Arriba
             </a>
         </div>
     @else
@@ -113,11 +113,11 @@
         <div class="card">
             <div class="card-body text-center py-5">
                 <i class="fas fa-tags fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">No Categories Available</h5>
-                <p class="text-muted">Start by adding your first category to see the alphabetical view.</p>
+                <h5 class="text-muted">No Hay Categorías Disponibles</h5>
+                <p class="text-muted">Comienza agregando tu primera categoría para ver la vista alfabética.</p>
                 <a href="{{ route('categories.create') }}" class="btn btn-primary">
                     <i class="fas fa-plus me-1"></i>
-                    Add First Category
+                    Agregar Primera Categoría
                 </a>
             </div>
         </div>
@@ -129,26 +129,26 @@
             <div class="card-header">
                 <h6 class="mb-0">
                     <i class="fas fa-chart-bar me-2"></i>
-                    Summary Statistics
+                    Estadísticas de Resumen
                 </h6>
             </div>
             <div class="card-body">
                 <div class="row text-center">
                     <div class="col-md-3">
                         <h4 class="text-primary">{{ $categoryGroups->sum(function($group) { return $group->count(); }) }}</h4>
-                        <small class="text-muted">Total Categories</small>
+                        <small class="text-muted">Total de Categorías</small>
                     </div>
                     <div class="col-md-3">
                         <h4 class="text-success">{{ $categoryGroups->count() }}</h4>
-                        <small class="text-muted">Letter Groups</small>
+                        <small class="text-muted">Grupos de Letras</small>
                     </div>
                     <div class="col-md-3">
                         <h4 class="text-info">{{ $categoryGroups->max(function($group) { return $group->count(); }) }}</h4>
-                        <small class="text-muted">Largest Group</small>
+                        <small class="text-muted">Grupo Más Grande</small>
                     </div>
                     <div class="col-md-3">
                         <h4 class="text-warning">{{ round($categoryGroups->avg(function($group) { return $group->count(); }), 1) }}</h4>
-                        <small class="text-muted">Average per Letter</small>
+                        <small class="text-muted">Promedio por Letra</small>
                     </div>
                 </div>
             </div>

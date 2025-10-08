@@ -107,9 +107,9 @@
                             </div>
 
                             <!-- Other Categories -->
-                            @php
+                            <!-- @php
                                 $otherCategories = $film->categories->filter(fn($cat) => $cat->category_id !== $category->category_id);
-                            @endphp
+                            @endphp -->
                             @if($otherCategories->count() > 0)
                                 <div class="mt-3">
                                     <small class="text-muted">Also in:</small>

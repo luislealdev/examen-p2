@@ -1,24 +1,24 @@
 @extends('layouts.app')
 
-@section('title', 'Inventory Management')
+@section('title', 'Gestión de Inventario')
 
 @section('content')
 <div class="container">
     <!-- Header with Title and Add Button -->
     <div class="row align-items-center mb-4">
         <div class="col">
-            <h1 class="display-4 fw-bold text-gradient">
-                <i class="fas fa-boxes me-3"></i>Inventory Management
+            <h1 class="display-4 fw-bold text-primary">
+                <i class="fas fa-boxes me-3"></i>Gestión de Inventario
             </h1>
-            <p class="lead text-muted">Track and manage store inventory with {{ number_format($stats['total_items']) }} items</p>
+            <p class="lead text-muted">Rastrear y gestionar el inventario de la tienda con {{ number_format($stats['total_items']) }} artículos</p>
         </div>
         <div class="col-auto">
             <div class="btn-group">
-                <a href="{{ route('inventories.create') }}" class="btn btn-primary">
-                    <i class="fas fa-plus me-2"></i>Add Item
+                <a href="{{ route('inventories.create') }}" class="btn btn-gradient-primary">
+                    <i class="fas fa-plus me-2"></i>Agregar Artículo
                 </a>
-                <a href="{{ route('inventories.bulk-create') }}" class="btn btn-success">
-                    <i class="fas fa-layer-group me-2"></i>Bulk Add
+                <a href="{{ route('inventories.bulk-create') }}" class="btn btn-gradient-success">
+                    <i class="fas fa-layer-group me-2"></i>Agregar en Lote
                 </a>
             </div>
         </div>
@@ -27,11 +27,11 @@
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-md-3">
-            <div class="card gradient-card-primary">
-                <div class="card-body text-white">
+            <div class="card shadow-custom border-0">
+                <div class="card-header bg-gradient-primary text-white border-0">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
-                            <h6 class="card-title mb-0">Total Items</h6>
+                            <h6 class="card-title mb-0">Total de Artículos</h6>
                             <h3 class="mb-0">{{ number_format($stats['total_items']) }}</h3>
                         </div>
                         <div class="opacity-75">
@@ -42,11 +42,11 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card gradient-card-success">
-                <div class="card-body text-white">
+            <div class="card shadow-custom border-0">
+                <div class="card-header bg-gradient-success text-white border-0">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
-                            <h6 class="card-title mb-0">Recent Additions</h6>
+                            <h6 class="card-title mb-0">Adiciones Recientes</h6>
                             <h3 class="mb-0">{{ number_format($stats['recent_additions']) }}</h3>
                         </div>
                         <div class="opacity-75">
@@ -57,11 +57,11 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card gradient-card-warning">
-                <div class="card-body text-white">
+            <div class="card shadow-custom border-0">
+                <div class="card-header bg-gradient-warning text-white border-0">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
-                            <h6 class="card-title mb-0">High Value Items</h6>
+                            <h6 class="card-title mb-0">Artículos de Alto Valor</h6>
                             <h3 class="mb-0">{{ number_format($stats['high_value_items']) }}</h3>
                         </div>
                         <div class="opacity-75">
@@ -72,11 +72,11 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card gradient-card-info">
-                <div class="card-body text-white">
+            <div class="card shadow-custom border-0">
+                <div class="card-header bg-gradient-info text-white border-0">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
-                            <h6 class="card-title mb-0">Avg Rental Rate</h6>
+                            <h6 class="card-title mb-0">Precio Promedio</h6>
                             <h3 class="mb-0">${{ number_format($stats['avg_rental_rate'], 2) }}</h3>
                         </div>
                         <div class="opacity-75">
@@ -89,30 +89,30 @@
     </div>
 
     <!-- Filters and Search -->
-    <div class="card shadow-lg border-0 mb-4">
-        <div class="card-header bg-light border-0">
+    <div class="card shadow-custom border-0 mb-4">
+        <div class="card-header bg-gradient-light text-dark border-0">
             <h5 class="mb-0">
-                <i class="fas fa-filter me-2"></i>Filters & Search
+                <i class="fas fa-filter me-2"></i>Filtros y Búsqueda
             </h5>
         </div>
         <div class="card-body">
             <form method="GET" action="{{ route('inventories.index') }}" class="row g-3">
-                <!-- Search -->
+                <!-- Búsqueda -->
                 <div class="col-md-4">
-                    <label class="form-label fw-bold">Search</label>
+                    <label class="form-label fw-bold">Buscar</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-search"></i></span>
                         <input type="text" name="search" class="form-control" 
-                               placeholder="Search by film title..."
+                               placeholder="Buscar por título de película..."
                                value="{{ request('search') }}">
                     </div>
                 </div>
 
-                <!-- Film Filter -->
+                <!-- Filtro de Película -->
                 <div class="col-md-3">
-                    <label class="form-label fw-bold">Film</label>
+                    <label class="form-label fw-bold">Película</label>
                     <select name="film_id" class="form-select">
-                        <option value="">All Films</option>
+                        <option value="">Todas las Películas</option>
                         @foreach($films as $film)
                             <option value="{{ $film->film_id }}" {{ request('film_id') == $film->film_id ? 'selected' : '' }}>
                                 {{ $film->title }}
@@ -121,24 +121,24 @@
                     </select>
                 </div>
 
-                <!-- Store Filter -->
+                <!-- Filtro de Tienda -->
                 <div class="col-md-2">
-                    <label class="form-label fw-bold">Store</label>
+                    <label class="form-label fw-bold">Tienda</label>
                     <select name="store_id" class="form-select">
-                        <option value="">All Stores</option>
+                        <option value="">Todas las Tiendas</option>
                         @foreach($stores as $store)
                             <option value="{{ $store->store_id }}" {{ request('store_id') == $store->store_id ? 'selected' : '' }}>
-                                Store #{{ $store->store_id }}
+                                Tienda #{{ $store->store_id }}
                             </option>
                         @endforeach
                     </select>
                 </div>
 
-                <!-- Rating Filter -->
+                <!-- Filtro de Clasificación -->
                 <div class="col-md-3">
-                    <label class="form-label fw-bold">Film Rating</label>
+                    <label class="form-label fw-bold">Clasificación de Película</label>
                     <select name="rating" class="form-select">
-                        <option value="">All Ratings</option>
+                        <option value="">Todas las Clasificaciones</option>
                         @foreach($ratings as $rating)
                             <option value="{{ $rating }}" {{ request('rating') == $rating ? 'selected' : '' }}>
                                 {{ $rating }}
@@ -147,11 +147,11 @@
                     </select>
                 </div>
 
-                <!-- Category Filter -->
+                <!-- Filtro de Categoría -->
                 <div class="col-md-3">
-                    <label class="form-label fw-bold">Category</label>
+                    <label class="form-label fw-bold">Categoría</label>
                     <select name="category_id" class="form-select">
-                        <option value="">All Categories</option>
+                        <option value="">Todas las Categorías</option>
                         @foreach($categories as $category)
                             <option value="{{ $category->category_id }}" 
                                     {{ request('category_id') == $category->category_id ? 'selected' : '' }}>
@@ -161,11 +161,11 @@
                     </select>
                 </div>
 
-                <!-- Language Filter -->
+                <!-- Filtro de Idioma -->
                 <div class="col-md-3">
-                    <label class="form-label fw-bold">Language</label>
+                    <label class="form-label fw-bold">Idioma</label>
                     <select name="language_id" class="form-select">
-                        <option value="">All Languages</option>
+                        <option value="">Todos los Idiomas</option>
                         @foreach($languages as $language)
                             <option value="{{ $language->language_id }}" 
                                     {{ request('language_id') == $language->language_id ? 'selected' : '' }}>
@@ -175,46 +175,46 @@
                     </select>
                 </div>
 
-                <!-- Recent Filter -->
+                <!-- Filtro Reciente -->
                 <div class="col-md-2">
-                    <label class="form-label fw-bold">Recent Days</label>
+                    <label class="form-label fw-bold">Días Recientes</label>
                     <select name="recent_days" class="form-select">
-                        <option value="">All Time</option>
-                        <option value="7" {{ request('recent_days') == '7' ? 'selected' : '' }}>Last 7 days</option>
-                        <option value="30" {{ request('recent_days') == '30' ? 'selected' : '' }}>Last 30 days</option>
-                        <option value="90" {{ request('recent_days') == '90' ? 'selected' : '' }}>Last 90 days</option>
+                        <option value="">Todo el Tiempo</option>
+                        <option value="7" {{ request('recent_days') == '7' ? 'selected' : '' }}>Últimos 7 días</option>
+                        <option value="30" {{ request('recent_days') == '30' ? 'selected' : '' }}>Últimos 30 días</option>
+                        <option value="90" {{ request('recent_days') == '90' ? 'selected' : '' }}>Últimos 90 días</option>
                     </select>
                 </div>
 
-                <!-- High Value Filter -->
+                <!-- Filtro de Alto Valor -->
                 <div class="col-md-2">
-                    <label class="form-label fw-bold">Value</label>
+                    <label class="form-label fw-bold">Valor</label>
                     <div class="form-check">
                         <input type="checkbox" name="high_value" value="1" class="form-check-input"
                                {{ request('high_value') ? 'checked' : '' }}>
-                        <label class="form-check-label">High Value ($4+)</label>
+                        <label class="form-check-label">Alto Valor ($4+)</label>
                     </div>
                 </div>
 
-                <!-- Sort Options -->
+                <!-- Opciones de Ordenamiento -->
                 <div class="col-md-2">
-                    <label class="form-label fw-bold">Sort By</label>
+                    <label class="form-label fw-bold">Ordenar Por</label>
                     <select name="sort" class="form-select">
-                        <option value="alphabetical" {{ request('sort') == 'alphabetical' ? 'selected' : '' }}>Film Title</option>
-                        <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>Newest First</option>
-                        <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Oldest First</option>
-                        <option value="inventory_id" {{ request('sort') == 'inventory_id' ? 'selected' : '' }}>Inventory ID</option>
-                        <option value="store_id" {{ request('sort') == 'store_id' ? 'selected' : '' }}>Store ID</option>
+                        <option value="alphabetical" {{ request('sort') == 'alphabetical' ? 'selected' : '' }}>Título de Película</option>
+                        <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>Más Recientes</option>
+                        <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Más Antiguos</option>
+                        <option value="inventory_id" {{ request('sort') == 'inventory_id' ? 'selected' : '' }}>ID de Inventario</option>
+                        <option value="store_id" {{ request('sort') == 'store_id' ? 'selected' : '' }}>ID de Tienda</option>
                     </select>
                 </div>
 
-                <!-- Filter Buttons -->
+                <!-- Botones de Filtro -->
                 <div class="col-12">
-                    <button type="submit" class="btn btn-primary me-2">
-                        <i class="fas fa-search me-1"></i>Apply Filters
+                    <button type="submit" class="btn btn-gradient-primary me-2">
+                        <i class="fas fa-search me-1"></i>Aplicar Filtros
                     </button>
                     <a href="{{ route('inventories.index') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-times me-1"></i>Clear Filters
+                        <i class="fas fa-times me-1"></i>Limpiar Filtros
                     </a>
                 </div>
             </form>
@@ -252,14 +252,14 @@
                         <thead class="table-dark">
                             <tr>
                                 <th>ID</th>
-                                <th>Film</th>
-                                <th>Store</th>
-                                <th>Rating</th>
-                                <th>Language</th>
-                                <th>Rental Rate</th>
-                                <th>Status</th>
-                                <th>Last Update</th>
-                                <th>Actions</th>
+                                <th>Película</th>
+                                <th>Tienda</th>
+                                <th>Clasificación</th>
+                                <th>Idioma</th>
+                                <th>Precio de Alquiler</th>
+                                <th>Estado</th>
+                                <th>Última Actualización</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -307,19 +307,19 @@
                                     <td>
                                         <div class="btn-group btn-group-sm">
                                             <a href="{{ route('inventories.show', $inventory) }}" 
-                                               class="btn btn-outline-primary" title="View Details">
+                                               class="btn btn-outline-primary" title="Ver Detalles">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             <a href="{{ route('inventories.edit', $inventory) }}" 
-                                               class="btn btn-outline-secondary" title="Edit">
+                                               class="btn btn-outline-secondary" title="Editar">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             <form action="{{ route('inventories.destroy', $inventory) }}" 
                                                   method="POST" class="d-inline"
-                                                  onsubmit="return confirm('Are you sure you want to delete this inventory item?')">
+                                                  onsubmit="return confirm('¿Estás seguro de que quieres eliminar este elemento del inventario?')">>
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-outline-danger" title="Delete">
+                                                <button type="submit" class="btn btn-outline-danger" title="Eliminar">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
@@ -340,14 +340,14 @@
     @else
         <div class="text-center py-5">
             <i class="fas fa-boxes fa-4x text-muted mb-3"></i>
-            <h3 class="text-muted">No inventory items found</h3>
-            <p class="text-muted">Try adjusting your search criteria or add some inventory items to get started.</p>
+            <h3 class="text-muted">No se encontraron elementos de inventario</h3>
+            <p class="text-muted">Intenta ajustar tus criterios de búsqueda o agrega algunos elementos al inventario para comenzar.</p>
             <div class="mt-3">
                 <a href="{{ route('inventories.create') }}" class="btn btn-primary me-2">
-                    <i class="fas fa-plus me-2"></i>Add First Item
+                    <i class="fas fa-plus me-2"></i>Agregar Primer Elemento
                 </a>
                 <a href="{{ route('inventories.bulk-create') }}" class="btn btn-success">
-                    <i class="fas fa-layer-group me-2"></i>Bulk Add Items
+                    <i class="fas fa-layer-group me-2"></i>Agregar Elementos en Lote
                 </a>
             </div>
         </div>

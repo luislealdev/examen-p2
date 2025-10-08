@@ -1,71 +1,80 @@
 @extends('layouts.app')
 
-@section('title', 'Staff List')
+@section('title', 'Lista de Personal')
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Staff</h1>
-    <a href="{{ route('staff.create') }}" class="btn btn-primary">Add New Staff</a>
+    <h1 class="text-primary">
+        <i class="fas fa-users-cog me-2"></i>Personal
+    </h1>
+    <a href="{{ route('staff.create') }}" class="btn btn-gradient-primary">
+        <i class="fas fa-plus me-2"></i>Agregar Nuevo Personal
+    </a>
 </div>
 
 <!-- Advanced Search and Filter Section -->
-<div class="card mb-4">
+<div class="card shadow-custom border-0 mb-4">
+    <div class="card-header bg-gradient-light text-dark border-0">
+        <h5 class="mb-0">
+            <i class="fas fa-filter me-2"></i>Búsqueda y Filtros Avanzados
+        </h5>
+    </div>
     <div class="card-body">
         <form method="GET" action="{{ route('staff.index') }}" class="row g-3">
             <div class="col-md-3">
-                <label for="search" class="form-label">Search</label>
+                <label for="search" class="form-label fw-bold">Buscar</label>
                 <input type="text" 
                        class="form-control" 
                        id="search" 
                        name="search" 
                        value="{{ request('search') }}" 
-                       placeholder="Name, email or username...">
+                       placeholder="Nombre, email o usuario...">
             </div>
             
             <div class="col-md-2">
-                <label for="status" class="form-label">Status</label>
+                <label for="status" class="form-label fw-bold">Estado</label>
                 <select class="form-select" id="status" name="status">
-                    <option value="">All Staff</option>
-                    <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active Only</option>
-                    <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Inactive Only</option>
+                    <option value="">Todo el Personal</option>
+                    <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Solo Activos</option>
+                    <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Solo Inactivos</option>
                 </select>
             </div>
             
             <div class="col-md-2">
-                <label for="store_id" class="form-label">Store</label>
+                <label for="store_id" class="form-label fw-bold">Tienda</label>
                 <select class="form-select" id="store_id" name="store_id">
-                    <option value="">All Stores</option>
+                    <option value="">Todas las Tiendas</option>
                     @foreach($stores as $store)
                         <option value="{{ $store->store_id }}" {{ request('store_id') == $store->store_id ? 'selected' : '' }}>
-                            Store {{ $store->store_id }}
+                            Tienda {{ $store->store_id }}
                         </option>
                     @endforeach
                 </select>
             </div>
             
             <div class="col-md-2">
-                <label for="is_manager" class="form-label">Manager</label>
+                <label for="is_manager" class="form-label fw-bold">Gerente</label>
                 <select class="form-select" id="is_manager" name="is_manager">
-                    <option value="">All Staff</option>
-                    <option value="yes" {{ request('is_manager') === 'yes' ? 'selected' : '' }}>Managers Only</option>
-                    <option value="no" {{ request('is_manager') === 'no' ? 'selected' : '' }}>Non-Managers</option>
+                    <option value="">Todo el Personal</option>
+                    <option value="yes" {{ request('is_manager') === 'yes' ? 'selected' : '' }}>Solo Gerentes</option>
+                    <option value="no" {{ request('is_manager') === 'no' ? 'selected' : '' }}>No Gerentes</option>
                 </select>
             </div>
             
             <div class="col-md-2">
-                <label for="sort" class="form-label">Sort By</label>
+                <label for="sort" class="form-label">Ordenar Por</label>
                 <select class="form-select" id="sort" name="sort">
-                    <option value="last_update" {{ request('sort') === 'last_update' ? 'selected' : '' }}>Last Update</option>
-                    <option value="first_name" {{ request('sort') === 'first_name' ? 'selected' : '' }}>First Name</option>
-                    <option value="last_name" {{ request('sort') === 'last_name' ? 'selected' : '' }}>Last Name</option>
+                    <option value="last_update" {{ request('sort') === 'last_update' ? 'selected' : '' }}>Última Actualización</option>
+                    <option value="first_name" {{ request('sort') === 'first_name' ? 'selected' : '' }}>Nombre</option>
+                    <option value="last_name" {{ request('sort') === 'last_name' ? 'selected' : '' }}>Apellido</option>
                     <option value="email" {{ request('sort') === 'email' ? 'selected' : '' }}>Email</option>
-                    <option value="username" {{ request('sort') === 'username' ? 'selected' : '' }}>Username</option>
-                    <option value="store_id" {{ request('sort') === 'store_id' ? 'selected' : '' }}>Store</option>
+                    <option value="username" {{ request('sort') === 'username' ? 'selected' : '' }}>Usuario</option>
+                    <option value="store_id" {{ request('sort') === 'store_id' ? 'selected' : '' }}>Tienda</option>
                 </select>
             </div>
             
             <div class="col-md-1">
-                <label for="direction" class="form-label">Order</label>
+                <label for="direction" class="form-label">Orden</label>
                 <select class="form-select" id="direction" name="direction">
                     <option value="desc" {{ request('direction') === 'desc' ? 'selected' : '' }}>↓</option>
                     <option value="asc" {{ request('direction') === 'asc' ? 'selected' : '' }}>↑</option>
@@ -73,8 +82,8 @@
             </div>
             
             <div class="col-12">
-                <button type="submit" class="btn btn-outline-primary">Apply Filters</button>
-                <a href="{{ route('staff.index') }}" class="btn btn-outline-secondary">Clear</a>
+                <button type="submit" class="btn btn-outline-primary">Aplicar Filtros</button>
+                <a href="{{ route('staff.index') }}" class="btn btn-outline-secondary">Limpiar</a>
             </div>
         </form>
     </div>
@@ -87,10 +96,10 @@
             <!-- Results summary -->
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <span class="text-muted">
-                    Showing {{ $staff->firstItem() }} to {{ $staff->lastItem() }} of {{ $staff->total() }} staff members
+                    Mostrando {{ $staff->firstItem() }} a {{ $staff->lastItem() }} de {{ $staff->total() }} miembros del personal
                 </span>
                 <span class="text-muted">
-                    Page {{ $staff->currentPage() }} of {{ $staff->lastPage() }}
+                    Página {{ $staff->currentPage() }} de {{ $staff->lastPage() }}
                 </span>
             </div>
 
@@ -99,14 +108,14 @@
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Photo</th>
-                            <th>Name</th>
-                            <th>Username</th>
+                            <th>Foto</th>
+                            <th>Nombre</th>
+                            <th>Usuario</th>
                             <th>Email</th>
-                            <th>Store</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th>Tienda</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -116,7 +125,7 @@
                                 <td>
                                     @if($member->picture)
                                         <img src="{{ route('staff.picture', $member->staff_id) }}" 
-                                             alt="Photo" 
+                                             alt="Foto" 
                                              class="rounded-circle"
                                              style="width: 40px; height: 40px; object-fit: cover;">
                                     @else
@@ -134,31 +143,31 @@
                                 </td>
                                 <td>{{ $member->email ?: 'N/A' }}</td>
                                 <td>
-                                    <span class="badge bg-info">Store {{ $member->store_id }}</span>
+                                    <span class="badge bg-info">Tienda {{ $member->store_id }}</span>
                                 </td>
                                 <td>
                                     @if($member->is_manager)
-                                        <span class="badge bg-warning">Manager</span>
+                                        <span class="badge bg-warning">Gerente</span>
                                     @else
-                                        <span class="badge bg-light text-dark">Staff</span>
+                                        <span class="badge bg-light text-dark">Personal</span>
                                     @endif
                                 </td>
                                 <td>
                                     @if($member->active)
-                                        <span class="badge bg-success">Active</span>
+                                        <span class="badge bg-success">Activo</span>
                                     @else
-                                        <span class="badge bg-secondary">Inactive</span>
+                                        <span class="badge bg-secondary">Inactivo</span>
                                     @endif
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route('staff.show', $member->staff_id) }}" class="btn btn-sm btn-info">View</a>
-                                        <a href="{{ route('staff.edit', $member->staff_id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                        <a href="{{ route('staff.show', $member->staff_id) }}" class="btn btn-sm btn-info">Ver</a>
+                                        <a href="{{ route('staff.edit', $member->staff_id) }}" class="btn btn-sm btn-warning">Editar</a>
                                         @if($member->active)
-                                            <form action="{{ route('staff.destroy', $member->staff_id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to deactivate this staff member?')">
+                                            <form action="{{ route('staff.destroy', $member->staff_id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres desactivar este miembro del personal?')">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger">Deactivate</button>
+                                                <button type="submit" class="btn btn-sm btn-danger">Desactivar</button>
                                             </form>
                                         @endif
                                     </div>
@@ -175,18 +184,18 @@
                     {{ $staff->links() }}
                 </div>
                 <div class="text-muted">
-                    Total: {{ $staff->total() }} staff members
+                    Total: {{ $staff->total() }} miembros del personal
                 </div>
             </div>
         @else
             <div class="text-center py-4">
                 <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                <p class="text-muted">No staff members found.</p>
+                <p class="text-muted">No se encontraron miembros del personal.</p>
                 @if(request()->hasAny(['search', 'status', 'store_id', 'is_manager']))
-                    <p class="text-muted">Try adjusting your search or filter criteria.</p>
-                    <a href="{{ route('staff.index') }}" class="btn btn-outline-secondary">Clear Filters</a>
+                    <p class="text-muted">Intenta ajustar tus criterios de búsqueda o filtro.</p>
+                    <a href="{{ route('staff.index') }}" class="btn btn-outline-secondary">Limpiar Filtros</a>
                 @else
-                    <a href="{{ route('staff.create') }}" class="btn btn-primary">Add the first staff member</a>
+                    <a href="{{ route('staff.create') }}" class="btn btn-gradient-primary">Agregar el primer miembro del personal</a>
                 @endif
             </div>
         @endif

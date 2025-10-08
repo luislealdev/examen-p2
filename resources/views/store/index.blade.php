@@ -1,25 +1,34 @@
 @extends('layouts.app')
 
-@section('title', 'Stores List')
+@section('title', 'Lista de Tiendas')
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Stores</h1>
-    <a href="{{ route('stores.create') }}" class="btn btn-primary">Add New Store</a>
+    <h1 class="text-primary">
+        <i class="fas fa-store me-2"></i>Tiendas
+    </h1>
+    <a href="{{ route('stores.create') }}" class="btn btn-gradient-primary">
+        <i class="fas fa-plus me-2"></i>Agregar Nueva Tienda
+    </a>
 </div>
 
-<div class="card">
+<div class="card shadow-custom border-0">
+    <div class="card-header bg-gradient-primary text-white border-0">
+        <h5 class="mb-0">
+            <i class="fas fa-list me-2"></i>Lista de Tiendas
+        </h5>
+    </div>
     <div class="card-body">
         @if($stores->count() > 0)
             <div class="table-responsive">
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>Store ID</th>
-                            <th>Manager Staff ID</th>
-                            <th>Address ID</th>
-                            <th>Last Update</th>
-                            <th>Actions</th>
+                            <th>ID de Tienda</th>
+                            <th>ID del Gerente</th>
+                            <th>ID de Dirección</th>
+                            <th>Última Actualización</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -31,12 +40,18 @@
                                 <td>{{ $store->last_update ? $store->last_update->format('Y-m-d H:i:s') : 'N/A' }}</td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route('stores.show', $store->store_id) }}" class="btn btn-sm btn-info">View</a>
-                                        <a href="{{ route('stores.edit', $store->store_id) }}" class="btn btn-sm btn-warning">Edit</a>
-                                        <form action="{{ route('stores.destroy', $store->store_id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this store?')">
+                                        <a href="{{ route('stores.show', $store->store_id) }}" class="btn btn-sm btn-gradient-info">
+                                            <i class="fas fa-eye me-1"></i>Ver
+                                        </a>
+                                        <a href="{{ route('stores.edit', $store->store_id) }}" class="btn btn-sm btn-gradient-warning">
+                                            <i class="fas fa-edit me-1"></i>Editar
+                                        </a>
+                                        <form action="{{ route('stores.destroy', $store->store_id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta tienda?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash me-1"></i>Eliminar
+                                            </button>
                                         </form>
                                     </div>
                                 </td>
@@ -52,8 +67,8 @@
             </div>
         @else
             <div class="text-center py-4">
-                <p class="text-muted">No stores found.</p>
-                <a href="{{ route('stores.create') }}" class="btn btn-primary">Add the first store</a>
+                <p class="text-muted">No se encontraron tiendas.</p>
+                <a href="{{ route('stores.create') }}" class="btn btn-gradient-primary">Agregar la primera tienda</a>
             </div>
         @endif
     </div>

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Film Statistics')
+@section('title', 'Estadísticas de Películas')
 
 @section('content')
 <div class="container">
@@ -9,18 +9,18 @@
         <div class="col">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('films.index') }}">Films</a></li>
-                    <li class="breadcrumb-item active">Statistics</li>
+                    <li class="breadcrumb-item"><a href="{{ route('films.index') }}">Películas</a></li>
+                    <li class="breadcrumb-item active">Estadísticas</li>
                 </ol>
             </nav>
             <h1 class="display-4 fw-bold text-gradient">
-                <i class="fas fa-chart-bar me-3"></i>Film Statistics
+                <i class="fas fa-chart-bar me-3"></i>Estadísticas de Películas
             </h1>
-            <p class="lead text-muted">Comprehensive analysis of film collection data</p>
+            <p class="lead text-muted">Análisis integral de los datos de la colección de películas</p>
         </div>
         <div class="col-auto">
             <a href="{{ route('films.index') }}" class="btn btn-primary">
-                <i class="fas fa-arrow-left me-2"></i>Back to Films
+                <i class="fas fa-arrow-left me-2"></i>Volver a Películas
             </a>
         </div>
     </div>
@@ -31,7 +31,7 @@
             <div class="card gradient-card-primary">
                 <div class="card-body text-white text-center">
                     <div class="display-6 fw-bold">{{ number_format($stats['total_films']) }}</div>
-                    <div class="small">Total Films</div>
+                    <div class="small">Total de Películas</div>
                 </div>
             </div>
         </div>
@@ -39,7 +39,7 @@
             <div class="card gradient-card-success">
                 <div class="card-body text-white text-center">
                     <div class="display-6 fw-bold">{{ number_format($stats['recent_films']) }}</div>
-                    <div class="small">Recent Films</div>
+                    <div class="small">Películas Recientes</div>
                 </div>
             </div>
         </div>
@@ -47,7 +47,7 @@
             <div class="card gradient-card-warning">
                 <div class="card-body text-white text-center">
                     <div class="display-6 fw-bold">{{ number_format($stats['with_special_features']) }}</div>
-                    <div class="small">With Special Features</div>
+                    <div class="small">Con Características Especiales</div>
                 </div>
             </div>
         </div>
@@ -55,7 +55,7 @@
             <div class="card gradient-card-info">
                 <div class="card-body text-white text-center">
                     <div class="display-6 fw-bold">${{ number_format($stats['avg_rental_rate'], 2) }}</div>
-                    <div class="small">Avg Rental Rate</div>
+                    <div class="small">Precio Promedio de Alquiler</div>
                 </div>
             </div>
         </div>
@@ -67,7 +67,7 @@
             <div class="card shadow-lg border-0">
                 <div class="card-header bg-gradient-primary text-white">
                     <h5 class="mb-0">
-                        <i class="fas fa-star me-2"></i>Films by Rating
+                        <i class="fas fa-star me-2"></i>Películas por Clasificación
                     </h5>
                 </div>
                 <div class="card-body">
@@ -89,7 +89,7 @@
                                     <span class="fw-bold">
                                         <span class="badge bg-{{ $color }}">{{ $rating }}</span>
                                     </span>
-                                    <span class="text-muted">{{ $count }} films ({{ number_format($percentage, 1) }}%)</span>
+                                    <span class="text-muted">{{ $count }} películas ({{ number_format($percentage, 1) }}%)</span>
                                 </div>
                                 <div class="progress" style="height: 8px;">
                                     <div class="progress-bar bg-{{ $color }}" style="width: {{ $percentage }}%"></div>
@@ -97,7 +97,7 @@
                             </div>
                         @endforeach
                     @else
-                        <p class="text-muted text-center">No rating data available</p>
+                        <p class="text-muted text-center">No hay datos de clasificación disponibles</p>
                     @endif
                 </div>
             </div>
@@ -108,7 +108,7 @@
             <div class="card shadow-lg border-0">
                 <div class="card-header bg-gradient-info text-white">
                     <h5 class="mb-0">
-                        <i class="fas fa-language me-2"></i>Films by Language
+                        <i class="fas fa-language me-2"></i>Películas por Idioma
                     </h5>
                 </div>
                 <div class="card-body">
@@ -120,7 +120,7 @@
                             <div class="mb-3">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <span class="fw-bold">{{ $language }}</span>
-                                    <span class="text-muted">{{ $count }} films ({{ number_format($percentage, 1) }}%)</span>
+                                    <span class="text-muted">{{ $count }} películas ({{ number_format($percentage, 1) }}%)</span>
                                 </div>
                                 <div class="progress" style="height: 8px;">
                                     <div class="progress-bar bg-info" style="width: {{ $percentage }}%"></div>
@@ -130,11 +130,11 @@
                         @if($stats['by_language']->count() > 10)
                             <p class="text-muted text-center small">
                                 <i class="fas fa-info-circle me-1"></i>
-                                Showing top 10 languages only
+                                Mostrando solo los 10 idiomas principales
                             </p>
                         @endif
                     @else
-                        <p class="text-muted text-center">No language data available</p>
+                        <p class="text-muted text-center">No hay datos de idioma disponibles</p>
                     @endif
                 </div>
             </div>
@@ -145,7 +145,7 @@
             <div class="card shadow-lg border-0">
                 <div class="card-header bg-gradient-warning text-white">
                     <h5 class="mb-0">
-                        <i class="fas fa-calendar me-2"></i>Films by Decade
+                        <i class="fas fa-calendar me-2"></i>Películas por Década
                     </h5>
                 </div>
                 <div class="card-body">
@@ -157,7 +157,7 @@
                             <div class="mb-3">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <span class="fw-bold">{{ $decade }}s</span>
-                                    <span class="text-muted">{{ $count }} films ({{ number_format($percentage, 1) }}%)</span>
+                                    <span class="text-muted">{{ $count }} películas ({{ number_format($percentage, 1) }}%)</span>
                                 </div>
                                 <div class="progress" style="height: 8px;">
                                     <div class="progress-bar bg-warning" style="width: {{ $percentage }}%"></div>
@@ -165,7 +165,7 @@
                             </div>
                         @endforeach
                     @else
-                        <p class="text-muted text-center">No decade data available</p>
+                        <p class="text-muted text-center">No hay datos de década disponibles</p>
                     @endif
                 </div>
             </div>
@@ -176,7 +176,7 @@
             <div class="card shadow-lg border-0">
                 <div class="card-header bg-gradient-success text-white">
                     <h5 class="mb-0">
-                        <i class="fas fa-calculator me-2"></i>Average Statistics
+                        <i class="fas fa-calculator me-2"></i>Estadísticas Promedio
                     </h5>
                 </div>
                 <div class="card-body">
@@ -184,8 +184,8 @@
                         <div class="col-12">
                             <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
                                 <div>
-                                    <h6 class="fw-bold mb-0">Average Rental Rate</h6>
-                                    <small class="text-muted">Per film rental</small>
+                                    <h6 class="fw-bold mb-0">Precio Promedio de Alquiler</h6>
+                                    <small class="text-muted">Por alquiler de película</small>
                                 </div>
                                 <div class="text-end">
                                     <div class="h5 mb-0 text-success">${{ number_format($stats['avg_rental_rate'], 2) }}</div>
@@ -195,8 +195,8 @@
                         <div class="col-12">
                             <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
                                 <div>
-                                    <h6 class="fw-bold mb-0">Average Length</h6>
-                                    <small class="text-muted">Film duration</small>
+                                    <h6 class="fw-bold mb-0">Duración Promedio</h6>
+                                    <small class="text-muted">Duración de película</small>
                                 </div>
                                 <div class="text-end">
                                     <div class="h5 mb-0 text-info">{{ number_format($stats['avg_length']) }} min</div>

@@ -1,28 +1,28 @@
 @extends('layouts.app')
 
-@section('title', 'Categories')
+@section('title', 'Categorías')
 
 @section('content')
 <div class="container">
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="d-flex justify-content-between align-items-center">
-                <h2 class="mb-0">
+                <h2 class="mb-0 text-primary">
                     <i class="fas fa-tags me-2"></i>
-                    Categories Management
+                    Gestión de Categorías
                 </h2>
                 <div class="d-flex gap-2">
                     <a href="{{ route('categories.alphabetical') }}" class="btn btn-outline-primary">
                         <i class="fas fa-sort-alpha-down me-1"></i>
-                        Alphabetical View
+                        Vista Alfabética
                     </a>
                     <a href="{{ route('categories.popular') }}" class="btn btn-outline-success">
                         <i class="fas fa-star me-1"></i>
-                        Popular Categories
+                        Categorías Populares
                     </a>
-                    <a href="{{ route('categories.create') }}" class="btn btn-primary">
+                    <a href="{{ route('categories.create') }}" class="btn btn-gradient-primary">
                         <i class="fas fa-plus me-1"></i>
-                        Add Category
+                        Agregar Categoría
                     </a>
                 </div>
             </div>
@@ -32,11 +32,11 @@
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-md-6">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
+            <div class="card shadow-custom border-0">
+                <div class="card-header bg-gradient-primary text-white border-0">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <h6 class="card-title mb-0">Total Categories</h6>
+                            <h6 class="card-title mb-0">Total de Categorías</h6>
                             <h3 class="mt-2">{{ $totalCategories }}</h3>
                         </div>
                         <div class="align-self-center">
@@ -47,11 +47,12 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card bg-success text-white">
+            <div class="card shadow-custom border-0">
+                <div class="card-header bg-gradient-success text-white border-0">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <h6 class="card-title mb-0">Recently Updated</h6>
+                            <h6 class="card-title mb-0">Actualizadas Recientemente</h6>
                             <h3 class="mt-2">{{ $recentlyAdded }}</h3>
                         </div>
                         <div class="align-self-center">
@@ -68,38 +69,38 @@
         <div class="card-body">
             <form method="GET" action="{{ route('categories.index') }}" class="row g-3">
                 <div class="col-md-4">
-                    <label for="search" class="form-label">Search Category</label>
+                    <label for="search" class="form-label">Buscar Categoría</label>
                     <div class="input-group">
                         <input type="text" 
                                class="form-control" 
                                id="search" 
                                name="search" 
                                value="{{ request('search') }}" 
-                               placeholder="Enter category name...">
+                               placeholder="Ingresa el nombre de la categoría...">
                         <button class="btn btn-outline-secondary" type="submit">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <label for="sort" class="form-label">Sort By</label>
+                    <label for="sort" class="form-label">Ordenar Por</label>
                     <select class="form-select" id="sort" name="sort">
-                        <option value="name" {{ request('sort') == 'name' ? 'selected' : '' }}>Name</option>
+                        <option value="name" {{ request('sort') == 'name' ? 'selected' : '' }}>Nombre</option>
                         <option value="category_id" {{ request('sort') == 'category_id' ? 'selected' : '' }}>ID</option>
-                        <option value="last_update" {{ request('sort') == 'last_update' ? 'selected' : '' }}>Last Update</option>
+                        <option value="last_update" {{ request('sort') == 'last_update' ? 'selected' : '' }}>Última Actualización</option>
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label for="direction" class="form-label">Direction</label>
+                    <label for="direction" class="form-label">Dirección</label>
                     <select class="form-select" id="direction" name="direction">
-                        <option value="asc" {{ request('direction') == 'asc' ? 'selected' : '' }}>Ascending</option>
-                        <option value="desc" {{ request('direction') == 'desc' ? 'selected' : '' }}>Descending</option>
+                        <option value="asc" {{ request('direction') == 'asc' ? 'selected' : '' }}>Ascendente</option>
+                        <option value="desc" {{ request('direction') == 'desc' ? 'selected' : '' }}>Descendente</option>
                     </select>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">
+                    <button type="submit" class="btn btn-gradient-primary w-100">
                         <i class="fas fa-filter me-1"></i>
-                        Filter
+                        Filtrar
                     </button>
                 </div>
             </form>
@@ -107,7 +108,7 @@
                 <div class="mt-3">
                     <a href="{{ route('categories.index') }}" class="btn btn-outline-secondary btn-sm">
                         <i class="fas fa-times me-1"></i>
-                        Clear Filters
+                        Limpiar Filtros
                     </a>
                 </div>
             @endif
@@ -118,9 +119,9 @@
     @if(request('search') || request()->hasAny(['sort', 'direction']))
         <div class="alert alert-info">
             <i class="fas fa-info-circle me-2"></i>
-            Showing {{ $categories->count() }} of {{ $categories->total() }} categories
+            Mostrando {{ $categories->count() }} de {{ $categories->total() }} categorías
             @if(request('search'))
-                matching "<strong>{{ request('search') }}</strong>"
+                que coinciden con "<strong>{{ request('search') }}</strong>"
             @endif
         </div>
     @endif
@@ -130,7 +131,7 @@
         <div class="card-header">
             <h5 class="card-title mb-0">
                 <i class="fas fa-list me-2"></i>
-                Categories List
+                Lista de Categorías
                 <span class="badge bg-secondary ms-2">{{ $categories->total() }}</span>
             </h5>
         </div>
@@ -154,7 +155,7 @@
                                 <th>
                                     <a href="{{ request()->fullUrlWithQuery(['sort' => 'name', 'direction' => request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
                                        class="text-decoration-none text-dark">
-                                        Category Name
+                                        Nombre de Categoría
                                         @if(request('sort') == 'name' || !request('sort'))
                                             <i class="fas fa-sort-{{ request('direction') === 'desc' ? 'down' : 'up' }}"></i>
                                         @else
@@ -165,7 +166,7 @@
                                 <th>
                                     <a href="{{ request()->fullUrlWithQuery(['sort' => 'last_update', 'direction' => request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
                                        class="text-decoration-none text-dark">
-                                        Last Update
+                                        Última Actualización
                                         @if(request('sort') == 'last_update')
                                             <i class="fas fa-sort-{{ request('direction') === 'asc' ? 'up' : 'down' }}"></i>
                                         @else
@@ -173,7 +174,7 @@
                                         @endif
                                     </a>
                                 </th>
-                                <th width="200" class="text-center">Actions</th>
+                                <th width="200" class="text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -195,7 +196,7 @@
                                                 <br>
                                                 <small class="text-muted">{{ $category->slug }}</small>
                                                 @if($category->is_recent)
-                                                    <span class="badge bg-success ms-1">New</span>
+                                                    <span class="badge bg-success ms-1">Nuevo</span>
                                                 @endif
                                             </div>
                                         </div>
@@ -203,32 +204,32 @@
                                     <td>
                                         <span class="text-muted">{{ $category->last_update?->format('M d, Y H:i') ?? 'N/A' }}</span>
                                         @if($category->last_update && $category->last_update->isToday())
-                                            <span class="badge bg-success ms-1">Today</span>
+                                            <span class="badge bg-success ms-1">Hoy</span>
                                         @elseif($category->last_update && $category->last_update->isYesterday())
-                                            <span class="badge bg-warning ms-1">Yesterday</span>
+                                            <span class="badge bg-warning ms-1">Ayer</span>
                                         @endif
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group" role="group">
                                             <a href="{{ route('categories.show', $category) }}" 
                                                class="btn btn-sm btn-outline-info" 
-                                               title="View Details">
+                                               title="Ver Detalles">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             <a href="{{ route('categories.edit', $category) }}" 
                                                class="btn btn-sm btn-outline-warning" 
-                                               title="Edit Category">
+                                               title="Editar Categoría">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             <form method="POST" 
                                                   action="{{ route('categories.destroy', $category) }}" 
                                                   class="d-inline" 
-                                                  onsubmit="return confirm('Are you sure you want to delete the category \'{{ $category->name }}\'?')">
+                                                  onsubmit="return confirm('¿Estás seguro de que quieres eliminar la categoría \'{{ $category->name }}\'?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" 
                                                         class="btn btn-sm btn-outline-danger" 
-                                                        title="Delete Category">
+                                                        title="Eliminar Categoría">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
@@ -242,18 +243,18 @@
             @else
                 <div class="text-center py-5">
                     <i class="fas fa-tags fa-3x text-muted mb-3"></i>
-                    <h5 class="text-muted">No categories found</h5>
+                    <h5 class="text-muted">No se encontraron categorías</h5>
                     <p class="text-muted">
                         @if(request('search'))
-                            No categories match your search criteria.
+                            No hay categorías que coincidan con tus criterios de búsqueda.
                         @else
-                            Start by adding your first category.
+                            Comienza agregando tu primera categoría.
                         @endif
                     </p>
                     @if(request('search'))
-                        <a href="{{ route('categories.index') }}" class="btn btn-outline-primary">Clear Search</a>
+                        <a href="{{ route('categories.index') }}" class="btn btn-outline-primary">Limpiar Búsqueda</a>
                     @else
-                        <a href="{{ route('categories.create') }}" class="btn btn-primary">Add First Category</a>
+                        <a href="{{ route('categories.create') }}" class="btn btn-gradient-primary">Agregar Primera Categoría</a>
                     @endif
                 </div>
             @endif
@@ -264,7 +265,7 @@
                 <div class="row align-items-center">
                     <div class="col-md-6">
                         <span class="text-muted">
-                            Showing {{ $categories->firstItem() }} to {{ $categories->lastItem() }} of {{ $categories->total() }} results
+                            Mostrando {{ $categories->firstItem() }} a {{ $categories->lastItem() }} de {{ $categories->total() }} resultados
                         </span>
                     </div>
                     <div class="col-md-6">
