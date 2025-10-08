@@ -11,6 +11,7 @@ use App\Http\Controllers\StaffController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\OmdbController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -51,6 +52,16 @@ Route::get('films-rating/{rating}', [FilmController::class, 'byRating'])->name('
 Route::get('films-decade/{decade}', [FilmController::class, 'byDecade'])->name('films.by-decade');
 Route::get('films-recent', [FilmController::class, 'recent'])->name('films.recent');
 Route::get('films-statistics', [FilmController::class, 'statistics'])->name('films.statistics');
+
+// OMDB API routes
+Route::prefix('omdb')->name('omdb.')->group(function () {
+    Route::get('search', [OmdbController::class, 'search'])->name('search');
+    Route::post('search-movies', [OmdbController::class, 'searchMovies'])->name('search-movies');
+    Route::post('movie-details', [OmdbController::class, 'getMovieDetails'])->name('movie-details');
+    Route::post('preview-import', [OmdbController::class, 'previewImport'])->name('preview-import');
+    Route::post('import-movie', [OmdbController::class, 'importMovie'])->name('import-movie');
+    Route::get('check-config', [OmdbController::class, 'checkConfiguration'])->name('check-config');
+});
 
 // Inventory routes
 Route::resource('inventories', InventoryController::class);

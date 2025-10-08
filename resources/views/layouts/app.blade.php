@@ -33,6 +33,17 @@
             color: white;
         }
         
+        .btn-gradient-info {
+            background: linear-gradient(45deg, var(--secondary-color), #17a2b8);
+            border: none;
+            color: white;
+        }
+        
+        .btn-gradient-info:hover {
+            background: linear-gradient(45deg, #17a2b8, var(--secondary-color));
+            color: white;
+        }
+        
         .card-header.bg-gradient-primary {
             background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)) !important;
         }
@@ -142,6 +153,8 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    @stack('scripts')
 </body>
 </html>

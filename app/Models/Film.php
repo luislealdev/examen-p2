@@ -42,6 +42,20 @@ class Film extends Model
         'rating',
         'special_features',
         'category_id',
+        // Nuevos campos OMDB
+        'imdb_id',
+        'poster_url',
+        'imdb_rating',
+        'imdb_votes',
+        'metascore',
+        'plot',
+        'awards',
+        'box_office',
+        'production',
+        'website',
+        'writers',
+        'countries',
+        'imported_from_omdb',
     ];
 
     /**
@@ -55,6 +69,13 @@ class Film extends Model
         'replacement_cost' => 'decimal:2',
         'special_features' => 'array',
         'last_update' => 'datetime',
+        // Nuevos campos OMDB
+        'imdb_rating' => 'decimal:1',
+        'imdb_votes' => 'integer',
+        'metascore' => 'integer',
+        'writers' => 'array',
+        'countries' => 'array',
+        'imported_from_omdb' => 'boolean',
     ];
 
     /**
@@ -114,6 +135,27 @@ class Film extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'category_id', 'category_id');
+    }
+
+    /**
+     * Get the actors of the film.
+     */
+    public function actors(): BelongsToMany
+    {
+        return $this->belongsToMany(Actor::class, 'film_actors', 'film_id', 'actor_id')
+                    ->withPivot(['character_name', 'order'])
+                    ->withTimestamps()
+                    ->orderBy('film_actors.order');
+    }
+
+    /**
+     * Get the directors of the film.
+     */
+    public function directors(): BelongsToMany
+    {
+        return $this->belongsToMany(Director::class, 'film_directors', 'film_id', 'director_id')
+                    ->withPivot(['role'])
+                    ->withTimestamps();
     }
 
     /**

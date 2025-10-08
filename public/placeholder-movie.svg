@@ -1,0 +1,16 @@
+<svg width="300" height="450" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8f9fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e9ecef;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bg)"/>
+  <rect x="15" y="15" width="270" height="420" fill="none" stroke="#dee2e6" stroke-width="2" stroke-dasharray="10,5"/>
+  <circle cx="150" cy="180" r="40" fill="#6c757d"/>
+  <rect x="120" y="160" width="60" height="40" fill="none" stroke="#ffffff" stroke-width="3"/>
+  <circle cx="140" cy="175" r="8" fill="#ffffff"/>
+  <circle cx="160" cy="175" r="8" fill="#ffffff"/>
+  <text x="150" y="280" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#6c757d">Sin Imagen</text>
+  <text x="150" y="310" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#adb5bd">Película</text>
+</svg>

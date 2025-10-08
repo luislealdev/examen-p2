@@ -13,9 +13,14 @@
             <p class="lead text-muted">Explora nuestra extensa colección de {{ number_format($totalFilms) }} películas</p>
         </div>
         <div class="col-auto">
-            <a href="{{ route('films.create') }}" class="btn btn-gradient-primary btn-lg shadow-custom">
-                <i class="fas fa-plus me-2"></i>Agregar Nueva Película
-            </a>
+            <div class="d-flex gap-2">
+                <a href="{{ route('omdb.search') }}" class="btn btn-gradient-info btn-lg shadow-custom">
+                    <i class="fas fa-search me-2"></i>Buscar en OMDB
+                </a>
+                <a href="{{ route('films.create') }}" class="btn btn-gradient-primary btn-lg shadow-custom">
+                    <i class="fas fa-plus me-2"></i>Agregar Manual
+                </a>
+            </div>
         </div>
     </div>
 
