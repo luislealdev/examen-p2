@@ -26,13 +26,29 @@
         </div>
         <div class="col-auto">
             <div class="btn-group">
-                <a href="{{ route('films.edit', $film) }}" class="btn btn-gradient-primary">
-                    <i class="fas fa-edit me-2"></i>Editar Película
-                </a>
-                <button type="button" class="btn btn-outline-danger" 
-                        data-bs-toggle="modal" data-bs-target="#deleteModal">
-                    <i class="fas fa-trash me-2"></i>Eliminar
-                </button>
+                @auth
+                    @if(Auth::user()->isEmployee())
+                        <a href="{{ route('films.edit', $film) }}" class="btn btn-gradient-primary">
+                            <i class="fas fa-edit me-2"></i>Editar Película
+                        </a>
+                        <button type="button" class="btn btn-outline-danger" 
+                                data-bs-toggle="modal" data-bs-target="#deleteModal">
+                            <i class="fas fa-trash me-2"></i>Eliminar
+                        </button>
+                    @else
+                        <form action="{{ route('rentals.store', $film) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-gradient-primary">
+                                <i class="fas fa-shopping-cart me-2"></i>Alquilar Película
+                            </button>
+                        </form>
+                    @endif
+                @endauth
+                @guest
+                    <a href="{{ route('login') }}" class="btn btn-gradient-primary">
+                        <i class="fas fa-sign-in-alt me-2"></i>Iniciar sesión para alquilar
+                    </a>
+                @endguest
             </div>
         </div>
     </div>

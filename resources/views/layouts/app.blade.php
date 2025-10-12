@@ -76,6 +76,37 @@
             padding: 0.5em 0.75em;
             border-radius: 0.5rem;
         }
+
+        /* Estilos para el menú de usuario y cerrar sesión */
+        .dropdown-item-form {
+            padding: 0;
+        }
+
+        .dropdown-item-form button {
+            width: 100%;
+            text-align: left;
+            border: none;
+            background: none;
+            padding: .5rem 1rem;
+        }
+
+        .dropdown-item-form button:hover {
+            background-color: #dc3545;
+            color: white !important;
+        }
+
+        .navbar .dropdown-menu {
+            border: none;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        @media (max-width: 991.98px) {
+            .navbar-nav .dropdown-menu {
+                border: none;
+                padding-left: 1.5rem;
+                box-shadow: none;
+            }
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -89,32 +120,77 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <div class="navbar-nav me-auto">
+                    {{-- Menú visible para todos --}}
                     <a class="nav-link" href="{{ route('films.index') }}">
                         <i class="fas fa-film me-1"></i>Películas
                     </a>
-                    <a class="nav-link" href="{{ route('inventories.index') }}">
-                        <i class="fas fa-boxes me-1"></i>Inventario
-                    </a>
-                    <a class="nav-link" href="{{ route('categories.index') }}">
-                        <i class="fas fa-tags me-1"></i>Categorías
-                    </a>
-                    <a class="nav-link" href="{{ route('languages.index') }}">
-                        <i class="fas fa-language me-1"></i>Idiomas
-                    </a>
-                    <a class="nav-link" href="{{ route('stores.index') }}">
-                        <i class="fas fa-store me-1"></i>Tiendas
-                    </a>
-                    <a class="nav-link" href="{{ route('customers.index') }}">
-                        <i class="fas fa-users me-1"></i>Clientes
-                    </a>
-                    <a class="nav-link" href="{{ route('staff.index') }}">
-                        <i class="fas fa-user-tie me-1"></i>Personal
-                    </a>
+
+                    @auth
+                        @if(Auth::user()->isEmployee())
+                            {{-- Menú solo para empleados --}}
+                            <a class="nav-link" href="{{ route('inventories.index') }}">
+                                <i class="fas fa-boxes me-1"></i>Inventario
+                            </a>
+                            <a class="nav-link" href="{{ route('categories.index') }}">
+                                <i class="fas fa-tags me-1"></i>Categorías
+                            </a>
+                            <a class="nav-link" href="{{ route('languages.index') }}">
+                                <i class="fas fa-language me-1"></i>Idiomas
+                            </a>
+                            <a class="nav-link" href="{{ route('stores.index') }}">
+                                <i class="fas fa-store me-1"></i>Tiendas
+                            </a>
+                            <a class="nav-link" href="{{ route('customers.index') }}">
+                                <i class="fas fa-users me-1"></i>Clientes
+                            </a>
+                            <a class="nav-link" href="{{ route('staff.index') }}">
+                                <i class="fas fa-user-tie me-1"></i>Personal
+                            </a>
+                            <a class="nav-link" href="{{ route('films.statistics') }}">
+                                <i class="fas fa-chart-bar me-1"></i>Estadísticas
+                            </a>
+                        @else
+                            {{-- Menú para clientes --}}
+                            <a class="nav-link" href="{{ route('rentals.index') }}">
+                                <i class="fas fa-ticket-alt me-1"></i>Mis Alquileres
+                            </a>
+                        @endif
+                    @endauth
                 </div>
-                <div class="navbar-nav">
-                    <a class="nav-link" href="{{ route('films.statistics') }}">
-                        <i class="fas fa-chart-bar me-1"></i>Estadísticas
-                    </a>
+                <div class="navbar-nav ms-auto">
+                    @auth
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle me-1"></i>{{ Auth::user()->name }}
+                                <span class="badge bg-secondary ms-1">
+                                    {{ Auth::user()->isEmployee() ? 'Empleado' : 'Cliente' }}
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('profile.edit') }}">
+                                        <i class="fas fa-user-cog me-2"></i>Mi Perfil
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form action="{{ route('auth.logout') }}" method="POST" class="dropdown-item-form">
+                                        @csrf
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    @else
+                        <a class="nav-link" href="{{ route('login') }}">
+                            <i class="fas fa-sign-in-alt me-1"></i>Iniciar sesión
+                        </a>
+                        <a class="nav-link" href="{{ route('auth.register') }}">
+                            <i class="fas fa-user-plus me-1"></i>Registrarse
+                        </a>
+                    @endauth
                 </div>
             </div>
         </div>

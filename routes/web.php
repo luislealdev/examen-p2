@@ -12,24 +12,62 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OmdbController;
+use App\Http\Controllers\WebAuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route('films.index');
 });
 
-// Ruta de login solo para diseño (sin funcionalidad)
-Route::get('/login', function () {
-    return view('auth.login');
-})->name('login');
+// Rutas de autenticación
+Route::middleware('guest')->group(function () {
+    // Rutas de cliente
+    Route::get('/login', [WebAuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [WebAuthController::class, 'login'])->name('auth.login');
+    Route::get('/register', [WebAuthController::class, 'showRegister'])->name('auth.register');
+    Route::post('/register', [WebAuthController::class, 'register'])->name('auth.register.post');
 
-// TODO: Create Controllers and add them here
-// Rutas públicas de CRUD (sin middleware de autenticación)
-// Route::resource('actors', ActorController::class);
-// Route::resource('films', FilmController::class);
-// Route::resource('rentals', RentalController::class);
+    // Rutas de empleado
+    Route::get('/staff/login', [WebAuthController::class, 'showStaffLogin'])->name('auth.staff.login');
+    Route::post('/staff/login', [WebAuthController::class, 'staffLogin'])->name('auth.staff.login.post');
 
-// Nuevas rutas CRUD para Sakila
+    // Rutas de recuperación de contraseña
+    Route::get('forgot-password', [PasswordResetController::class, 'showForgotForm'])
+        ->name('password.request');
+    Route::post('forgot-password', [PasswordResetController::class, 'sendResetLink'])
+        ->name('password.email');
+    Route::get('reset-password/{token}', [PasswordResetController::class, 'showResetForm'])
+        ->name('password.reset');
+    Route::post('reset-password', [PasswordResetController::class, 'reset'])
+        ->name('password.update');
+});
+
+Route::post('/logout', [WebAuthController::class, 'logout'])
+    ->middleware('auth')
+    ->name('auth.logout');
+
+// Rutas públicas
+Route::resource('films', FilmController::class)->only(['index', 'show']);
+
+// Rutas para clientes autenticados
+Route::middleware(['auth', 'role:customer'])->group(function () {
+    Route::get('rentals', [RentalController::class, 'index'])->name('rentals.index');
+    Route::post('films/{film}/rent', [RentalController::class, 'store'])->name('rentals.store');
+    Route::get('profile/edit', [WebAuthController::class, 'editProfile'])->name('profile.edit');
+    Route::put('profile/update', [WebAuthController::class, 'updateProfile'])->name('profile.update');
+});
+
+// Rutas para empleados
+Route::middleware(['auth', 'role:employee'])->group(function () {
+    Route::resource('films', FilmController::class)->except(['index', 'show']);
+    Route::resource('languages', LanguageController::class);
+    Route::resource('categories', CategoryController::class);
+    Route::resource('inventories', InventoryController::class);
+    Route::resource('stores', StoreController::class);
+    Route::resource('customers', CustomerController::class);
+    Route::resource('staff', StaffController::class);
+    Route::get('films-statistics', [FilmController::class, 'statistics'])->name('films.statistics');
+});
 Route::resource('stores', StoreController::class);
 Route::resource('customers', CustomerController::class);
 Route::resource('staff', StaffController::class);
