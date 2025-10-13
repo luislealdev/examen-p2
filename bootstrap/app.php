@@ -11,13 +11,14 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
-        // Register Passport middlewares
-        $middleware->alias([
-            'scope' => \Laravel\Passport\Http\Middleware\CheckTokenForAnyScope::class,
-            'scopes' => \App\Http\Middleware\CheckScopes::class,
-        ]);
-    })
+->withMiddleware(function (Middleware $middleware): void {
+    // Register Passport middlewares
+    $middleware->alias([
+        'scope' => \Laravel\Passport\Http\Middleware\CheckTokenForAnyScope::class,
+        'scopes' => \App\Http\Middleware\CheckScopes::class,
+        'role' => \App\Http\Middleware\CheckRole::class, 
+    ]);
+})
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
