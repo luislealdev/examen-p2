@@ -43,7 +43,7 @@ Route::middleware('auth:api')->group(function () {
     // User authentication routes
     Route::prefix('auth')->group(function () {
         Route::get('user', [AuthController::class, 'user']);
-        Route::post('logout', [AuthController::class, 'logout']);
+        Route::post('logout', [AuthController::class, 'logout'])->name('auth.logout');
         Route::post('refresh', [AuthController::class, 'refreshToken']);
 
 
