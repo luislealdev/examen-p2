@@ -143,9 +143,11 @@
                             <a class="nav-link" href="{{ route('customers.index') }}">
                                 <i class="fas fa-users me-1"></i>Clientes
                             </a>
+                            @if(Auth::user()->isAdmin())
                             <a class="nav-link" href="{{ route('staff.index') }}">
                                 <i class="fas fa-user-tie me-1"></i>Personal
                             </a>
+                            @endif
                             <a class="nav-link" href="{{ route('films.statistics') }}">
                                 <i class="fas fa-chart-bar me-1"></i>Estadísticas
                             </a>

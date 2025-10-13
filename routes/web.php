@@ -84,11 +84,7 @@ Route::middleware(['auth', 'role:employee'])->group(function () {
     Route::resource('inventories', InventoryController::class);
     Route::resource('stores', StoreController::class);
     Route::resource('customers', CustomerController::class);
-    Route::resource('staff', StaffController::class);
     Route::resource('rentals', RentalController::class)->except(['index', 'store']); // index y store ya están en cliente
-
-    // RUTAS ESPECIALES
-    Route::get('staff/{staff}/picture', [StaffController::class, 'picture'])->name('staff.picture');
     Route::get('languages-alphabetical', [LanguageController::class, 'alphabetical'])->name('languages.alphabetical');
     Route::get('categories-alphabetical', [CategoryController::class, 'alphabetical'])->name('categories.alphabetical');
     Route::get('categories-popular', [CategoryController::class, 'popular'])->name('categories.popular');
@@ -130,4 +126,11 @@ Route::middleware(['auth', 'role:employee'])->group(function () {
     Route::post('ajax/customer-info', [RentalController::class, 'getCustomerInfo'])->name('ajax.customer-info');
     Route::post('ajax/film-availability', [RentalController::class, 'checkAvailability'])->name('ajax.film-availability');
     Route::post('ajax/update-overdue', [RentalController::class, 'updateOverdueStatus'])->name('ajax.update-overdue');
+});
+
+// --- RUTAS SOLO PARA ADMINISTRADORES ---
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    // Gestión de Personal
+    Route::resource('staff', StaffController::class);
+    Route::get('staff/{staff}/picture', [StaffController::class, 'picture'])->name('staff.picture');
 });

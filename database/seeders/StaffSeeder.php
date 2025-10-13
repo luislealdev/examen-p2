@@ -61,7 +61,7 @@ class StaffSeeder extends Seeder
                 'name' => $employee['first_name'] . ' ' . $employee['last_name'],
                 'email' => $employee['email'],
                 'password' => Hash::make($employee['password']),
-                'role' => 'employee'
+                'role' => $employee['username'] === 'admin' ? 'admin' : 'employee'
             ]);
 
             // Crear el staff

@@ -31,7 +31,7 @@ class User extends Authenticatable
      */
     public function isEmployee(): bool
     {
-        return $this->role === 'employee';
+        return $this->role === 'employee' || $this->role === 'admin';
     }
 
     /**
@@ -40,6 +40,14 @@ class User extends Authenticatable
     public function isCustomer(): bool
     {
         return $this->role === 'customer';
+    }
+
+    /**
+     * Check if user is an admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 
     /**
