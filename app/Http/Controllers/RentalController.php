@@ -325,4 +325,81 @@ class RentalController extends Controller
 
         return response()->json(['updated' => $overdueRentals->count()]);
     }
+
+    /**
+     * Rent a film from the film details page (customer action)
+     */
+    public function rentFilm(Request $request, Film $film)
+    {
+        // Validate customer is authenticated
+        if (!Auth::check() || Auth::user()->role !== 'customer') {
+            return redirect()->route('login')->with('error', 'Debes iniciar sesión como cliente para alquilar películas.');
+        }
+
+        // Get customer from authenticated user
+        $customer = Customer::where('email', Auth::user()->email)->first();
+        
+        if (!$customer) {
+            return back()->with('error', 'No se encontró tu perfil de cliente. Contacta al administrador.');
+        }
+
+        // Check if customer can rent (no outstanding fees)
+        if (!$customer->canRent()) {
+            return back()->with('error', 'No puedes alquilar películas mientras tengas cargos pendientes. Ponte al corriente con tus pagos.');
+        }
+
+        // Check if customer already has this film rented
+        $existingRental = Rental::whereHas('inventory', function($query) use ($film) {
+                $query->where('film_id', $film->film_id);
+            })
+            ->where('customer_id', $customer->customer_id)
+            ->where('status', 'active')
+            ->first();
+
+        if ($existingRental) {
+            return back()->with('error', 'Ya tienes esta película alquilada. Devuélvela antes de alquilarla nuevamente.');
+        }
+
+        // Find available inventory (try all stores)
+        $inventory = Inventory::where('film_id', $film->film_id)
+            ->whereNotExists(function ($query) {
+                $query->select(DB::raw(1))
+                      ->from('rentals')
+                      ->whereColumn('rentals.inventory_id', 'inventory.inventory_id')
+                      ->where('rentals.status', 'active');
+            })
+            ->first();
+
+        if (!$inventory) {
+            return back()->with('error', 'Lo sentimos, esta película no está disponible para alquiler en este momento. Todas las copias están prestadas.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Get rental duration from film
+            $rentalDuration = $film->rental_duration ?? 3;
+            
+            // Create rental
+            $rental = Rental::create([
+                'inventory_id' => $inventory->inventory_id,
+                'customer_id' => $customer->customer_id,
+                'staff_id' => 1, // System default
+                'rental_date' => now(),
+                'due_date' => now()->addDays($rentalDuration),
+                'rental_amount' => $film->rental_rate,
+                'status' => 'active',
+                'notes' => 'Alquilado desde el catálogo web'
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('rentals.index')
+                ->with('success', "¡Película alquilada exitosamente! Tienes hasta el {$rental->due_date->format('d/m/Y')} para devolverla. ¡Disfrútala!");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Error al procesar el alquiler: ' . $e->getMessage());
+        }
+    }
 }
