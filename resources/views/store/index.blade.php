@@ -3,6 +3,20 @@
 @section('title', 'Lista de Tiendas')
 
 @section('content')
+@if (session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
+@if (session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="text-primary">
         <i class="fas fa-store me-2"></i>Tiendas
@@ -25,8 +39,8 @@
                     <thead>
                         <tr>
                             <th>ID de Tienda</th>
-                            <th>ID del Gerente</th>
-                            <th>ID de Dirección</th>
+                            <th>Gerente</th>
+                            <th>Dirección</th>
                             <th>Última Actualización</th>
                             <th>Acciones</th>
                         </tr>
@@ -35,8 +49,22 @@
                         @foreach($stores as $store)
                             <tr>
                                 <td>{{ $store->store_id }}</td>
-                                <td>{{ $store->manager_staff_id }}</td>
-                                <td>{{ $store->address_id }}</td>
+                                <td>
+                                    @if($store->manager)
+                                        {{ $store->manager->first_name }} {{ $store->manager->last_name }}
+                                        <small class="text-muted">(ID: {{ $store->manager_staff_id }})</small>
+                                    @else
+                                        <span class="text-danger">Gerente no encontrado (ID: {{ $store->manager_staff_id }})</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($store->address)
+                                        {{ $store->address->address }}
+                                        <br><small class="text-muted">{{ $store->address->city ?? 'Ciudad N/A' }}</small>
+                                    @else
+                                        <span class="text-danger">Dirección no encontrada (ID: {{ $store->address_id }})</span>
+                                    @endif
+                                </td>
                                 <td>{{ $store->last_update ? $store->last_update->format('Y-m-d H:i:s') : 'N/A' }}</td>
                                 <td>
                                     <div class="btn-group" role="group">
