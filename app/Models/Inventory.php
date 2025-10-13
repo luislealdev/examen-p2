@@ -74,6 +74,14 @@ class Inventory extends Model
         return $this->belongsTo(Store::class, 'store_id', 'store_id');
     }
 
+    /**
+     * Get the rentals for this inventory item.
+     */
+    public function rentals()
+    {
+        return $this->hasMany(Rental::class, 'inventory_id', 'inventory_id');
+    }
+
     // ===== SCOPES =====
 
     /**

@@ -159,6 +159,14 @@ class Film extends Model
     }
 
     /**
+     * Get the inventories for this film.
+     */
+    public function inventories()
+    {
+        return $this->hasMany(Inventory::class, 'film_id', 'film_id');
+    }
+
+    /**
      * Query Scopes
      */
 
