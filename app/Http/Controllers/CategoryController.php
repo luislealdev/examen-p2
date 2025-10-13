@@ -63,6 +63,11 @@ class CategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:25|unique:category,name',
+        ], [
+            'name.required' => 'El nombre de la categoría es obligatorio.',
+            'name.string' => 'El nombre de la categoría debe ser texto.',
+            'name.max' => 'El nombre de la categoría no puede exceder los 25 caracteres.',
+            'name.unique' => 'Ya existe una categoría con este nombre.',
         ]);
 
         // Clean and format the name
@@ -71,7 +76,7 @@ class CategoryController extends Controller
         Category::create($validated);
 
         return redirect()->route('categories.index')
-            ->with('success', "Category '{$validated['name']}' created successfully!");
+            ->with('success', "¡Categoría '{$validated['name']}' creada exitosamente!");
     }
 
     /**
@@ -100,6 +105,11 @@ class CategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:25|unique:category,name,' . $category->category_id . ',category_id',
+        ], [
+            'name.required' => 'El nombre de la categoría es obligatorio.',
+            'name.string' => 'El nombre de la categoría debe ser texto.',
+            'name.max' => 'El nombre de la categoría no puede exceder los 25 caracteres.',
+            'name.unique' => 'Ya existe una categoría con este nombre.',
         ]);
 
         // Clean and format the name
@@ -108,7 +118,7 @@ class CategoryController extends Controller
         $category->update($validated);
 
         return redirect()->route('categories.index')
-            ->with('success', "Category updated to '{$validated['name']}' successfully!");
+            ->with('success', "¡Categoría actualizada a '{$validated['name']}' exitosamente!");
     }
 
     /**
@@ -119,14 +129,14 @@ class CategoryController extends Controller
         // Check if category is in use (when Film model exists)
         // if ($category->films()->exists()) {
         //     return redirect()->route('categories.index')
-        //         ->with('error', 'Cannot delete category that is currently assigned to films.');
+        //         ->with('error', 'No se puede eliminar una categoría que está asignada a películas.');
         // }
 
         $categoryName = $category->name;
         $category->delete();
 
         return redirect()->route('categories.index')
-            ->with('success', "Category '{$categoryName}' deleted successfully!");
+            ->with('success', "¡Categoría '{$categoryName}' eliminada exitosamente!");
     }
 
     /**

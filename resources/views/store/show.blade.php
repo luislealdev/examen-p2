@@ -3,13 +3,6 @@
 @section('title', 'Detalles de la Tienda')
 
 @section('content')
-@if (session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-@endif
-
 <div class="row justify-content-center">
     <div class="col-md-10">
         <div class="card shadow-custom border-0">
