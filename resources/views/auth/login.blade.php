@@ -55,9 +55,18 @@
                             @enderror
                         </div>
 
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                            <label class="form-check-label" for="remember">Recordarme</label>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                                    <label class="form-check-label" for="remember">Recordarme</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <a href="{{ route('password.request') }}" class="text-decoration-none">
+                                    ¿Olvidaste tu contraseña?
+                                </a>
+                            </div>
                         </div>
 
                         <div class="mb-3 text-end">
