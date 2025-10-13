@@ -183,29 +183,13 @@ document.getElementById('name').addEventListener('input', function(e) {
     updatePreview();
 });
 
-// Form validation
+// Form validation (simplified - Laravel handles server-side validation)
 document.querySelector('form').addEventListener('submit', function(e) {
     const name = document.getElementById('name').value.trim();
     
-    if (!name) {
-        e.preventDefault();
-        alert('Please enter a category name.');
-        document.getElementById('name').focus();
-        return false;
-    }
-    
-    if (name.length > 25) {
-        e.preventDefault();
-        alert('Category name cannot exceed 25 characters.');
-        document.getElementById('name').focus();
-        return false;
-    }
-    
-    if (name.length < 2) {
-        e.preventDefault();
-        alert('Category name must be at least 2 characters long.');
-        document.getElementById('name').focus();
-        return false;
+    // Optional: Set the trimmed value back to the input
+    if (name) {
+        document.getElementById('name').value = name;
     }
 });
 </script>

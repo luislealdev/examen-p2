@@ -53,7 +53,7 @@ Route::get('films-recent', [FilmController::class, 'recent'])->name('films.recen
 // --- RUTAS PARA CLIENTES AUTENTICADOS ---
 Route::middleware(['auth', 'role:customer'])->group(function () {
     Route::get('rentals', [RentalController::class, 'index'])->name('rentals.index');
-    Route::post('films/{film}/rent', [RentalController::class, 'store'])->name('rentals.store');
+    Route::post('films/{film}/rent', [RentalController::class, 'rentFilm'])->name('rentals.rent-film');
     Route::get('profile/edit', [WebAuthController::class, 'editProfile'])->name('profile.edit');
     Route::put('profile/update', [WebAuthController::class, 'updateProfile'])->name('profile.update');
 });
