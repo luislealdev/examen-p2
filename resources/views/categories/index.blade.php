@@ -294,21 +294,5 @@
 }
 </style>
 
-@if(session('success'))
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Simple alert for success message
-            alert('{{ session('success') }}');
-        });
-    </script>
-@endif
 
-@if(session('error'))
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Simple alert for error message
-            alert('{{ session('error') }}');
-        });
-    </script>
-@endif
 @endsection
