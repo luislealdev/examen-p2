@@ -135,13 +135,12 @@ class Category extends Model
     }
 
     /**
-     * Relationships - Film Category (Many-to-Many when Film model exists)
-     * Note: Uncomment when Film model is implemented
+     * Relationships - Films by Category
      */
-    // public function films()
-    // {
-    //     return $this->belongsToMany(Film::class, 'film_category', 'category_id', 'film_id');
-    // }
+    public function films()
+    {
+        return $this->hasMany(Film::class, 'category_id', 'category_id');
+    }
 
     /**
      * Get the route key for the model.

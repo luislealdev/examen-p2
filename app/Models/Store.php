@@ -44,12 +44,11 @@ class Store extends Model
 
     /**
      * Get the manager staff that manages this store.
-     * TODO: Uncomment when Staff model is created
      */
-    // public function manager(): BelongsTo
-    // {
-    //     return $this->belongsTo(Staff::class, 'manager_staff_id', 'staff_id');
-    // }
+    public function manager(): BelongsTo
+    {
+        return $this->belongsTo(Staff::class, 'manager_staff_id', 'staff_id');
+    }
 
     /**
      * Get the address of this store.
@@ -59,4 +58,12 @@ class Store extends Model
     // {
     //     return $this->belongsTo(Address::class, 'address_id', 'address_id');
     // }
+
+    /**
+     * Get all inventories for this store.
+     */
+    public function inventories()
+    {
+        return $this->hasMany(Inventory::class, 'store_id', 'store_id');
+    }
 }

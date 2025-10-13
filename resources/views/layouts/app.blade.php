@@ -110,8 +110,14 @@
                     <a class="nav-link" href="{{ route('staff.index') }}">
                         <i class="fas fa-user-tie me-1"></i>Personal
                     </a>
+                    <a class="nav-link" href="{{ route('rentals.index') }}">
+                        <i class="fas fa-video me-1"></i>Rentas
+                    </a>
                 </div>
                 <div class="navbar-nav">
+                    <a class="nav-link" href="{{ route('admin.dashboard') }}">
+                        <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                    </a>
                     <a class="nav-link" href="{{ route('films.statistics') }}">
                         <i class="fas fa-chart-bar me-1"></i>Estadísticas
                     </a>

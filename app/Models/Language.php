@@ -76,12 +76,11 @@ class Language extends Model
 
     /**
      * Get films that use this language.
-     * TODO: Uncomment when Film model is created
      */
-    // public function films(): HasMany
-    // {
-    //     return $this->hasMany(Film::class, 'language_id', 'language_id');
-    // }
+    public function films()
+    {
+        return $this->hasMany(Film::class, 'language_id', 'language_id');
+    }
 
     /**
      * Get films that use this language as original language.

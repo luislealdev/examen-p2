@@ -13,7 +13,7 @@ class CustomerController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request): View
+    public function index(Request $request)
     {
         $query = Customer::query();
 
@@ -42,6 +42,12 @@ class CustomerController extends Controller
         
         if (in_array($sortBy, ['first_name', 'last_name', 'email', 'active', 'create_date', 'last_update'])) {
             $query->orderBy($sortBy, $sortDirection);
+        }
+
+        // Handle AJAX requests for Select2
+        if ($request->filled('format') && $request->format === 'select2') {
+            $customers = $query->limit(20)->get();
+            return response()->json($customers);
         }
 
         // Pagination with request parameters preserved

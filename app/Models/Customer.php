@@ -95,4 +95,59 @@ class Customer extends Model
     // {
     //     return $this->belongsTo(Address::class, 'address_id', 'address_id');
     // }
+
+    /**
+     * Get all rentals for this customer
+     */
+    public function rentals()
+    {
+        return $this->hasMany(Rental::class, 'customer_id', 'customer_id');
+    }
+
+    /**
+     * Get active rentals for this customer
+     */
+    public function activeRentals()
+    {
+        return $this->rentals()->where('status', 'active');
+    }
+
+    /**
+     * Get overdue rentals for this customer
+     */
+    public function overdueRentals()
+    {
+        return $this->rentals()->where('status', 'overdue');
+    }
+
+    /**
+     * Check if customer has outstanding late fees
+     */
+    public function hasOutstandingFees(): bool
+    {
+        return $this->rentals()
+            ->where('late_fee_applied', true)
+            ->where('late_fee', '>', 0)
+            ->where('status', '!=', 'returned')
+            ->exists();
+    }
+
+    /**
+     * Get total outstanding late fees
+     */
+    public function getTotalOutstandingFees()
+    {
+        return $this->rentals()
+            ->where('late_fee_applied', true)
+            ->where('status', '!=', 'returned')
+            ->sum('late_fee');
+    }
+
+    /**
+     * Check if customer can rent (no outstanding fees)
+     */
+    public function canRent(): bool
+    {
+        return $this->active && !$this->hasOutstandingFees();
+    }
 }

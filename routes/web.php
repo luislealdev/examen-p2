@@ -18,6 +18,11 @@ Route::get('/', function () {
     return redirect()->route('films.index');
 });
 
+// Ruta rápida para acceso al dashboard
+Route::get('/dashboard', function () {
+    return redirect()->route('admin.dashboard');
+})->name('dashboard');
+
 // Ruta de login solo para diseño (sin funcionalidad)
 Route::get('/login', function () {
     return view('auth.login');
@@ -74,15 +79,37 @@ Route::get('inventories-statistics', [InventoryController::class, 'statistics'])
 Route::get('inventories-bulk-create', [InventoryController::class, 'bulkCreate'])->name('inventories.bulk-create');
 Route::post('inventories-bulk-store', [InventoryController::class, 'bulkStore'])->name('inventories.bulk-store');
 
+// Rental Management System
+Route::resource('rentals', RentalController::class);
+// Special routes for rentals
+Route::get('rentals/{rental}/return', [RentalController::class, 'returnForm'])->name('rentals.return-form');
+Route::post('rentals/{rental}/return', [RentalController::class, 'processReturn'])->name('rentals.process-return');
+Route::get('rentals-overdue', [RentalController::class, 'overdueReport'])->name('rentals.overdue');
+
+// AJAX routes for rental management
+Route::post('ajax/customer-info', [RentalController::class, 'getCustomerInfo'])->name('ajax.customer-info');
+Route::post('ajax/film-availability', [RentalController::class, 'checkAvailability'])->name('ajax.film-availability');
+Route::post('ajax/update-overdue', [RentalController::class, 'updateOverdueStatus'])->name('ajax.update-overdue');
+
 // Route::resource('inventories', InventoryController::class);
 // Route::resource('actors', ActorController::class);
 // Route::resource('films', FilmController::class);
-// Route::resource('rentals', RentalController::class);
 
-// Rutas protegidas con middleware de roles (para demostración)
+// Admin Dashboard (sin autenticación por ahora)
+Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+Route::get('/admin/rental-statistics', [AdminController::class, 'rentalStatistics'])->name('admin.rental-statistics');
+
+// Admin Report Routes
+Route::prefix('admin/reports')->name('admin.reports.')->group(function () {
+    Route::get('revenue', [AdminController::class, 'getRevenueReport'])->name('revenue');
+    Route::get('top-customers', [AdminController::class, 'getTopCustomers'])->name('top-customers');
+    Route::get('export/csv', [AdminController::class, 'exportToCSV'])->name('export.csv');
+    Route::get('export/pdf', [AdminController::class, 'exportToPDF'])->name('export.pdf');
+});
+
+// Rutas protegidas con middleware de roles (para demostración - futuro)
 // Nota: Estas rutas requerirán autenticación cuando implementes un sistema de login
 Route::middleware(['admin'])->group(function () {
-    // Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     // Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.users');
     // Route::put('/admin/users/{user}/role', [AdminController::class, 'updateUserRole'])->name('admin.users.updateRole');
 });
