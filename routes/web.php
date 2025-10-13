@@ -14,6 +14,8 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OmdbController;
 use App\Http\Controllers\WebAuthController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use Illuminate\Support\Facades\Route;
 
 // Redirección principal
@@ -33,8 +35,18 @@ Route::middleware('guest')->group(function () {
     Route::get('/staff/login', [WebAuthController::class, 'showStaffLogin'])->name('auth.staff.login');
     Route::post('/staff/login', [WebAuthController::class, 'staffLogin'])->name('auth.staff.login.post');
 
-    // Recuperación de contraseña (si aplica)
-    // ... tus rutas de password reset ...
+    // Rutas para recuperación de contraseña
+    Route::get('/password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])
+        ->name('password.request');
+        
+    Route::post('/password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])
+        ->name('password.email');
+        
+    Route::get('/password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])
+        ->name('password.reset');
+        
+    Route::post('/password/reset', [ResetPasswordController::class, 'reset'])
+        ->name('password.update');
 });
 
 Route::post('/logout', [WebAuthController::class, 'logout'])
