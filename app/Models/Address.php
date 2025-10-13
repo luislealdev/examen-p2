@@ -11,6 +11,11 @@ class Address extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'address', 'address2', 'district', 'city', 'postal_code', 'phone'
+        'address', 'address2', 'district', 'city_id', 'postal_code', 'phone'
     ];
+
+    public function city()
+    {
+        return $this->belongsTo(City::class, 'city_id', 'city_id');
+    }
 }

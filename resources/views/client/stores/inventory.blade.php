@@ -7,7 +7,7 @@
             <div class="card">
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
-                        <span>{{ __('Inventario de Películas - Tienda #') }}{{ $store->id }}</span>
+                        <span>{{ __('Inventario de Películas - Tienda #') }}{{ $store->store_id }}</span>
                         <a href="{{ route('client.stores.index') }}" class="btn btn-sm btn-secondary">
                             Volver a Tiendas
                         </a>
@@ -68,7 +68,10 @@ document.querySelectorAll('.rent-movie').forEach(button => {
     button.addEventListener('click', function() {
         const inventoryId = this.dataset.inventoryId;
         
-        // Aquí irá la lógica para rentar la película
+        const button = this;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+        
         fetch(`/client/inventory/${inventoryId}/rent`, {
             method: 'POST',
             headers: {
@@ -78,12 +81,26 @@ document.querySelectorAll('.rent-movie').forEach(button => {
         })
         .then(response => response.json())
         .then(data => {
-            alert(data.message);
-            // Aquí puedes añadir más lógica después de rentar
+            Swal.fire({
+                icon: 'success',
+                title: 'Éxito',
+                text: data.message,
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                window.location.href = '{{ route('client.rentals.index') }}';
+            });
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error al intentar rentar la película');
+            button.disabled = false;
+            button.innerHTML = 'Rentar Película';
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al intentar rentar la película. Por favor intente más tarde.'
+            });
         });
     });
 });

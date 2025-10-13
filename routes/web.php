@@ -63,9 +63,15 @@ Route::get('films-recent', [FilmController::class, 'recent'])->name('films.recen
 
 
 // --- RUTAS PARA CLIENTES AUTENTICADOS ---
-Route::middleware(['auth', 'role:customer'])->group(function () {
+Route::middleware(['auth', 'role:customer'])->prefix('client')->name('client.')->group(function () {
+    // Rutas para el catálogo de tiendas
+    Route::get('stores', [App\Http\Controllers\Client\StoreController::class, 'index'])->name('stores.index');
+    Route::get('stores/{store}/inventory', [App\Http\Controllers\Client\StoreController::class, 'showInventory'])->name('stores.inventory');
+    
+    // Rutas de renta
     Route::get('rentals', [RentalController::class, 'index'])->name('rentals.index');
     Route::post('films/{film}/rent', [RentalController::class, 'rentFilm'])->name('rentals.rent-film');
+    Route::post('inventory/{inventory}/rent', [App\Http\Controllers\Client\StoreController::class, 'rentMovie'])->name('stores.rent');
     Route::get('profile/edit', [WebAuthController::class, 'editProfile'])->name('profile.edit');
     Route::put('profile/update', [WebAuthController::class, 'updateProfile'])->name('profile.update');
 });

@@ -19,14 +19,14 @@ class StoreController extends Controller
 
     public function index()
     {
-        $stores = Store::all();
+        $stores = Store::with(['address.city.country', 'manager'])->get();
         return view('client.stores.index', compact('stores'));
     }
 
-    public function inventory($id)
+    public function showInventory($id)
     {
         $store = Store::findOrFail($id);
-        $inventory = Inventory::where('store_id', $id)
+        $inventory = Inventory::where('store_id', $store->store_id)
             ->with('film')
             ->get();
 

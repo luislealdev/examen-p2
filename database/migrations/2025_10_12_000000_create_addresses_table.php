@@ -16,12 +16,16 @@ return new class extends Migration
             $table->string('address', 100);
             $table->string('address2', 100)->nullable();
             $table->string('district', 50)->nullable();
-            $table->string('city', 50)->nullable();
+            $table->unsignedSmallInteger('city_id')->nullable();
             $table->string('postal_code', 20)->nullable();
             $table->string('phone', 20)->nullable();
             $table->timestamp('last_update')->useCurrent()->useCurrentOnUpdate();
 
-            $table->index('city');
+            $table->foreign('city_id')
+                  ->references('city_id')
+                  ->on('cities')
+                  ->onDelete('restrict')
+                  ->onUpdate('cascade');
             $table->index('postal_code');
         });
     }

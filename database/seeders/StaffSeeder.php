@@ -16,7 +16,7 @@ class StaffSeeder extends Seeder
         $address = Address::create([
             'address' => 'Calle Principal 123',
             'district' => 'Centro',
-            'city' => 'Ciudad Ejemplo',
+            'city_id' => 1, // Ciudad de México
             'postal_code' => '12345',
             'phone' => '555-0123',
         ]);
