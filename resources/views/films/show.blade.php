@@ -265,88 +265,92 @@
                 </div>
             </div>
 
-            <!-- Quick Actions Card -->
-            <div class="card shadow-custom border-0 mb-4">
-                <div class="card-header bg-gradient-secondary text-white border-0">
-                    <h5 class="mb-0">
-                        <i class="fas fa-bolt me-2"></i>Acciones Rápidas
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{{ route('films.edit', $film) }}" class="btn btn-gradient-primary">
-                            <i class="fas fa-edit me-2"></i>Editar Película
-                        </a>
-                        
-                        @if($film->language)
-                            <a href="{{ route('films.by-language', $film->language) }}" class="btn btn-outline-info">
-                                <i class="fas fa-language me-2"></i>Más Películas en {{ $film->language->name }}
-                            </a>
-                        @endif
-                        
-                        @if($film->rating)
-                            <a href="{{ route('films.by-rating', $film->rating) }}" class="btn btn-outline-warning">
-                                <i class="fas fa-certificate me-2"></i>Más Películas {{ $film->rating }}
-                            </a>
-                        @endif
-                        
-                        @if($film->release_year)
-                            <a href="{{ route('films.by-decade', floor($film->release_year / 10) * 10) }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-calendar me-2"></i>Películas de los {{ floor($film->release_year / 10) * 10 }}s
-                            </a>
-                        @endif
+            @auth
+                @if(Auth::user()->isEmployee())
+                    <!-- Quick Actions Card -->
+                    <div class="card shadow-custom border-0 mb-4">
+                        <div class="card-header bg-gradient-secondary text-white border-0">
+                            <h5 class="mb-0">
+                                <i class="fas fa-bolt me-2"></i>Acciones Rápidas
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{{ route('films.edit', $film) }}" class="btn btn-gradient-primary">
+                                    <i class="fas fa-edit me-2"></i>Editar Película
+                                </a>
+                                
+                                @if($film->language)
+                                    <a href="{{ route('films.by-language', $film->language) }}" class="btn btn-outline-info">
+                                        <i class="fas fa-language me-2"></i>Más Películas en {{ $film->language->name }}
+                                    </a>
+                                @endif
+                                
+                                @if($film->rating)
+                                    <a href="{{ route('films.by-rating', $film->rating) }}" class="btn btn-outline-warning">
+                                        <i class="fas fa-certificate me-2"></i>Más Películas {{ $film->rating }}
+                                    </a>
+                                @endif
+                                
+                                @if($film->release_year)
+                                    <a href="{{ route('films.by-decade', floor($film->release_year / 10) * 10) }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-calendar me-2"></i>Películas de los {{ floor($film->release_year / 10) * 10 }}s
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Film Statistics Card -->
-            <div class="card shadow-custom border-0">
-                <div class="card-header bg-gradient-dark text-white border-0">
-                    <h5 class="mb-0">
-                        <i class="fas fa-chart-bar me-2"></i>Estadísticas de la Película
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3 text-center">
-                        <div class="col-12">
-                            <div class="border rounded p-2">
-                                <div class="fw-bold text-primary">ID de Película</div>
-                                <div class="h5 mb-0">#{{ $film->film_id }}</div>
-                            </div>
+                    <!-- Film Statistics Card -->
+                    <div class="card shadow-custom border-0">
+                        <div class="card-header bg-gradient-dark text-white border-0">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-bar me-2"></i>Estadísticas de la Película
+                            </h5>
                         </div>
-                        
-                        @if($film->length)
-                        <div class="col-6">
-                            <div class="border rounded p-2">
-                                <div class="fw-bold text-info">Duración</div>
-                                <div class="h6 mb-0">{{ $film->length }} min</div>
-                            </div>
-                        </div>
-                        @endif
-                        
-                        <div class="col-6">
-                            <div class="border rounded p-2">
-                                <div class="fw-bold text-success">Categoría</div>
-                                <div class="h6 mb-0">{{ $film->category ? $film->category->name : 'Ninguna' }}</div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-6">
-                            <div class="border rounded p-2">
-                                <div class="fw-bold text-warning">Características</div>
-                                <div class="h6 mb-0">{{ $film->special_features ? count($film->special_features) : 0 }}</div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-6">
-                            <div class="border rounded p-2">
-                                <div class="fw-bold text-danger">Ratio de Costo</div>
-                                <div class="h6 mb-0">{{ number_format($film->replacement_cost / $film->rental_rate, 1) }}x</div>
+                        <div class="card-body">
+                            <div class="row g-3 text-center">
+                                <div class="col-12">
+                                    <div class="border rounded p-2">
+                                        <div class="fw-bold text-primary">ID de Película</div>
+                                        <div class="h5 mb-0">#{{ $film->film_id }}</div>
+                                    </div>
+                                </div>
+                                
+                                @if($film->length)
+                                <div class="col-6">
+                                    <div class="border rounded p-2">
+                                        <div class="fw-bold text-info">Duración</div>
+                                        <div class="h6 mb-0">{{ $film->length }} min</div>
+                                    </div>
+                                </div>
+                                @endif
+                                
+                                <div class="col-6">
+                                    <div class="border rounded p-2">
+                                        <div class="fw-bold text-success">Categoría</div>
+                                        <div class="h6 mb-0">{{ $film->category ? $film->category->name : 'Ninguna' }}</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-6">
+                                    <div class="border rounded p-2">
+                                        <div class="fw-bold text-warning">Características</div>
+                                        <div class="h6 mb-0">{{ $film->special_features ? count($film->special_features) : 0 }}</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-6">
+                                    <div class="border rounded p-2">
+                                        <div class="fw-bold text-danger">Ratio de Costo</div>
+                                        <div class="h6 mb-0">{{ number_format($film->replacement_cost / $film->rental_rate, 1) }}x</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                @endif
+            @endauth
         </div>
     </div>
 </div>

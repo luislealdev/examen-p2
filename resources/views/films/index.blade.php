@@ -30,6 +30,8 @@
     </div>
 
     <!-- Statistics Cards -->
+    @auth
+    @if(Auth::user()->isEmployee())
     <div class="row mb-4">
         <div class="col-md-3">
             <div class="card shadow-custom border-0">
@@ -92,6 +94,8 @@
             </div>
         </div>
     </div>
+    @endif
+    @endauth
 
     <!-- Filters and Search -->
     <div class="card shadow-custom border-0 mb-4">
