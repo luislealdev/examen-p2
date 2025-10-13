@@ -45,6 +45,14 @@ Route::middleware('auth:api')->group(function () {
         Route::get('user', [AuthController::class, 'user']);
         Route::post('logout', [AuthController::class, 'logout']);
         Route::post('refresh', [AuthController::class, 'refreshToken']);
+
+
+        // Nueva ruta para contar usuarios
+    Route::get('users/count', function () {
+        return response()->json([
+            'total_users' => \App\Models\User::count()
+        ]);
+    });
     });
 
     // Movies routes with scope-based access control
