@@ -21,15 +21,6 @@ class StaffSeeder extends Seeder
             'phone' => '555-0123',
         ]);
 
-        // Crear tienda si no existe
-        $store = Store::firstOrCreate(
-            ['store_id' => 1],
-            [
-                'manager_staff_id' => 1,
-                'address_id' => $address->address_id,
-            ]
-        );
-
         // Crear empleados de prueba
         $employees = [
             [
@@ -70,7 +61,7 @@ class StaffSeeder extends Seeder
                 'last_name' => $employee['last_name'],
                 'address_id' => $address->address_id,
                 'email' => $employee['email'],
-                'store_id' => $store->store_id,
+                'store_id' => null,
                 'active' => true,
                 'username' => $employee['username'],
                 'password' => Hash::make($employee['password'])

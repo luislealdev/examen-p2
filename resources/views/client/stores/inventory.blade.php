@@ -15,8 +15,66 @@
                 </div>
 
                 <div class="card-body">
+                    {{-- Formulario de búsqueda --}}
+                    <form action="{{ route('client.stores.inventory', $store->store_id) }}" method="GET" class="mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    <input type="text" name="search" class="form-control" placeholder="Buscar por título..." value="{{ request('search') }}">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-2">
+                                <select name="category" class="form-select">
+                                    <option value="">Todas las categorías</option>
+                                    @foreach(\App\Models\Category::orderBy('name')->get() as $category)
+                                        <option value="{{ $category->category_id }}" {{ request('category') == $category->category_id ? 'selected' : '' }}>
+                                            {{ $category->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-2">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text" name="actor" class="form-control" placeholder="Buscar por actor..." value="{{ request('actor') }}">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-2">
+                                <select name="language" class="form-select">
+                                    <option value="">Todos los idiomas</option>
+                                    @foreach(\App\Models\Language::orderBy('name')->get() as $language)
+                                        <option value="{{ $language->language_id }}" {{ request('language') == $language->language_id ? 'selected' : '' }}>
+                                            <i class="fas fa-globe me-1"></i>{{ $language->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search me-1"></i>Buscar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    {{-- Resultados --}}
+                    {{-- Mostrar número de resultados si hay una búsqueda --}}
+                    @if(request()->hasAny(['search', 'category', 'actor', 'language']))
+                        <div class="alert alert-info mb-4">
+                            Se encontraron {{ $inventory->count() }} resultados
+                            @if(request('search'))
+                                para la búsqueda "{{ request('search') }}"
+                            @endif
+                        </div>
+                    @endif
+
                     <div class="row">
-                        @foreach($inventory as $item)
+                        @forelse($inventory as $item)
                             <div class="col-md-6 mb-4">
                                 <div class="card h-100">
                                     <div class="row g-0">
@@ -54,13 +112,32 @@
                                     </div>
                                 </div>
                             </div>
-                        @endforeach
+                        @empty
+                            <div class="col-12">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    No se encontraron películas que coincidan con los criterios de búsqueda.
+                                </div>
+                            </div>
+                        @endforelse
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar Select2 para mejorar los selectores
+    $('select').select2({
+        theme: 'bootstrap-5',
+        width: '100%'
+    });
+});
+</script>
+@endpush
 
 @push('scripts')
 <script>

@@ -64,11 +64,22 @@ class StoreAndAddressSeeder extends Seeder
                 'phone' => $data['phone'],
             ]);
 
-            // Crear la tienda
-            Store::create([
+            // Crear la tienda y obtener su instancia
+            $store = Store::create([
                 'manager_staff_id' => $staffMembers->random()->staff_id,
                 'address_id' => $address->address_id,
             ]);
+
+            // Actualizar la tienda del empleado que es manager
+            Staff::where('staff_id', $store->manager_staff_id)
+                ->update(['store_id' => $store->store_id]);
         }
+
+        // Asignar empleados restantes a tiendas aleatoriamente
+        $stores = Store::all();
+        Staff::whereNull('store_id')->get()
+            ->each(function ($staff) use ($stores) {
+                $staff->update(['store_id' => $stores->random()->store_id]);
+            });
     }
 }

@@ -23,12 +23,43 @@ class StoreController extends Controller
         return view('client.stores.index', compact('stores'));
     }
 
-    public function showInventory($id)
+    public function showInventory($id, Request $request)
     {
         $store = Store::findOrFail($id);
-        $inventory = Inventory::where('store_id', $store->store_id)
-            ->with('film')
-            ->get();
+        
+        // Construir la consulta base
+        $query = Inventory::where('store_id', $store->store_id)
+            ->with(['film.actors', 'film.category', 'film.language']);
+        
+        // Aplicar filtros de búsqueda
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->whereHas('film', function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%");
+            });
+        }
+        
+        if ($request->filled('category')) {
+            $query->whereHas('film', function($q) use ($request) {
+                $q->where('category_id', $request->category);
+            });
+        }
+        
+        if ($request->filled('actor')) {
+            $search = $request->input('actor');
+            $query->whereHas('film.actors', function($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%");
+            });
+        }
+        
+        if ($request->filled('language')) {
+            $query->whereHas('film', function($q) use ($request) {
+                $q->where('language_id', $request->language);
+            });
+        }
+        
+        $inventory = $query->get();
 
         // Enriquecer datos con OMDB
         $inventoryWithOmdb = $inventory->map(function ($item) {

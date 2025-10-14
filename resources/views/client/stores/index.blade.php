@@ -35,7 +35,7 @@
                                         </p>
                                         <a href="{{ route('client.stores.inventory', $store->store_id) }}" 
                                            class="btn btn-primary">
-                                            <i class="fas fa-film me-1"></i>Ver Inventario
+                                            <i class="fas fa-film me-1"></i>Ver Catálogo
                                         </a>
                                     </div>
                                 </div>

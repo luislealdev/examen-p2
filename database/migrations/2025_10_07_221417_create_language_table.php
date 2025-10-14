@@ -14,11 +14,13 @@ return new class extends Migration
         Schema::create('language', function (Blueprint $table) {
             $table->id('language_id'); // Surrogate primary key
             $table->string('name', 20); // English name of the language
+            $table->string('code', 2); // ISO 639-1 language code
             $table->timestamp('last_update')->useCurrent()->useCurrentOnUpdate(); // Auto-update timestamp
             
             // Indexes for better performance
             $table->index('name'); // Index for language name searches
             $table->unique('name'); // Ensure language names are unique
+            $table->unique('code'); // Ensure language codes are unique
         });
     }
 

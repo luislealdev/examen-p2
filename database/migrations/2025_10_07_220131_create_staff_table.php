@@ -19,7 +19,7 @@ return new class extends Migration
                 $table->unsignedBigInteger('address_id'); // Foreign key to address table
                 $table->binary('picture')->nullable(); // BLOB containing employee photograph
                 $table->string('email', 50)->nullable(); // Staff email address
-                $table->unsignedBigInteger('store_id'); // Foreign key to stores table (home store)
+                $table->unsignedBigInteger('store_id')->nullable(); // Foreign key to stores table (home store)
                 $table->boolean('active')->default(true); // Active employee indicator
                 $table->string('username', 16)->unique(); // Username for rental system access
                 $table->string('password', 64); // Password hash (SHA2 compatible length)

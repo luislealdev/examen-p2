@@ -14,8 +14,13 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            // Primero las tablas base
             CountrySeeder::class,
             CitySeeder::class,
+            CategorySeeder::class,
+            LanguageSeeder::class,
+            
+            // Primero los empleados, luego las tiendas con sus direcciones
             StaffSeeder::class,
             StoreAndAddressSeeder::class,
         ]);
