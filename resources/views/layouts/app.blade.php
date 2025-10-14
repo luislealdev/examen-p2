@@ -168,7 +168,13 @@
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-user-circle me-1"></i>{{ Auth::user()->name }}
                                 <span class="badge bg-secondary ms-1">
-                                    {{ Auth::user()->isEmployee() ? 'Empleado' : 'Cliente' }}
+                                    @if(Auth::user()->isAdmin())
+                                        Admin
+                                    @elseif(Auth::user()->isEmployee())
+                                        Empleado
+                                    @else
+                                        Cliente
+                                    @endif
                                 </span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">

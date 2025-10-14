@@ -24,7 +24,34 @@ class User extends Authenticatable
         'password',
         'role',
         'username',
+        'staff_id',
+        'store_id',
+        'last_login_at',
     ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var list<string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'last_login_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
 
     /**
      * Check if user is an employee
@@ -51,25 +78,31 @@ class User extends Authenticatable
     }
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
+     * Get the staff record associated with the user
      */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    public function staff()
+    {
+        return $this->belongsTo(Staff::class, 'staff_id', 'staff_id');
+    }
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Get the store associated with the user
      */
-    protected function casts(): array
+    public function store()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->belongsTo(Store::class, 'store_id', 'store_id');
+    }
+
+    /**
+     * Scope a query to filter by user's store
+     * Admins can see everything, employees only their store
+     */
+    public function scopeForUserStore($query)
+    {
+        if ($this->isAdmin()) {
+            return $query; // Admin ve todo
+        }
+        
+        return $query->where('store_id', $this->store_id);
     }
 }
