@@ -55,18 +55,10 @@
                             @enderror
                         </div>
 
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                                    <label class="form-check-label" for="remember">Recordarme</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6 text-end">
-                                <a href="{{ route('password.request') }}" class="text-decoration-none">
-                                    ¿Olvidaste tu contraseña?
-                                </a>
-                            </div>
+                        <div class="mb-3 text-end">
+                            <a href="{{ route('password.request') }}" class="text-decoration-none">
+                                ¿Olvidaste tu contraseña?
+                            </a>
                         </div>
 
                         <div class="mb-3 text-end">
@@ -75,17 +67,10 @@
                             </button>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center border-top pt-3">
-                            <div>
-                                <a href="{{ route('auth.register') }}" class="text-decoration-none">
-                                    ¿No tienes cuenta? Regístrate
-                                </a>
-                            </div>
-                            <div>
-                                <a href="{{ route('auth.staff.login') }}" class="text-decoration-none text-primary">
-                                    <i class="fas fa-user-tie me-1"></i>Acceso Empleados
-                                </a>
-                            </div>
+                        <div class="text-center border-top pt-3">
+                            <a href="{{ route('auth.register') }}" class="text-decoration-none">
+                                ¿No tienes cuenta? Regístrate
+                            </a>
                         </div>
                     </form>
                 </div>
