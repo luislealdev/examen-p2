@@ -141,6 +141,22 @@
                                 <div class="form-text">Desmarque para crear un empleado inactivo.</div>
                             </div>
 
+                            <div class="mb-3">
+                                <label for="role" class="form-label fw-bold">Rol del Usuario <span class="text-danger">*</span></label>
+                                <select class="form-select @error('role') is-invalid @enderror" 
+                                        id="role" 
+                                        name="role" 
+                                        required>
+                                    <option value="">Seleccionar rol...</option>
+                                    <option value="employee" {{ old('role') == 'employee' ? 'selected' : '' }}>Empleado</option>
+                                    <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Administrador</option>
+                                </select>
+                                @error('role')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="form-text">Rol para el sistema de autenticación y permisos.</div>
+                            </div>
+
                             <h5 class="mt-4 text-primary">
                                 <i class="fas fa-key me-2"></i>Acceso al Sistema
                             </h5>

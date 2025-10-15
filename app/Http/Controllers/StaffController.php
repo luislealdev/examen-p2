@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Staff;
 use App\Models\Store;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class StaffController extends Controller
 {
@@ -41,15 +44,6 @@ class StaffController extends Controller
         // Filter by store
         if ($request->filled('store_id')) {
             $query->where('store_id', $request->store_id);
-        }
-
-        // Filter by manager status
-        if ($request->filled('is_manager')) {
-            if ($request->is_manager === 'yes') {
-                $query->has('managedStores');
-            } elseif ($request->is_manager === 'no') {
-                $query->doesntHave('managedStores');
-            }
         }
 
         // Sort functionality
@@ -93,19 +87,32 @@ class StaffController extends Controller
             'active' => 'boolean',
             'username' => 'required|string|max:16|unique:staff,username',
             'password' => 'required|string|min:6|max:255',
+            'role' => 'required|in:employee,admin',
         ]);
 
         $validated['active'] = $request->boolean('active', true);
 
-        // Handle picture upload
-        if ($request->hasFile('picture')) {
-            $validated['picture'] = file_get_contents($request->file('picture')->getRealPath());
-        }
+        DB::transaction(function () use ($validated) {
+            // 1. Crear usuario en la tabla users para autenticación
+            $user = User::create([
+                'name' => $validated['first_name'] . ' ' . $validated['last_name'],
+                'email' => $validated['email'] ?: $validated['username'] . '@sakila.local',
+                'password' => Hash::make($validated['password']),
+                'role' => $validated['role'],
+            ]);
 
-        Staff::create($validated);
+            // 2. Crear staff en la tabla staff
+            $staffData = $validated;
+            // Handle picture upload
+            if (request()->hasFile('picture')) {
+                $staffData['picture'] = file_get_contents(request()->file('picture')->getRealPath());
+            }
+            
+            Staff::create($staffData);
+        });
 
         return redirect()->route('staff.index')
-            ->with('success', 'Staff member created successfully!');
+            ->with('success', 'Personal creado exitosamente con acceso al sistema!');
     }
 
     /**
@@ -146,24 +153,44 @@ class StaffController extends Controller
                 Rule::unique('staff', 'username')->ignore($staff->staff_id, 'staff_id')
             ],
             'password' => 'nullable|string|min:6|max:255',
+            'role' => 'required|in:employee,admin',
         ]);
 
         $validated['active'] = $request->boolean('active', true);
 
-        // Handle picture upload
-        if ($request->hasFile('picture')) {
-            $validated['picture'] = file_get_contents($request->file('picture')->getRealPath());
-        }
+        DB::transaction(function () use ($validated, $staff) {
+            // Update staff record
+            $staffData = $validated;
+            if (request()->hasFile('picture')) {
+                $staffData['picture'] = file_get_contents(request()->file('picture')->getRealPath());
+            }
+            
+            // Only update password if provided
+            if (empty($staffData['password'])) {
+                unset($staffData['password']);
+            }
 
-        // Only update password if provided
-        if (empty($validated['password'])) {
-            unset($validated['password']);
-        }
+            $staff->update($staffData);
 
-        $staff->update($validated);
+            // Update corresponding user record
+            $user = User::where('email', $staff->email ?: $staff->username . '@sakila.local')->first();
+            if ($user) {
+                $userData = [
+                    'name' => $validated['first_name'] . ' ' . $validated['last_name'],
+                    'email' => $validated['email'] ?: $validated['username'] . '@sakila.local',
+                    'role' => $validated['role'],
+                ];
+                
+                if (!empty($validated['password'])) {
+                    $userData['password'] = Hash::make($validated['password']);
+                }
+                
+                $user->update($userData);
+            }
+        });
 
         return redirect()->route('staff.index')
-            ->with('success', 'Staff member updated successfully!');
+            ->with('success', 'Personal actualizado exitosamente!');
     }
 
     /**
@@ -171,11 +198,23 @@ class StaffController extends Controller
      */
     public function destroy(Staff $staff): RedirectResponse
     {
-        // Instead of deleting, we mark as inactive (soft delete approach)
-        $staff->update(['active' => false]);
+        DB::transaction(function () use ($staff) {
+            // Delete corresponding user record
+            $user = User::where('email', $staff->email ?: $staff->username . '@sakila.local')->first();
+            if ($user) {
+                // Prevent deletion of the last admin
+                if ($user->role === 'admin' && User::where('role', 'admin')->count() <= 1) {
+                    throw new \Exception('No se puede eliminar el último administrador.');
+                }
+                $user->delete();
+            }
+            
+            // Instead of deleting, we mark as inactive (soft delete approach)
+            $staff->update(['active' => false]);
+        });
 
         return redirect()->route('staff.index')
-            ->with('success', 'Staff member deactivated successfully!');
+            ->with('success', 'Personal desactivado exitosamente!');
     }
 
     /**

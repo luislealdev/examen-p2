@@ -146,10 +146,12 @@
                                     <span class="badge bg-info">Tienda {{ $member->store_id }}</span>
                                 </td>
                                 <td>
-                                    @if($member->is_manager)
-                                        <span class="badge bg-warning">Gerente</span>
+                                    @if($member->role === 'admin')
+                                        <span class="badge bg-danger">Administrador</span>
+                                    @elseif($member->role === 'employee')
+                                        <span class="badge bg-primary">Empleado</span>
                                     @else
-                                        <span class="badge bg-light text-dark">Personal</span>
+                                        <span class="badge bg-light text-dark">{{ ucfirst($member->role) }}</span>
                                     @endif
                                 </td>
                                 <td>

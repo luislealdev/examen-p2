@@ -121,6 +121,23 @@ class Staff extends Model
     // }
 
     /**
+     * Get the corresponding user for authentication.
+     */
+    public function user()
+    {
+        return User::where('email', $this->email ?: $this->username . '@sakila.local')->first();
+    }
+
+    /**
+     * Get the role from the corresponding user.
+     */
+    public function getRoleAttribute()
+    {
+        $user = $this->user();
+        return $user ? $user->role : 'employee';
+    }
+
+    /**
      * Check if this staff member is a manager.
      */
     public function getIsManagerAttribute(): bool
