@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Builder;
 use Carbon\Carbon;
 
@@ -72,6 +73,30 @@ class Inventory extends Model
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class, 'store_id', 'store_id');
+    }
+
+    /**
+     * Get all rentals for this inventory item.
+     */
+    public function rentals(): HasMany
+    {
+        return $this->hasMany(Rental::class, 'inventory_id', 'inventory_id');
+    }
+
+    /**
+     * Check if this inventory item is currently available (not rented).
+     */
+    public function isAvailable(): bool
+    {
+        return !$this->rentals()->whereNull('return_date')->exists();
+    }
+
+    /**
+     * Get the current active rental for this inventory item.
+     */
+    public function currentRental()
+    {
+        return $this->rentals()->whereNull('return_date')->first();
     }
 
     // ===== SCOPES =====
