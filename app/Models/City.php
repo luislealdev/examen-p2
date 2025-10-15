@@ -4,25 +4,26 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Store extends Model
+class City extends Model
 {
     /**
      * The table associated with the model.
      */
-    protected $table = 'stores';
+    protected $table = 'city';
 
     /**
      * The primary key associated with the table.
      */
-    protected $primaryKey = 'store_id';
+    protected $primaryKey = 'city_id';
 
     /**
      * The attributes that are mass assignable.
      */
     protected $fillable = [
-        'manager_staff_id',
-        'address_id',
+        'city',
+        'country_id',
     ];
 
     /**
@@ -30,6 +31,7 @@ class Store extends Model
      */
     protected $casts = [
         'last_update' => 'datetime',
+        'country_id' => 'integer',
     ];
 
     /**
@@ -43,18 +45,18 @@ class Store extends Model
     const UPDATED_AT = 'last_update';
 
     /**
-     * Get the manager staff that manages this store.
+     * Get the country that owns the city.
      */
-    public function manager(): BelongsTo
+    public function country(): BelongsTo
     {
-        return $this->belongsTo(Staff::class, 'manager_staff_id', 'staff_id');
+        return $this->belongsTo(Country::class, 'country_id', 'country_id');
     }
 
     /**
-     * Get the address of this store.
+     * Get the addresses for the city.
      */
-    public function address(): BelongsTo
+    public function addresses(): HasMany
     {
-        return $this->belongsTo(Address::class, 'address_id', 'address_id');
+        return $this->hasMany(Address::class, 'city_id', 'city_id');
     }
 }

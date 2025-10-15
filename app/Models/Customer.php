@@ -89,10 +89,9 @@ class Customer extends Model
 
     /**
      * Get the address of this customer.
-     * TODO: Uncomment when Address model is created
      */
-    // public function address(): BelongsTo
-    // {
-    //     return $this->belongsTo(Address::class, 'address_id', 'address_id');
-    // }
+    public function address(): BelongsTo
+    {
+        return $this->belongsTo(Address::class, 'address_id', 'address_id');
+    }
 }
