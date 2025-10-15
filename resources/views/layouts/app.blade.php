@@ -119,36 +119,18 @@
                             <a class="nav-link" href="{{ route('staff.index') }}">
                                 <i class="fas fa-user-tie me-1"></i>Personal
                             </a>
-                            
-                            <div class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                    <i class="fas fa-cog me-1"></i>Administración
-                                </a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}">
-                                        <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="{{ route('admin.users') }}">
-                                        <i class="fas fa-users me-1"></i>Gestionar Usuarios
-                                    </a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="{{ route('films.statistics') }}">
-                                        <i class="fas fa-chart-bar me-1"></i>Estadísticas
-                                    </a></li>
-                                </ul>
-                            </div>
+                            <a class="nav-link" href="{{ route('films.statistics') }}">
+                                <i class="fas fa-chart-bar me-1"></i>Estadísticas
+                            </a>
+                            <a class="nav-link" href="{{ route('admin.dashboard') }}">
+                                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                            </a>
                         @endif
                     @endauth
                 </div>
                 
                 <div class="navbar-nav">
                     @auth
-                        @if(Auth::user()->isStaff())
-                            <a class="nav-link" href="{{ route('films.statistics') }}">
-                                <i class="fas fa-chart-bar me-1"></i>Estadísticas
-                            </a>
-                        @endif
-                        
                         <!-- User menu -->
                         <div class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
