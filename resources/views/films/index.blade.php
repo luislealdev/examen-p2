@@ -27,7 +27,6 @@
             @endauth
         </div>
     </div>
-    </div>
 
     <!-- Statistics Cards -->
     @auth
@@ -270,7 +269,7 @@
         </div>
     </div>
 
-    <!-- Films Grid -->
+    <!-- Films Grid - SOLO PARA EMPLEADOS Y ADMINISTRADORES -->
     @if($films->count() > 0)
         <div class="row">
             @foreach($films as $film)
@@ -373,11 +372,14 @@
             @endforeach
         </div>
 
-        <!-- Pagination -->
+ <!-- Pagination -->
         <div class="d-flex justify-content-center mt-4">
             {{ $films->links() }}
         </div>
     @else
+        <!-- Mensaje cuando no hay películas - Solo para empleados y admin -->
+        @auth
+        @if(Auth::user()->isEmployee())
         <div class="text-center py-5">
             <i class="fas fa-film fa-4x text-muted mb-3"></i>
             <h3 class="text-muted">No se encontraron películas</h3>
@@ -386,6 +388,39 @@
                 <i class="fas fa-plus me-2"></i>Agregar Primera Película
             </a>
         </div>
+        @endif
+        @endauth
     @endif
+
+
+    <!-- Mensaje para usuarios sin permisos -->
+    <!-- @auth
+    @if(!Auth::user()->isEmployee())
+    <div class="alert alert-info shadow-custom border-0" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-info-circle fa-2x me-3"></i>
+            <div>
+                <h5 class="alert-heading mb-1">Acceso Restringido</h5>
+                <p class="mb-0">No tienes permisos para ver el catálogo completo de películas. Esta función está disponible solo para empleados y administradores.</p>
+            </div>
+        </div>
+    </div>
+    @endif
+    @endauth -->
+
+
+<!-- Mensaje para invitados -->
+<!-- @guest
+<div class="alert alert-warning shadow-custom border-0" role="alert">
+    <div class="d-flex align-items-center">
+        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+        <div>
+            <h5 class="alert-heading mb-1">Inicia Sesión</h5>
+            <p class="mb-0">Para ver el catálogo de películas, por favor <a href="{{ route('login') }}" class="alert-link">inicia sesión</a>.</p>
+        </div>
+    </div>
+</div>
+@endguest -->
+
 </div>
 @endsection
