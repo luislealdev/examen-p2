@@ -56,9 +56,9 @@
                         </div>
 
                         <div class="mb-3 text-end">
-                            <a href="{{ route('password.request') }}" class="text-decoration-none">
-                                ¿Olvidaste tu contraseña?
-                            </a>
+                            <small class="text-muted">
+                                <!-- Funcionalidad de recuperación de contraseña próximamente -->
+                            </small>
                         </div>
 
                         <div class="mb-3 text-end">

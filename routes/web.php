@@ -13,9 +13,6 @@ use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OmdbController;
 use App\Http\Controllers\WebAuthController;
-use App\Http\Controllers\PasswordResetController;
-use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Http\Controllers\Auth\ResetPasswordController;
 use Illuminate\Support\Facades\Route;
 
 // Redirección principal
@@ -35,18 +32,8 @@ Route::middleware('guest')->group(function () {
     Route::get('/staff/login', [WebAuthController::class, 'showStaffLogin'])->name('auth.staff.login');
     Route::post('/staff/login', [WebAuthController::class, 'staffLogin'])->name('auth.staff.login.post');
 
-    // Rutas para recuperación de contraseña
-    Route::get('/password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])
-        ->name('password.request');
-        
-    Route::post('/password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])
-        ->name('password.email');
-        
-    Route::get('/password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])
-        ->name('password.reset');
-        
-    Route::post('/password/reset', [ResetPasswordController::class, 'reset'])
-        ->name('password.update');
+    // Recuperación de contraseña (si aplica)
+    // ... tus rutas de password reset ...
 });
 
 Route::post('/logout', [WebAuthController::class, 'logout'])
@@ -63,15 +50,9 @@ Route::get('films-recent', [FilmController::class, 'recent'])->name('films.recen
 
 
 // --- RUTAS PARA CLIENTES AUTENTICADOS ---
-Route::middleware(['auth', 'role:customer'])->prefix('client')->name('client.')->group(function () {
-    // Rutas para el catálogo de tiendas
-    Route::get('stores', [App\Http\Controllers\Client\StoreController::class, 'index'])->name('stores.index');
-    Route::get('stores/{store}/inventory', [App\Http\Controllers\Client\StoreController::class, 'showInventory'])->name('stores.inventory');
-    
-    // Rutas de renta
+Route::middleware(['auth', 'role:customer'])->group(function () {
     Route::get('rentals', [RentalController::class, 'index'])->name('rentals.index');
     Route::post('films/{film}/rent', [RentalController::class, 'rentFilm'])->name('rentals.rent-film');
-    Route::post('inventory/{inventory}/rent', [App\Http\Controllers\Client\StoreController::class, 'rentMovie'])->name('stores.rent');
     Route::get('profile/edit', [WebAuthController::class, 'editProfile'])->name('profile.edit');
     Route::put('profile/update', [WebAuthController::class, 'updateProfile'])->name('profile.update');
 });
@@ -90,7 +71,11 @@ Route::middleware(['auth', 'role:employee'])->group(function () {
     Route::resource('inventories', InventoryController::class);
     Route::resource('stores', StoreController::class);
     Route::resource('customers', CustomerController::class);
+    Route::resource('staff', StaffController::class);
     Route::resource('rentals', RentalController::class)->except(['index', 'store']); // index y store ya están en cliente
+
+    // RUTAS ESPECIALES
+    Route::get('staff/{staff}/picture', [StaffController::class, 'picture'])->name('staff.picture');
     Route::get('languages-alphabetical', [LanguageController::class, 'alphabetical'])->name('languages.alphabetical');
     Route::get('categories-alphabetical', [CategoryController::class, 'alphabetical'])->name('categories.alphabetical');
     Route::get('categories-popular', [CategoryController::class, 'popular'])->name('categories.popular');
@@ -132,11 +117,4 @@ Route::middleware(['auth', 'role:employee'])->group(function () {
     Route::post('ajax/customer-info', [RentalController::class, 'getCustomerInfo'])->name('ajax.customer-info');
     Route::post('ajax/film-availability', [RentalController::class, 'checkAvailability'])->name('ajax.film-availability');
     Route::post('ajax/update-overdue', [RentalController::class, 'updateOverdueStatus'])->name('ajax.update-overdue');
-});
-
-// --- RUTAS SOLO PARA ADMINISTRADORES ---
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    // Gestión de Personal
-    Route::resource('staff', StaffController::class);
-    Route::get('staff/{staff}/picture', [StaffController::class, 'picture'])->name('staff.picture');
 });

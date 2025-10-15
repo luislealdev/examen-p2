@@ -71,7 +71,7 @@
                                     {{ old('store_id') == $store->store_id ? 'selected' : '' }}>
                                 Tienda #{{ $store->store_id }}
                                 @if($store->address)
-                                    - {{ $store->address }}
+                                    - {{ $store->address->address }}
                                 @endif
                             </option>
                         @endforeach
