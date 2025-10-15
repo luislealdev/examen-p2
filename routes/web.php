@@ -72,6 +72,11 @@ Route::middleware(['auth', 'role:customer'])->prefix('client')->name('client.')-
     Route::get('rentals', [RentalController::class, 'index'])->name('rentals.index');
     Route::post('films/{film}/rent', [RentalController::class, 'rentFilm'])->name('rentals.rent-film');
     Route::post('inventory/{inventory}/rent', [App\Http\Controllers\Client\StoreController::class, 'rentMovie'])->name('stores.rent');
+    
+    // Rutas de pagos y cargos
+    Route::get('payments', [App\Http\Controllers\Client\PaymentController::class, 'index'])->name('payments.index');
+    
+    // Rutas de perfil
     Route::get('profile/edit', [WebAuthController::class, 'editProfile'])->name('profile.edit');
     Route::put('profile/update', [WebAuthController::class, 'updateProfile'])->name('profile.update');
 });
