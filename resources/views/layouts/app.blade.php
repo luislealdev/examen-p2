@@ -89,32 +89,98 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <div class="navbar-nav me-auto">
+                    <!-- Public links - visible to everyone -->
                     <a class="nav-link" href="{{ route('films.index') }}">
                         <i class="fas fa-film me-1"></i>Películas
                     </a>
-                    <a class="nav-link" href="{{ route('inventories.index') }}">
-                        <i class="fas fa-boxes me-1"></i>Inventario
-                    </a>
-                    <a class="nav-link" href="{{ route('categories.index') }}">
-                        <i class="fas fa-tags me-1"></i>Categorías
-                    </a>
-                    <a class="nav-link" href="{{ route('languages.index') }}">
-                        <i class="fas fa-language me-1"></i>Idiomas
-                    </a>
-                    <a class="nav-link" href="{{ route('stores.index') }}">
-                        <i class="fas fa-store me-1"></i>Tiendas
-                    </a>
-                    <a class="nav-link" href="{{ route('customers.index') }}">
-                        <i class="fas fa-users me-1"></i>Clientes
-                    </a>
-                    <a class="nav-link" href="{{ route('staff.index') }}">
-                        <i class="fas fa-user-tie me-1"></i>Personal
-                    </a>
+                    
+                    @auth
+                        @if(Auth::user()->isStaff())
+                            <!-- Staff and Admin links -->
+                            <a class="nav-link" href="{{ route('inventories.index') }}">
+                                <i class="fas fa-boxes me-1"></i>Inventario
+                            </a>
+                            <a class="nav-link" href="{{ route('categories.index') }}">
+                                <i class="fas fa-tags me-1"></i>Categorías
+                            </a>
+                            <a class="nav-link" href="{{ route('languages.index') }}">
+                                <i class="fas fa-language me-1"></i>Idiomas
+                            </a>
+                            <a class="nav-link" href="{{ route('stores.index') }}">
+                                <i class="fas fa-store me-1"></i>Tiendas
+                            </a>
+                            <a class="nav-link" href="{{ route('customers.index') }}">
+                                <i class="fas fa-users me-1"></i>Clientes
+                            </a>
+                        @endif
+                        
+                        @if(Auth::user()->isAdmin())
+                            <!-- Admin only links -->
+                            <a class="nav-link" href="{{ route('staff.index') }}">
+                                <i class="fas fa-user-tie me-1"></i>Personal
+                            </a>
+                            
+                            <div class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-cog me-1"></i>Administración
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}">
+                                        <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ route('admin.users') }}">
+                                        <i class="fas fa-users me-1"></i>Gestionar Usuarios
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ route('films.statistics') }}">
+                                        <i class="fas fa-chart-bar me-1"></i>Estadísticas
+                                    </a></li>
+                                </ul>
+                            </div>
+                        @endif
+                    @endauth
                 </div>
+                
                 <div class="navbar-nav">
-                    <a class="nav-link" href="{{ route('films.statistics') }}">
-                        <i class="fas fa-chart-bar me-1"></i>Estadísticas
-                    </a>
+                    @auth
+                        @if(Auth::user()->isStaff())
+                            <a class="nav-link" href="{{ route('films.statistics') }}">
+                                <i class="fas fa-chart-bar me-1"></i>Estadísticas
+                            </a>
+                        @endif
+                        
+                        <!-- User menu -->
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user me-1"></i>{{ Auth::user()->name }}
+                                <span class="badge bg-{{ Auth::user()->role === 'admin' ? 'danger' : (Auth::user()->role === 'employee' ? 'warning' : 'info') }} ms-1">
+                                    {{ ucfirst(Auth::user()->role) }}
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#">
+                                    <i class="fas fa-user-edit me-1"></i>Mi Perfil
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="POST" action="{{ route('auth.logout') }}" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    @else
+                        <!-- Guest links -->
+                        <a class="nav-link" href="{{ route('login') }}">
+                            <i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión
+                        </a>
+                        <a class="nav-link" href="{{ route('auth.register') }}">
+                            <i class="fas fa-user-plus me-1"></i>Registrarse
+                        </a>
+                    @endauth
                 </div>
             </div>
         </div>
