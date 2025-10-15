@@ -40,12 +40,21 @@ class RentalController extends Controller
             return redirect()->back()->with('error', 'No hay copias disponibles de esta película en la tienda seleccionada.');
         }
 
+        // Find the staff record for the current user
+        $staff = \App\Models\Staff::where('email', Auth::user()->email)
+            ->orWhere('username', Auth::user()->email)
+            ->first();
+            
+        if (!$staff) {
+            return redirect()->back()->with('error', 'No se encontró el registro de personal asociado.');
+        }
+
         // Create the rental
         Rental::create([
             'rental_date' => now(),
             'inventory_id' => $inventory->inventory_id,
             'customer_id' => $request->customer_id,
-            'staff_id' => Auth::user()->id, // Assuming staff_id matches user id
+            'staff_id' => $staff->staff_id,
         ]);
 
         return redirect()->back()->with('success', 'Película rentada exitosamente.');

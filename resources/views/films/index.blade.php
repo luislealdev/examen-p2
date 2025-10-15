@@ -282,19 +282,32 @@
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li><a class="dropdown-item" href="{{ route('films.show', $film) }}">
                                         <i class="fas fa-eye me-1"></i>Ver Detalles</a></li>
-                                    <li><a class="dropdown-item" href="{{ route('films.edit', $film) }}">
-                                        <i class="fas fa-edit me-1"></i>Editar Película</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <form action="{{ route('films.destroy', $film) }}" method="POST" 
-                                              onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta película?')" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="dropdown-item text-danger">
-                                                <i class="fas fa-trash me-1"></i>Eliminar Película
-                                            </button>
-                                        </form>
-                                    </li>
+                                    
+                                    @auth
+                                        @if(Auth::user()->isAdmin())
+                                            <li><a class="dropdown-item" href="{{ route('films.edit', $film) }}">
+                                                <i class="fas fa-edit me-1"></i>Editar Película</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <form action="{{ route('films.destroy', $film) }}" method="POST" 
+                                                      onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta película?')" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="dropdown-item text-danger">
+                                                        <i class="fas fa-trash me-1"></i>Eliminar Película
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        @elseif(Auth::user()->isEmployee())
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item text-success" href="#" 
+                                                   onclick="showRentModal({{ $film->film_id }}, '{{ $film->title }}')">
+                                                    <i class="fas fa-shopping-cart me-1"></i>Rentar Película
+                                                </a>
+                                            </li>
+                                        @endif
+                                    @endauth
                                 </ul>
                             </div>
                         </div>
