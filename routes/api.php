@@ -16,6 +16,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// Route for getting cities by country
+Route::get('countries/{country}/cities', function ($countryId) {
+    $cities = \App\Models\City::where('country_id', $countryId)->get(['city_id', 'city']);
+    return response()->json($cities);
+});
+
 // Test route
 Route::get('test', function () {
     return response()->json([

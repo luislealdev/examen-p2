@@ -55,8 +55,10 @@ class CustomerController extends Controller
      */
     public function create(): View
     {
-        $stores = Store::all();
-        return view('customers.create', compact('stores'));
+        $stores = Store::with('address.city.country', 'manager')->get();
+        $addresses = \App\Models\Address::with('city.country')->get();
+        
+        return view('customers.create', compact('stores', 'addresses'));
     }
 
     /**
@@ -86,7 +88,11 @@ class CustomerController extends Controller
      */
     public function show(Customer $customer): View
     {
-        $customer->load('store'); // Eager load the store relationship
+        $customer->load([
+            'store.address.city.country',
+            'store.manager', 
+            'address.city.country'
+        ]);
         return view('customers.show', compact('customer'));
     }
 
@@ -95,8 +101,12 @@ class CustomerController extends Controller
      */
     public function edit(Customer $customer): View
     {
-        $stores = Store::all();
-        return view('customers.edit', compact('customer', 'stores'));
+        $stores = Store::with('address.city.country', 'manager')->get();
+        $addresses = \App\Models\Address::with('city.country')->get();
+        $countries = \App\Models\Country::all();
+        $cities = \App\Models\City::all();
+        
+        return view('customers.edit', compact('customer', 'stores', 'addresses', 'countries', 'cities'));
     }
 
     /**
@@ -104,21 +114,79 @@ class CustomerController extends Controller
      */
     public function update(Request $request, Customer $customer): RedirectResponse
     {
-        $validated = $request->validate([
+        $validationRules = [
             'store_id' => 'required|integer|exists:stores,store_id',
             'first_name' => 'required|string|max:45',
             'last_name' => 'required|string|max:45',
             'email' => 'nullable|email|max:50|unique:customers,email,' . $customer->customer_id . ',customer_id',
-            'address_id' => 'required|integer|min:1',
             'active' => 'boolean',
-        ]);
+            'address_option' => 'required|in:edit_current,select_existing,create_new',
+        ];
 
+        // Validación condicional según la opción de dirección
+        if ($request->address_option === 'select_existing') {
+            $validationRules['address_id'] = 'required|integer|exists:address,address_id';
+        } else {
+            $validationRules = array_merge($validationRules, [
+                'address_line1' => 'required|string|max:50',
+                'address_line2' => 'nullable|string|max:50',
+                'district' => 'required|string|max:20',
+                'postal_code' => 'required|string|max:10',
+                'phone' => 'nullable|string|max:20',
+                'country_id' => 'required|integer|exists:country,country_id',
+                'city_id' => 'required|integer|exists:city,city_id',
+            ]);
+        }
+
+        $validated = $request->validate($validationRules);
         $validated['active'] = $request->boolean('active', true);
 
-        $customer->update($validated);
+        // Manejar la dirección según la opción seleccionada
+        if ($request->address_option === 'select_existing') {
+            // Usar dirección existente
+            $customer->update([
+                'store_id' => $validated['store_id'],
+                'first_name' => $validated['first_name'],
+                'last_name' => $validated['last_name'],
+                'email' => $validated['email'],
+                'address_id' => $validated['address_id'],
+                'active' => $validated['active'],
+            ]);
+        } else {
+            // Editar dirección actual o crear nueva
+            $addressData = [
+                'address' => $validated['address_line1'],
+                'address2' => $validated['address_line2'],
+                'district' => $validated['district'],
+                'postal_code' => $validated['postal_code'],
+                'phone' => $validated['phone'],
+                'city_id' => $validated['city_id'],
+                'last_update' => now(),
+            ];
 
-        return redirect()->route('customers.index')
-            ->with('success', 'Customer updated successfully!');
+            if ($request->address_option === 'edit_current' && $customer->address) {
+                // Actualizar dirección existente
+                $customer->address->update($addressData);
+                $addressId = $customer->address_id;
+            } else {
+                // Crear nueva dirección
+                $newAddress = \App\Models\Address::create($addressData);
+                $addressId = $newAddress->address_id;
+            }
+
+            // Actualizar customer
+            $customer->update([
+                'store_id' => $validated['store_id'],
+                'first_name' => $validated['first_name'],
+                'last_name' => $validated['last_name'],
+                'email' => $validated['email'],
+                'address_id' => $addressId,
+                'active' => $validated['active'],
+            ]);
+        }
+
+        return redirect()->route('customers.show', $customer->customer_id)
+            ->with('success', 'Cliente actualizado exitosamente!');
     }
 
     /**
