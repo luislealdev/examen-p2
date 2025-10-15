@@ -22,7 +22,53 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
+
+    /**
+     * User roles constants
+     */
+    public const ROLE_CLIENT = 'client';
+    public const ROLE_EMPLOYEE = 'employee';
+    public const ROLE_ADMIN = 'admin';
+
+    public const ROLES = [
+        self::ROLE_CLIENT,
+        self::ROLE_EMPLOYEE,
+        self::ROLE_ADMIN,
+    ];
+
+    /**
+     * Check if user is an admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    /**
+     * Check if user is an employee
+     */
+    public function isEmployee(): bool
+    {
+        return $this->role === self::ROLE_EMPLOYEE;
+    }
+
+    /**
+     * Check if user is a client
+     */
+    public function isClient(): bool
+    {
+        return $this->role === self::ROLE_CLIENT;
+    }
+
+    /**
+     * Check if user has admin or employee privileges
+     */
+    public function isStaff(): bool
+    {
+        return in_array($this->role, [self::ROLE_ADMIN, self::ROLE_EMPLOYEE]);
+    }
 
     /**
      * The attributes that should be hidden for serialization.
