@@ -100,6 +100,13 @@
                             <a class="nav-link" href="{{ route('inventories.index') }}">
                                 <i class="fas fa-boxes me-1"></i>Inventario
                             </a>
+                            <a class="nav-link" href="{{ route('customers.index') }}">
+                                <i class="fas fa-users me-1"></i>Clientes
+                            </a>
+                        @endif
+                        
+                        @if(Auth::user()->isAdmin())
+                            <!-- Admin only links -->
                             <a class="nav-link" href="{{ route('categories.index') }}">
                                 <i class="fas fa-tags me-1"></i>Categorías
                             </a>
@@ -109,13 +116,6 @@
                             <a class="nav-link" href="{{ route('stores.index') }}">
                                 <i class="fas fa-store me-1"></i>Tiendas
                             </a>
-                            <a class="nav-link" href="{{ route('customers.index') }}">
-                                <i class="fas fa-users me-1"></i>Clientes
-                            </a>
-                        @endif
-                        
-                        @if(Auth::user()->isAdmin())
-                            <!-- Admin only links -->
                             <a class="nav-link" href="{{ route('staff.index') }}">
                                 <i class="fas fa-user-tie me-1"></i>Personal
                             </a>

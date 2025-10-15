@@ -51,7 +51,6 @@ Route::middleware(['auth', 'role:employee,admin'])->group(function () {
     Route::get('films/{film}/edit', [FilmController::class, 'edit'])->name('films.edit');
     Route::put('films/{film}', [FilmController::class, 'update'])->name('films.update');
     Route::delete('films/{film}', [FilmController::class, 'destroy'])->name('films.destroy');
-    Route::get('films-statistics', [FilmController::class, 'statistics'])->name('films.statistics');
 
     // OMDB API routes
     Route::prefix('omdb')->name('omdb.')->group(function () {
@@ -62,6 +61,16 @@ Route::middleware(['auth', 'role:employee,admin'])->group(function () {
         Route::post('import-movie', [OmdbController::class, 'importMovie'])->name('import-movie');
         Route::get('check-config', [OmdbController::class, 'checkConfiguration'])->name('check-config');
     });
+
+    // Gestión de inventarios
+    Route::resource('inventories', InventoryController::class);
+    Route::get('inventories-film/{film}', [InventoryController::class, 'byFilm'])->name('inventories.by-film');
+    Route::get('inventories-store/{store}', [InventoryController::class, 'byStore'])->name('inventories.by-store');
+    Route::get('inventories-recent', [InventoryController::class, 'recent'])->name('inventories.recent');
+    Route::get('inventories-high-value', [InventoryController::class, 'highValue'])->name('inventories.high-value');
+    Route::get('inventories-statistics', [InventoryController::class, 'statistics'])->name('inventories.statistics');
+    Route::get('inventories-bulk-create', [InventoryController::class, 'bulkCreate'])->name('inventories.bulk-create');
+    Route::post('inventories-bulk-store', [InventoryController::class, 'bulkStore'])->name('inventories.bulk-store');
 
     // Gestión de inventarios
     Route::resource('inventories', InventoryController::class);
@@ -94,6 +103,21 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     
     // Panel de administración
     Route::get('admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    
+    // Estadísticas de películas (solo admin)
+    Route::get('films-statistics', [FilmController::class, 'statistics'])->name('films.statistics');
+    
+    // Gestión de categorías (solo admin)
+    Route::resource('categories', CategoryController::class);
+    Route::get('categories-alphabetical', [CategoryController::class, 'alphabetical'])->name('categories.alphabetical');
+    Route::get('categories-popular', [CategoryController::class, 'popular'])->name('categories.popular');
+
+    // Gestión de idiomas (solo admin)
+    Route::resource('languages', LanguageController::class);
+    Route::get('languages-alphabetical', [LanguageController::class, 'alphabetical'])->name('languages.alphabetical');
+
+    // Gestión de tiendas (solo admin)
+    Route::resource('stores', StoreController::class);
     
     // Gestión de usuarios
     Route::get('admin/users', [AdminController::class, 'users'])->name('admin.users');
