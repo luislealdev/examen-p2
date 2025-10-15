@@ -107,10 +107,12 @@ class InventoryController extends Controller
      */
     public function create(): View
     {
-        $films = Film::with(['language', 'categories'])
+        $films = Film::with(['language', 'category'])
                     ->orderBy('title')
                     ->get();
-        $stores = Store::orderBy('store_id')->get();
+        $stores = Store::with(['address', 'manager'])
+                    ->orderBy('store_id')
+                    ->get();
 
         return view('inventories.create', compact('films', 'stores'));
     }
@@ -122,7 +124,7 @@ class InventoryController extends Controller
     {
         $validated = $request->validate([
             'film_id' => 'required|exists:film,film_id',
-            'store_id' => 'required|exists:store,store_id',
+            'store_id' => 'required|exists:stores,store_id',
         ]);
 
         $inventory = Inventory::create($validated);
@@ -136,7 +138,7 @@ class InventoryController extends Controller
      */
     public function show(Inventory $inventory): View
     {
-        $inventory->load(['film.language', 'film.categories', 'store']);
+        $inventory->load(['film.language', 'film.category', 'store']);
         
         return view('inventories.show', compact('inventory'));
     }
@@ -146,11 +148,13 @@ class InventoryController extends Controller
      */
     public function edit(Inventory $inventory): View
     {
-        $inventory->load(['film', 'store']);
-        $films = Film::with(['language', 'categories'])
+        $inventory->load(['film.category', 'film.language', 'store.address', 'store.manager']);
+        $films = Film::with(['language', 'category'])
                     ->orderBy('title')
                     ->get();
-        $stores = Store::orderBy('store_id')->get();
+        $stores = Store::with(['address', 'manager'])
+                    ->orderBy('store_id')
+                    ->get();
 
         return view('inventories.edit', compact('inventory', 'films', 'stores'));
     }
@@ -162,7 +166,7 @@ class InventoryController extends Controller
     {
         $validated = $request->validate([
             'film_id' => 'required|exists:film,film_id',
-            'store_id' => 'required|exists:store,store_id',
+            'store_id' => 'required|exists:stores,store_id',
         ]);
 
         $inventory->update($validated);
@@ -189,7 +193,7 @@ class InventoryController extends Controller
      */
     public function byFilm(Film $film): View
     {
-        $inventories = Inventory::with(['film.language', 'film.categories', 'store'])
+        $inventories = Inventory::with(['film.language', 'film.category', 'store'])
             ->byFilm($film->film_id)
             ->orderBy('store_id')
             ->paginate(20);
@@ -202,7 +206,7 @@ class InventoryController extends Controller
      */
     public function byStore(Store $store): View
     {
-        $inventories = Inventory::with(['film.language', 'film.categories', 'store'])
+        $inventories = Inventory::with(['film.language', 'film.category', 'store'])
             ->byStore($store->store_id)
             ->alphabetical()
             ->paginate(20);
@@ -217,7 +221,7 @@ class InventoryController extends Controller
     {
         $days = $request->get('days', 30);
         
-        $inventories = Inventory::with(['film.language', 'film.categories', 'store'])
+        $inventories = Inventory::with(['film.language', 'film.category', 'store'])
             ->recent($days)
             ->newest()
             ->paginate(20);
@@ -230,7 +234,7 @@ class InventoryController extends Controller
      */
     public function highValue(): View
     {
-        $inventories = Inventory::with(['film.language', 'film.categories', 'store'])
+        $inventories = Inventory::with(['film.language', 'film.category', 'store'])
             ->highValue()
             ->alphabetical()
             ->paginate(20);
@@ -254,10 +258,12 @@ class InventoryController extends Controller
      */
     public function bulkCreate(): View
     {
-        $films = Film::with(['language', 'categories'])
+        $films = Film::with(['language', 'category'])
                     ->orderBy('title')
                     ->get();
-        $stores = Store::orderBy('store_id')->get();
+        $stores = Store::with(['address', 'manager'])
+                    ->orderBy('store_id')
+                    ->get();
 
         return view('inventories.bulk-create', compact('films', 'stores'));
     }
@@ -270,7 +276,7 @@ class InventoryController extends Controller
         $validated = $request->validate([
             'film_id' => 'required|exists:film,film_id',
             'stores' => 'required|array|min:1',
-            'stores.*' => 'exists:store,store_id',
+            'stores.*' => 'exists:stores,store_id',
             'quantity' => 'required|integer|min:1|max:50',
         ]);
 

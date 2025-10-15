@@ -128,8 +128,8 @@ class Inventory extends Model
      */
     public function scopeByFilmCategory(Builder $query, int $categoryId): Builder
     {
-        return $query->whereHas('film.categories', function (Builder $categoryQuery) use ($categoryId) {
-            $categoryQuery->where('category_id', $categoryId);
+        return $query->whereHas('film', function (Builder $filmQuery) use ($categoryId) {
+            $filmQuery->where('category_id', $categoryId);
         });
     }
 

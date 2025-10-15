@@ -153,10 +153,10 @@
                             </a>
                         @else
                             {{-- Menú para clientes --}}
-                            <a class="nav-link" href="{{ route('client.stores.index') }}">
+                            <a class="nav-link" href="{{ route('stores.index') }}">
                                 <i class="fas fa-store me-1"></i>Catálogo de Tiendas
                             </a>
-                            <a class="nav-link" href="{{ route('client.rentals.index') }}">
+                            <a class="nav-link" href="{{ route('rentals.index') }}">
                                 <i class="fas fa-ticket-alt me-1"></i>Mis Alquileres
                             </a>
                             <a class="nav-link" href="{{ route('client.payments.index') }}">
@@ -182,7 +182,7 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('client.profile.edit') }}">
+                                    <a class="dropdown-item" href="{{ route('profile.edit') }}">
                                         <i class="fas fa-user me-1"></i> Mi Perfil
                                     </a>
                                 </li>

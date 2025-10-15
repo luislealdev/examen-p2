@@ -79,13 +79,30 @@
                                     @foreach($stores as $store)
                                         <option value="{{ $store->store_id }}" 
                                                 {{ old('store_id', $inventory->store_id) == $store->store_id ? 'selected' : '' }}>
-                                            {{ $store->location }}
+                                            Store #{{ $store->store_id }} - {{ $store->address ? $store->address->address : 'No address' }}
                                         </option>
                                     @endforeach
                                 </select>
                                 @error('store_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                            </div>
+                        </div>
+
+                        <!-- Additional Information -->
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="alert alert-info">
+                                    <h6 class="alert-heading">
+                                        <i class="fas fa-info-circle me-2"></i>Editing Instructions
+                                    </h6>
+                                    <p class="mb-2">You are editing <strong>Inventory Item #{{ $inventory->inventory_id }}</strong></p>
+                                    <ul class="mb-0 small">
+                                        <li>Change the <strong>Film</strong> to move this inventory to a different movie</li>
+                                        <li>Change the <strong>Store</strong> to transfer this inventory to another location</li>
+                                        <li>Use the preview panel on the right to see film details before updating</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
 
@@ -96,6 +113,9 @@
                             <a href="{{ route('inventories.show', $inventory) }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-eye me-1"></i>View Item
                             </a>
+                            <a href="{{ route('inventories.index') }}" class="btn btn-outline-dark">
+                                <i class="fas fa-list me-1"></i>All Inventories
+                            </a>
                         </div>
                     </form>
                 </div>
@@ -103,16 +123,29 @@
         </div>
 
         <div class="col-md-4">
-            <!-- Current Film Preview -->
+            <!-- Current Inventory Information -->
             <div class="card shadow-sm mb-3">
                 <div class="card-header bg-light">
                     <h6 class="mb-0">
-                        <i class="fas fa-film me-1"></i>Current Film
+                        <i class="fas fa-info-circle me-1"></i>Current Inventory
                     </h6>
                 </div>
                 <div class="card-body">
-                    <h6 class="text-primary">{{ $inventory->film->title }}</h6>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Inventory ID</small>
+                            <strong class="text-primary">#{{ $inventory->inventory_id }}</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Last Update</small>
+                            <strong>{{ $inventory->last_update ? $inventory->last_update->format('M d, Y') : 'N/A' }}</strong>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-2">
+                    <h6 class="text-primary mb-2">{{ $inventory->film->title }}</h6>
                     <p class="small text-muted mb-2">{{ Str::limit($inventory->film->description, 100) }}</p>
+                    
                     <div class="row g-2">
                         <div class="col-6">
                             <small class="text-muted d-block">Category</small>
@@ -132,7 +165,42 @@
                             <small class="text-muted d-block">Length</small>
                             <strong>{{ $inventory->film->length }} min</strong>
                         </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Rental Rate</small>
+                            <strong class="text-success">${{ $inventory->film->rental_rate }}</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Replacement Cost</small>
+                            <strong class="text-warning">${{ $inventory->film->replacement_cost }}</strong>
+                        </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Current Store Information -->
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-store me-1"></i>Current Store
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-primary">Store #{{ $inventory->store->store_id }}</h6>
+                    @if($inventory->store->address)
+                        <p class="small mb-2">
+                            <i class="fas fa-map-marker-alt me-1"></i>
+                            {{ $inventory->store->address->address }}
+                        </p>
+                    @else
+                        <p class="small mb-2 text-muted">No address specified</p>
+                    @endif
+                    
+                    @if($inventory->store->manager)
+                        <div class="d-flex align-items-center">
+                            <small class="text-muted me-2">Manager:</small>
+                            <strong>{{ $inventory->store->manager->first_name }} {{ $inventory->store->manager->last_name }}</strong>
+                        </div>
+                    @endif
                 </div>
             </div>
 
