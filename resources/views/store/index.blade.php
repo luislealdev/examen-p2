@@ -24,9 +24,10 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>ID de Tienda</th>
-                            <th>ID del Gerente</th>
-                            <th>ID de Dirección</th>
+                            <th>Tienda</th>
+                            <th>Gerente</th>
+                            <th>Ubicación</th>
+                            <th>Dirección</th>
                             <th>Última Actualización</th>
                             <th>Acciones</th>
                         </tr>
@@ -34,10 +35,40 @@
                     <tbody>
                         @foreach($stores as $store)
                             <tr>
-                                <td>{{ $store->store_id }}</td>
-                                <td>{{ $store->manager_staff_id }}</td>
-                                <td>{{ $store->address_id }}</td>
-                                <td>{{ $store->last_update ? $store->last_update->format('Y-m-d H:i:s') : 'N/A' }}</td>
+                                <td>
+                                    <strong>Tienda #{{ $store->store_id }}</strong><br>
+                                    @if($store->address && $store->address->city)
+                                        <small class="text-muted">{{ $store->address->city->city }}</small>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($store->manager)
+                                        <strong>{{ $store->manager->full_name }}</strong><br>
+                                        <small class="text-muted">{{ $store->manager->email ?: $store->manager->username }}</small>
+                                    @else
+                                        <span class="text-muted">ID: {{ $store->manager_staff_id }}</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($store->address && $store->address->city)
+                                        <strong>{{ $store->address->city->city }}</strong><br>
+                                        <small class="text-muted">{{ $store->address->city->country->country ?? 'País desconocido' }}</small>
+                                    @else
+                                        <span class="text-muted">Dirección ID: {{ $store->address_id }}</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($store->address)
+                                        {{ $store->address->address }}<br>
+                                        @if($store->address->address2)
+                                            {{ $store->address->address2 }}<br>
+                                        @endif
+                                        <small class="text-muted">{{ $store->address->district }}, CP: {{ $store->address->postal_code }}</small>
+                                    @else
+                                        <span class="text-muted">Sin dirección</span>
+                                    @endif
+                                </td>
+                                <td>{{ $store->last_update ? $store->last_update->format('d/m/Y H:i') : 'N/A' }}</td>
                                 <td>
                                     <div class="btn-group" role="group">
                                         <a href="{{ route('stores.show', $store->store_id) }}" class="btn btn-sm btn-gradient-info">
