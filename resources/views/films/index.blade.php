@@ -13,80 +13,88 @@
             <p class="lead text-muted">Explora nuestra extensa colección de {{ number_format($totalFilms) }} películas</p>
         </div>
         <div class="col-auto">
-            <div class="d-flex gap-2">
-                <a href="{{ route('omdb.search') }}" class="btn btn-gradient-info btn-lg shadow-custom">
-                    <i class="fas fa-search me-2"></i>Buscar en OMDB
-                </a>
-                <a href="{{ route('films.create') }}" class="btn btn-gradient-primary btn-lg shadow-custom">
-                    <i class="fas fa-plus me-2"></i>Agregar Manual
-                </a>
-            </div>
+            @auth
+                @if(Auth::user()->isAdmin())
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('omdb.search') }}" class="btn btn-gradient-info btn-lg shadow-custom">
+                            <i class="fas fa-search me-2"></i>Buscar en OMDB
+                        </a>
+                        <a href="{{ route('films.create') }}" class="btn btn-gradient-primary btn-lg shadow-custom">
+                            <i class="fas fa-plus me-2"></i>Agregar Manual
+                        </a>
+                    </div>
+                @endif
+            @endauth
         </div>
     </div>
 
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card shadow-custom border-0">
-                <div class="card-header bg-gradient-primary text-white border-0">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <h6 class="card-title mb-0">Total de Películas</h6>
-                            <h3 class="mb-0">{{ number_format($totalFilms) }}</h3>
+    @auth
+        @if(Auth::user()->isAdmin())
+            <!-- Statistics Cards (Admin only) -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card shadow-custom border-0">
+                        <div class="card-header bg-gradient-primary text-white border-0">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title mb-0">Total de Películas</h6>
+                                    <h3 class="mb-0">{{ number_format($totalFilms) }}</h3>
+                                </div>
+                                <div class="opacity-75">
+                                    <i class="fas fa-film fa-2x"></i>
+                                </div>
+                            </div>
                         </div>
-                        <div class="opacity-75">
-                            <i class="fas fa-film fa-2x"></i>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card shadow-custom border-0">
+                        <div class="card-header bg-gradient-success text-white border-0">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title mb-0">Películas Recientes</h6>
+                                    <h3 class="mb-0">{{ number_format($recentFilms) }}</h3>
+                                </div>
+                                <div class="opacity-75">
+                                    <i class="fas fa-calendar-star fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card shadow-custom border-0">
+                        <div class="card-header bg-gradient-info text-white border-0">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title mb-0">Precio Promedio</h6>
+                                    <h3 class="mb-0">${{ number_format($avgRentalRate, 2) }}</h3>
+                                </div>
+                                <div class="opacity-75">
+                                    <i class="fas fa-dollar-sign fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card shadow-custom border-0">
+                        <div class="card-header bg-gradient-warning text-white border-0">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title mb-0">Duración Promedio</h6>
+                                    <h3 class="mb-0">{{ number_format($avgLength) }} min</h3>
+                                </div>
+                                <div class="opacity-75">
+                                    <i class="fas fa-clock fa-2x"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow-custom border-0">
-                <div class="card-header bg-gradient-success text-white border-0">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <h6 class="card-title mb-0">Películas Recientes</h6>
-                            <h3 class="mb-0">{{ number_format($recentFilms) }}</h3>
-                        </div>
-                        <div class="opacity-75">
-                            <i class="fas fa-calendar-star fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow-custom border-0">
-                <div class="card-header bg-gradient-info text-white border-0">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <h6 class="card-title mb-0">Precio Promedio</h6>
-                            <h3 class="mb-0">${{ number_format($avgRentalRate, 2) }}</h3>
-                        </div>
-                        <div class="opacity-75">
-                            <i class="fas fa-dollar-sign fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow-custom border-0">
-                <div class="card-header bg-gradient-warning text-white border-0">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <h6 class="card-title mb-0">Duración Promedio</h6>
-                            <h3 class="mb-0">{{ number_format($avgLength) }} min</h3>
-                        </div>
-                        <div class="opacity-75">
-                            <i class="fas fa-clock fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+        @endif
+    @endauth
 
     <!-- Filters and Search -->
     <div class="card shadow-custom border-0 mb-4">

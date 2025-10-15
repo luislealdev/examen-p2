@@ -188,26 +188,28 @@
                 </div>
             </div>
 
-            <!-- Quick Actions Card -->
-            <div class="card shadow-custom border-0 mb-4">
-                <div class="card-header bg-gradient-secondary text-white border-0">
-                    <h5 class="mb-0">
-                        <i class="fas fa-bolt me-2"></i>Acciones Rápidas
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{{ route('films.edit', $film) }}" class="btn btn-gradient-primary">
-                            <i class="fas fa-edit me-2"></i>Editar Película
-                        </a>
-                        
-                        @if($film->language)
-                            <a href="{{ route('films.by-language', $film->language) }}" class="btn btn-outline-info">
-                                <i class="fas fa-language me-2"></i>Más Películas en {{ $film->language->name }}
-                            </a>
-                        @endif
-                        
-                        @if($film->rating)
+            @auth
+                @if(Auth::user()->isAdmin())
+                    <!-- Quick Actions Card (Admin only) -->
+                    <div class="card shadow-custom border-0 mb-4">
+                        <div class="card-header bg-gradient-secondary text-white border-0">
+                            <h5 class="mb-0">
+                                <i class="fas fa-bolt me-2"></i>Acciones Rápidas
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{{ route('films.edit', $film) }}" class="btn btn-gradient-primary">
+                                    <i class="fas fa-edit me-2"></i>Editar Película
+                                </a>
+                                
+                                @if($film->language)
+                                    <a href="{{ route('films.by-language', $film->language) }}" class="btn btn-outline-info">
+                                        <i class="fas fa-language me-2"></i>Más Películas en {{ $film->language->name }}
+                                    </a>
+                                @endif
+                                
+                                @if($film->rating)
                             <a href="{{ route('films.by-rating', $film->rating) }}" class="btn btn-outline-warning">
                                 <i class="fas fa-certificate me-2"></i>Más Películas {{ $film->rating }}
                             </a>
@@ -221,6 +223,8 @@
                     </div>
                 </div>
             </div>
+                @endif
+            @endauth
 
             <!-- Film Statistics Card -->
             <div class="card shadow-custom border-0">
