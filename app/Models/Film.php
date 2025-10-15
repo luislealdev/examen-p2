@@ -208,7 +208,7 @@ class Film extends Model
     /**
      * Scope a query to filter by rental rate range.
      */
-    public function scopeByRentalRate(Builder $query, float $min = null, float $max = null): Builder
+    public function scopeByRentalRate(Builder $query, ?float $min = null, ?float $max = null): Builder
     {
         if ($min !== null) {
             $query->where('rental_rate', '>=', $min);
@@ -222,7 +222,7 @@ class Film extends Model
     /**
      * Scope a query to filter by length range.
      */
-    public function scopeByLength(Builder $query, int $min = null, int $max = null): Builder
+    public function scopeByLength(Builder $query, ?int $min = null, ?int $max = null): Builder
     {
         if ($min !== null) {
             $query->where('length', '>=', $min);
