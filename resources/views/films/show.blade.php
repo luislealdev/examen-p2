@@ -25,15 +25,32 @@
             <p class="lead text-muted">{{ $film->age_category }}</p>
         </div>
         <div class="col-auto">
-            <div class="btn-group">
-                <a href="{{ route('films.edit', $film) }}" class="btn btn-gradient-primary">
-                    <i class="fas fa-edit me-2"></i>Editar Película
-                </a>
-                <button type="button" class="btn btn-outline-danger" 
-                        data-bs-toggle="modal" data-bs-target="#deleteModal">
-                    <i class="fas fa-trash me-2"></i>Eliminar
-                </button>
-            </div>
+            @auth
+                @if(Auth::user()->isAdmin())
+                    <!-- Admin actions -->
+                    <div class="btn-group">
+                        <a href="{{ route('films.edit', $film) }}" class="btn btn-gradient-primary">
+                            <i class="fas fa-edit me-2"></i>Editar Película
+                        </a>
+                        <button type="button" class="btn btn-outline-danger" 
+                                data-bs-toggle="modal" data-bs-target="#deleteModal">
+                            <i class="fas fa-trash me-2"></i>Eliminar
+                        </button>
+                    </div>
+                @elseif(Auth::user()->isEmployee())
+                    <!-- Employee actions -->
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-gradient-success" 
+                                data-bs-toggle="modal" data-bs-target="#rentModal">
+                            <i class="fas fa-shopping-cart me-2"></i>Rentar Película
+                        </button>
+                        <button type="button" class="btn btn-outline-info" 
+                                onclick="checkAvailability({{ $film->film_id }})">
+                            <i class="fas fa-search me-2"></i>Ver Disponibilidad
+                        </button>
+                    </div>
+                @endif
+            @endauth
         </div>
     </div>
 
@@ -257,32 +274,145 @@
     </div>
 </div>
 
-<!-- Delete Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirmar Eliminación</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>¿Estás seguro de que quieres eliminar la película <strong>"{{ $film->title }}"</strong>?</p>
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    Esta acción no se puede deshacer. La película será eliminada permanentemente de la colección.
+@auth
+    @if(Auth::user()->isAdmin())
+        <!-- Delete Modal (Admin only) -->
+        <div class="modal fade" id="deleteModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirmar Eliminación</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>¿Estás seguro de que quieres eliminar la película <strong>"{{ $film->title }}"</strong>?</p>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Esta acción no se puede deshacer. La película será eliminada permanentemente de la colección.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-gradient-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <form action="{{ route('films.destroy', $film) }}" method="POST" class="d-inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>Eliminar Película
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-gradient-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <form action="{{ route('films.destroy', $film) }}" method="POST" class="d-inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash me-2"></i>Eliminar Película
-                    </button>
-                </form>
+        </div>
+    @endif
+
+    @if(Auth::user()->isEmployee())
+        <!-- Rent Modal (Employee only) -->
+        <div class="modal fade" id="rentModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Rentar Película</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form action="{{ route('rental.rent', $film) }}" method="POST">
+                        @csrf
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="customer_id" class="form-label">Cliente <span class="text-danger">*</span></label>
+                                <select class="form-select" id="customer_id" name="customer_id" required>
+                                    <option value="">Seleccionar cliente...</option>
+                                    @foreach(App\Models\Customer::orderBy('last_name')->get() as $customer)
+                                        <option value="{{ $customer->customer_id }}">
+                                            {{ $customer->first_name }} {{ $customer->last_name }} ({{ $customer->email }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="store_id" class="form-label">Tienda <span class="text-danger">*</span></label>
+                                <select class="form-select" id="store_id" name="store_id" required>
+                                    <option value="">Seleccionar tienda...</option>
+                                    @foreach(App\Models\Store::all() as $store)
+                                        <option value="{{ $store->store_id }}">
+                                            Tienda {{ $store->store_id }} (Gerente: {{ $store->manager_staff_id }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Se verificará la disponibilidad del inventario antes de procesar la renta.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-gradient-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-gradient-success">
+                                <i class="fas fa-shopping-cart me-2"></i>Procesar Renta
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
-</div>
+
+        <!-- Availability Modal -->
+        <div class="modal fade" id="availabilityModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Disponibilidad de "{{ $film->title }}"</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="availabilityContent">
+                            <div class="text-center">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+@endauth
+
+<script>
+function checkAvailability(filmId) {
+    $('#availabilityModal').modal('show');
+    
+    fetch(`/films/${filmId}/availability`)
+        .then(response => response.json())
+        .then(data => {
+            let html = '<div class="table-responsive"><table class="table table-striped">';
+            html += '<thead><tr><th>Tienda</th><th>Estado</th><th>Información</th></tr></thead><tbody>';
+            
+            data.forEach(item => {
+                html += `<tr>
+                    <td>Tienda ${item.store_id}</td>
+                    <td>
+                        <span class="badge bg-${item.is_available ? 'success' : 'danger'}">
+                            ${item.is_available ? 'Disponible' : 'Rentada'}
+                        </span>
+                    </td>
+                    <td>${item.is_available ? 'Listo para rentar' : 'Actualmente rentada'}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table></div>';
+            
+            if (data.length === 0) {
+                html = '<div class="alert alert-warning">No hay inventario disponible para esta película.</div>';
+            }
+            
+            document.getElementById('availabilityContent').innerHTML = html;
+        })
+        .catch(error => {
+            document.getElementById('availabilityContent').innerHTML = 
+                '<div class="alert alert-danger">Error al cargar la disponibilidad.</div>';
+        });
+}
+</script>
 @endsection

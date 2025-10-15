@@ -72,12 +72,10 @@ Route::middleware(['auth', 'role:employee,admin'])->group(function () {
     Route::get('inventories-bulk-create', [InventoryController::class, 'bulkCreate'])->name('inventories.bulk-create');
     Route::post('inventories-bulk-store', [InventoryController::class, 'bulkStore'])->name('inventories.bulk-store');
 
-    // Gestión de inventarios
-    Route::resource('inventories', InventoryController::class);
-    Route::get('inventories-film/{film}', [InventoryController::class, 'byFilm'])->name('inventories.by-film');
-    Route::get('inventories-store/{store}', [InventoryController::class, 'byStore'])->name('inventories.by-store');
-    Route::get('inventories-recent', [InventoryController::class, 'recent'])->name('inventories.recent');
-    Route::get('inventories-high-value', [InventoryController::class, 'highValue'])->name('inventories.high-value');
+    // Gestión de rentas (empleados y administradores)
+    Route::post('films/{film}/rent', [RentalController::class, 'rentFilm'])->name('rental.rent');
+    Route::put('rentals/{rental}/return', [RentalController::class, 'returnFilm'])->name('rental.return');
+    Route::get('films/{film}/availability', [RentalController::class, 'checkAvailability'])->name('rental.availability');
     Route::get('inventories-statistics', [InventoryController::class, 'statistics'])->name('inventories.statistics');
     Route::get('inventories-bulk-create', [InventoryController::class, 'bulkCreate'])->name('inventories.bulk-create');
     Route::post('inventories-bulk-store', [InventoryController::class, 'bulkStore'])->name('inventories.bulk-store');
