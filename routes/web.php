@@ -49,12 +49,21 @@ Route::get('films-decade/{decade}', [FilmController::class, 'byDecade'])->name('
 Route::get('films-recent', [FilmController::class, 'recent'])->name('films.recent');
 
 
-// --- RUTAS PARA CLIENTES AUTENTICADOS ---
-Route::middleware(['auth', 'role:customer'])->group(function () {
+// --- RUTAS COMPARTIDAS PARA USUARIOS AUTENTICADOS ---
+Route::middleware(['auth'])->group(function () {
+    // Rutas accesibles por todos los usuarios autenticados
     Route::get('rentals', [RentalController::class, 'index'])->name('rentals.index');
-    Route::post('films/{film}/rent', [RentalController::class, 'rentFilm'])->name('rentals.rent-film');
+    Route::get('stores', [StoreController::class, 'index'])->name('stores.index');
+    Route::get('stores/{store}', [StoreController::class, 'show'])->name('stores.show');
     Route::get('profile/edit', [WebAuthController::class, 'editProfile'])->name('profile.edit');
     Route::put('profile/update', [WebAuthController::class, 'updateProfile'])->name('profile.update');
+    
+    // Rutas específicas para clientes
+    Route::post('films/{film}/rent', [RentalController::class, 'rentFilm'])->name('rentals.rent-film');
+    
+    // Rutas de devolución (disponibles para clientes y empleados)
+    Route::get('rentals/{rental}/return', [RentalController::class, 'returnForm'])->name('rentals.return-form');
+    Route::post('rentals/{rental}/return', [RentalController::class, 'processReturn'])->name('rentals.process-return');
 });
 
 

@@ -124,7 +124,7 @@ class InventoryController extends Controller
     {
         $validated = $request->validate([
             'film_id' => 'required|exists:film,film_id',
-            'store_id' => 'required|exists:store,store_id',
+            'store_id' => 'required|exists:stores,store_id',
         ]);
 
         $inventory = Inventory::create($validated);
@@ -166,7 +166,7 @@ class InventoryController extends Controller
     {
         $validated = $request->validate([
             'film_id' => 'required|exists:film,film_id',
-            'store_id' => 'required|exists:store,store_id',
+            'store_id' => 'required|exists:stores,store_id',
         ]);
 
         $inventory->update($validated);
@@ -276,7 +276,7 @@ class InventoryController extends Controller
         $validated = $request->validate([
             'film_id' => 'required|exists:film,film_id',
             'stores' => 'required|array|min:1',
-            'stores.*' => 'exists:store,store_id',
+            'stores.*' => 'exists:stores,store_id',
             'quantity' => 'required|integer|min:1|max:50',
         ]);
 

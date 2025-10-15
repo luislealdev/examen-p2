@@ -24,6 +24,7 @@
                             <th>Fecha de Alquiler</th>
                             <th>Fecha de Devolución</th>
                             <th>Estado</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -52,6 +53,18 @@
                                         <span class="badge bg-success">Devuelto</span>
                                     @else
                                         <span class="badge bg-primary">En préstamo</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if(!$rental->return_date && $rental->status === 'active')
+                                        <a href="{{ route('rentals.return-form', $rental) }}" 
+                                           class="btn btn-sm btn-outline-success">
+                                            <i class="fas fa-undo me-1"></i>Devolver
+                                        </a>
+                                    @elseif($rental->return_date)
+                                        <small class="text-muted">Devuelto</small>
+                                    @else
+                                        <small class="text-muted">-</small>
                                     @endif
                                 </td>
                             </tr>

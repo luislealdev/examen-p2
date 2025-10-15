@@ -23,7 +23,13 @@ class RentalController extends Controller
         
         // Check if user is a customer - if so, only show their own rentals
         if (Auth::user() && Auth::user()->role === 'customer') {
-            $query->where('customer_id', Auth::id());
+            // Get customer by email since User and Customer are separate tables
+            $customer = Customer::where('email', Auth::user()->email)->first();
+            if (!$customer) {
+                return redirect()->route('films.index')->with('error', 'No se encontró tu perfil de cliente.');
+            }
+            
+            $query->where('customer_id', $customer->customer_id);
             $rentals = $query->orderBy('rental_date', 'desc')->paginate(10);
             return view('rentals.customer-index', compact('rentals'));
         }
@@ -179,9 +185,23 @@ class RentalController extends Controller
      */
     public function returnForm(Rental $rental)
     {
+        // Si es cliente, verificar que sea su propio alquiler
+        if (Auth::user()->role === 'customer') {
+            $customer = Customer::where('email', Auth::user()->email)->first();
+            if (!$customer) {
+                return redirect()->route('rentals.index')
+                    ->with('error', 'No se encontró tu perfil de cliente. Contacta al administrador.');
+            }
+            
+            if ($rental->customer_id !== $customer->customer_id) {
+                return redirect()->route('rentals.index')
+                    ->with('error', 'Solo puedes devolver tus propios alquileres.');
+            }
+        }
+        
         if ($rental->status !== 'active') {
-            return redirect()->route('rentals.show', $rental)
-                ->with('error', 'This rental cannot be returned.');
+            return redirect()->route('rentals.index')
+                ->with('error', 'Este alquiler no puede ser devuelto.');
         }
         
         $rental->load(['customer', 'inventory.film', 'store']);
@@ -189,6 +209,12 @@ class RentalController extends Controller
         // Calculate current late fee
         $currentLateFee = $rental->getCurrentLateFee();
         
+        // Si es cliente, usar vista simplificada
+        if (Auth::user()->role === 'customer') {
+            return view('rentals.customer-return', compact('rental', 'currentLateFee'));
+        }
+        
+        // Para empleados/admin, usar vista completa
         return view('rentals.return', compact('rental', 'currentLateFee'));
     }
 
@@ -197,6 +223,20 @@ class RentalController extends Controller
      */
     public function processReturn(Request $request, Rental $rental)
     {
+        // Si es cliente, verificar que sea su propio alquiler
+        if (Auth::user()->role === 'customer') {
+            $customer = Customer::where('email', Auth::user()->email)->first();
+            if (!$customer) {
+                return redirect()->route('rentals.index')
+                    ->with('error', 'No se encontró tu perfil de cliente. Contacta al administrador.');
+            }
+            
+            if ($rental->customer_id !== $customer->customer_id) {
+                return redirect()->route('rentals.index')
+                    ->with('error', 'Solo puedes devolver tus propios alquileres.');
+            }
+        }
+        
         $request->validate([
             'return_condition' => 'required|string',
             'additional_fees' => 'nullable|numeric|min:0',
@@ -204,8 +244,8 @@ class RentalController extends Controller
         ]);
 
         if ($rental->status !== 'active') {
-            return redirect()->route('rentals.show', $rental)
-                ->with('error', 'This rental cannot be returned.');
+            return redirect()->route('rentals.index')
+                ->with('error', 'Este alquiler no puede ser devuelto.');
         }
 
         try {
