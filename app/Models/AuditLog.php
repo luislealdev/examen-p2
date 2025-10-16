@@ -118,11 +118,4 @@ class AuditLog extends Model
         return $descriptions[$this->action] ?? ucfirst($this->action);
     }
 }
-}
 
-use Illuminate\Database\Eloquent\Model;
-
-class AuditLog extends Model
-{
-    //
-}

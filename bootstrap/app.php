@@ -15,11 +15,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register middleware aliases
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
+            'audit' => \App\Http\Middleware\AuditMiddleware::class,
         ]);
         
-        // Alternative registration method for Laravel 11
+        // Add audit middleware to web group
         $middleware->appendToGroup('web', [
-            // Additional web middleware if needed
+            \App\Http\Middleware\AuditMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

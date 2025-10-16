@@ -113,6 +113,14 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // Gestión de personal (solo administradores)
     Route::resource('staff', StaffController::class);
     Route::get('staff/{staff}/picture', [StaffController::class, 'picture'])->name('staff.picture');
+    
+    // Auditoría (solo administradores)
+    Route::prefix('audit')->name('audit.')->group(function () {
+        Route::get('/', [App\Http\Controllers\AuditController::class, 'index'])->name('index');
+        Route::get('/statistics', [App\Http\Controllers\AuditController::class, 'statistics'])->name('statistics');
+        Route::get('/{id}', [App\Http\Controllers\AuditController::class, 'show'])->name('show');
+        Route::post('/cleanup', [App\Http\Controllers\AuditController::class, 'cleanup'])->name('cleanup');
+    });
 });
 
 // === RUTAS DE DEBUG TEMPORAL ===

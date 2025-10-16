@@ -125,6 +125,9 @@
                             <a class="nav-link" href="{{ route('admin.dashboard') }}">
                                 <i class="fas fa-tachometer-alt me-1"></i>Dashboard
                             </a>
+                            <a class="nav-link" href="{{ route('audit.index') }}">
+                                <i class="fas fa-clipboard-list me-1"></i>Auditoría
+                            </a>
                         @endif
                     @endauth
                 </div>

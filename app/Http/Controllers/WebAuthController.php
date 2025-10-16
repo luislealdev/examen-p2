@@ -50,6 +50,21 @@ class WebAuthController extends Controller
             
             $user = Auth::user();
             
+            // Registrar evento de login en auditoría
+            \DB::table('audit_logs')->insert([
+                'user_id' => $user->id,
+                'action' => 'login',
+                'resource' => null,
+                'method' => 'POST',
+                'url' => $request->fullUrl(),
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'request_data' => json_encode(['email' => $user->email]),
+                'response_code' => 200,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            
             // Redirect based on user role
             switch ($user->role) {
                 case User::ROLE_ADMIN:
@@ -101,6 +116,25 @@ class WebAuthController extends Controller
      */
     public function logout(Request $request)
     {
+        $user = Auth::user();
+        
+        // Registrar evento de logout en auditoría
+        if ($user) {
+            \DB::table('audit_logs')->insert([
+                'user_id' => $user->id,
+                'action' => 'logout',
+                'resource' => null,
+                'method' => 'POST',
+                'url' => $request->fullUrl(),
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'request_data' => json_encode(['email' => $user->email]),
+                'response_code' => 200,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+        
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
