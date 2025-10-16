@@ -42,6 +42,10 @@ Route::get('films-rating/{rating}', [FilmController::class, 'byRating'])->name('
 Route::get('films-decade/{decade}', [FilmController::class, 'byDecade'])->name('films.by-decade');
 Route::get('films-recent', [FilmController::class, 'recent'])->name('films.recent');
 
+// Rutas de búsqueda para autocompletado (disponibles para todos)
+Route::get('search/films', [InventoryController::class, 'searchFilms'])->name('films.search');
+Route::get('search/stores', [InventoryController::class, 'searchStores'])->name('stores.search');
+
 // === RUTAS PARA EMPLEADOS Y ADMINISTRADORES ===
 Route::middleware(['auth', 'role:employee,admin'])->group(function () {
     

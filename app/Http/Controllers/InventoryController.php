@@ -7,6 +7,7 @@ use App\Models\Film;
 use App\Models\Store;
 use App\Models\Category;
 use App\Models\Language;
+use App\Models\Address;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -107,12 +108,7 @@ class InventoryController extends Controller
      */
     public function create(): View
     {
-        $films = Film::with(['language', 'categories'])
-                    ->orderBy('title')
-                    ->get();
-        $stores = Store::orderBy('store_id')->get();
-
-        return view('inventories.create', compact('films', 'stores'));
+        return view('inventories.create');
     }
 
     /**
@@ -122,7 +118,7 @@ class InventoryController extends Controller
     {
         $validated = $request->validate([
             'film_id' => 'required|exists:film,film_id',
-            'store_id' => 'required|exists:store,store_id',
+            'store_id' => 'required|exists:stores,store_id',
         ]);
 
         $inventory = Inventory::create($validated);
@@ -136,7 +132,7 @@ class InventoryController extends Controller
      */
     public function show(Inventory $inventory): View
     {
-        $inventory->load(['film.language', 'film.categories', 'store']);
+        $inventory->load(['film.language', 'film.category', 'store']);
         
         return view('inventories.show', compact('inventory'));
     }
@@ -147,7 +143,7 @@ class InventoryController extends Controller
     public function edit(Inventory $inventory): View
     {
         $inventory->load(['film', 'store']);
-        $films = Film::with(['language', 'categories'])
+        $films = Film::with(['language', 'category'])
                     ->orderBy('title')
                     ->get();
         $stores = Store::orderBy('store_id')->get();
@@ -189,7 +185,7 @@ class InventoryController extends Controller
      */
     public function byFilm(Film $film): View
     {
-        $inventories = Inventory::with(['film.language', 'film.categories', 'store'])
+        $inventories = Inventory::with(['film.language', 'film.category', 'store'])
             ->byFilm($film->film_id)
             ->orderBy('store_id')
             ->paginate(20);
@@ -202,7 +198,7 @@ class InventoryController extends Controller
      */
     public function byStore(Store $store): View
     {
-        $inventories = Inventory::with(['film.language', 'film.categories', 'store'])
+        $inventories = Inventory::with(['film.language', 'film.category', 'store'])
             ->byStore($store->store_id)
             ->alphabetical()
             ->paginate(20);
@@ -217,7 +213,7 @@ class InventoryController extends Controller
     {
         $days = $request->get('days', 30);
         
-        $inventories = Inventory::with(['film.language', 'film.categories', 'store'])
+        $inventories = Inventory::with(['film.language', 'film.category', 'store'])
             ->recent($days)
             ->newest()
             ->paginate(20);
@@ -230,7 +226,7 @@ class InventoryController extends Controller
      */
     public function highValue(): View
     {
-        $inventories = Inventory::with(['film.language', 'film.categories', 'store'])
+        $inventories = Inventory::with(['film.language', 'film.category', 'store'])
             ->highValue()
             ->alphabetical()
             ->paginate(20);
@@ -254,7 +250,7 @@ class InventoryController extends Controller
      */
     public function bulkCreate(): View
     {
-        $films = Film::with(['language', 'categories'])
+        $films = Film::with(['language', 'category'])
                     ->orderBy('title')
                     ->get();
         $stores = Store::orderBy('store_id')->get();
@@ -269,14 +265,14 @@ class InventoryController extends Controller
     {
         $validated = $request->validate([
             'film_id' => 'required|exists:film,film_id',
-            'stores' => 'required|array|min:1',
-            'stores.*' => 'exists:store,store_id',
+            'store_ids' => 'required|array|min:1',
+            'store_ids.*' => 'exists:stores,store_id',
             'quantity' => 'required|integer|min:1|max:50',
         ]);
 
         $totalAdded = 0;
         
-        foreach ($validated['stores'] as $storeId) {
+        foreach ($validated['store_ids'] as $storeId) {
             for ($i = 0; $i < $validated['quantity']; $i++) {
                 Inventory::create([
                     'film_id' => $validated['film_id'],
@@ -288,5 +284,65 @@ class InventoryController extends Controller
 
         return redirect()->route('inventories.index')
             ->with('success', "Successfully added {$totalAdded} inventory items!");
+    }
+
+    /**
+     * Search films for inventory form autocomplete
+     */
+    public function searchFilms(Request $request)
+    {
+        $query = $request->get('q');
+        
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $films = Film::with(['category', 'language'])
+            ->where(function ($q) use ($query) {
+                $q->where('title', 'LIKE', '%' . $query . '%')
+                  ->orWhere('description', 'LIKE', '%' . $query . '%');
+            })
+            ->orderBy('title')
+            ->limit(10)
+            ->get();
+
+        return response()->json($films->map(function ($film) {
+            return [
+                'film_id' => $film->film_id,
+                'title' => $film->title,
+                'release_year' => $film->release_year,
+                'category' => $film->category->name ?? 'Sin categoría',
+                'language' => $film->language->name ?? 'N/A',
+                'rating' => $film->rating,
+                'rental_rate' => $film->rental_rate,
+                'full_text' => $film->title . ($film->release_year ? ' (' . $film->release_year . ')' : '') . ' - ' . ($film->category->name ?? 'Sin categoría')
+            ];
+        }));
+    }
+
+    /**
+     * Search stores for inventory form autocomplete
+     */
+    public function searchStores(Request $request)
+    {
+        $query = $request->get('q', '');
+        
+        $stores = Store::with('address')
+            ->where('store_id', 'like', "%{$query}%")
+            ->orWhereHas('address', function($q) use ($query) {
+                $q->where('address', 'like', "%{$query}%")
+                  ->orWhere('district', 'like', "%{$query}%");
+            })
+            ->limit(10)
+            ->get()
+            ->map(function($store) {
+                return [
+                    'store_id' => $store->store_id,
+                    'address' => $store->address ? $store->address->address : 'Dirección no disponible',
+                    'district' => $store->address ? $store->address->district : '',
+                ];
+            });
+        
+        return response()->json($stores);
     }
 }

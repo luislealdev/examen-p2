@@ -34,84 +34,80 @@
                 <!-- Selección de Película -->
                 <div class="mb-4">
                     <label for="film_id" class="form-label fw-bold">Película <span class="text-danger">*</span></label>
-                    <select class="form-select @error('film_id') is-invalid @enderror" 
-                            id="film_id" name="film_id" required>
-                        <option value="">Seleccionar Película</option>
-                        @foreach($films as $film)
-                            <option value="{{ $film->film_id }}" 
-                                    {{ old('film_id') == $film->film_id ? 'selected' : '' }}
-                                    data-rating="{{ $film->rating }}"
-                                    data-language="{{ $film->language->name ?? 'N/A' }}"
-                                    data-rental-rate="{{ $film->rental_rate }}"
-                                    data-category="{{ $film->category->name ?? 'N/A' }}">
-                                {{ $film->title }} 
-                                @if($film->release_year)
-                                    ({{ $film->release_year }})
-                                @endif
-                                - {{ $film->rating }} - ${{ number_format($film->rental_rate, 2) }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <div class="position-relative">
+                        <input type="text" 
+                               class="form-control @error('film_id') is-invalid @enderror" 
+                               id="film_search" 
+                               placeholder="Buscar película..."
+                               autocomplete="off">
+                        <input type="hidden" id="film_id" name="film_id" value="{{ old('film_id') }}">
+                        
+                        <!-- Dropdown de resultados -->
+                        <div class="dropdown-menu w-100" id="film_dropdown" style="display: none; max-height: 300px; overflow-y: auto;">
+                        </div>
+                        
+                        <!-- Película seleccionada -->
+                        <div id="selected_film" class="mt-2" style="display: none;">
+                            <div class="border rounded p-2 bg-light">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong id="selected_film_title"></strong>
+                                        <div class="small text-muted">
+                                            <span id="selected_film_details"></span>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearFilmSelection()">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     @error('film_id')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                     <div class="form-text">
-                        Selecciona la película a agregar al inventario
+                        Busca y selecciona la película a agregar al inventario
                     </div>
                 </div>
 
                 <!-- Selección de Tienda -->
                 <div class="mb-4">
                     <label for="store_id" class="form-label fw-bold">Tienda <span class="text-danger">*</span></label>
-                    <select class="form-select @error('store_id') is-invalid @enderror" 
-                            id="store_id" name="store_id" required>
-                        <option value="">Seleccionar Tienda</option>
-                        @foreach($stores as $store)
-                            <option value="{{ $store->store_id }}" 
-                                    {{ old('store_id') == $store->store_id ? 'selected' : '' }}>
-                                Tienda #{{ $store->store_id }}
-                                @if($store->address)
-                                    - {{ $store->address }}
-                                @endif
-                            </option>
-                        @endforeach
-                    </select>
+                    <div class="position-relative">
+                        <input type="text" 
+                               class="form-control @error('store_id') is-invalid @enderror" 
+                               id="store_search" 
+                               placeholder="Buscar tienda..."
+                               autocomplete="off">
+                        <input type="hidden" id="store_id" name="store_id" value="{{ old('store_id') }}">
+                        
+                        <!-- Dropdown de resultados -->
+                        <div class="dropdown-menu w-100" id="store_dropdown" style="display: none; max-height: 300px; overflow-y: auto;">
+                        </div>
+                        
+                        <!-- Tienda seleccionada -->
+                        <div id="selected_store" class="mt-2" style="display: none;">
+                            <div class="border rounded p-2 bg-light">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong id="selected_store_name"></strong>
+                                        <div class="small text-muted">
+                                            <span id="selected_store_address"></span>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearStoreSelection()">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     @error('store_id')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                     <div class="form-text">
-                        Selecciona la tienda donde se almacenará este artículo
-                    </div>
-                </div>
-
-                <!-- Vista Previa de Detalles de la Película (oculta por defecto) -->
-                <div id="film-details" class="mb-4" style="display: none;">
-                    <div class="card bg-light">
-                        <div class="card-header">
-                            <h6 class="mb-0">
-                                <i class="fas fa-info-circle me-2"></i>Detalles de la Película Seleccionada
-                            </h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <strong>Clasificación:</strong>
-                                    <span id="film-rating" class="badge"></span>
-                                </div>
-                                <div class="col-md-3">
-                                    <strong>Idioma:</strong>
-                                    <span id="film-language"></span>
-                                </div>
-                                <div class="col-md-3">
-                                    <strong>Precio de Alquiler:</strong>
-                                    <span id="film-rental-rate" class="text-success fw-bold"></span>
-                                </div>
-                                <div class="col-md-3">
-                                    <strong>Categoría:</strong>
-                                    <span id="film-category" class="small"></span>
-                                </div>
-                            </div>
-                        </div>
+                        Busca y selecciona la tienda donde se almacenará este artículo
                     </div>
                 </div>
 
@@ -144,9 +140,9 @@
             <div class="card border-0 bg-light">
                 <div class="card-body">
                     <h6 class="fw-bold">
-                        <i class="fas fa-film me-2"></i>Películas Disponibles
+                        <i class="fas fa-film me-2"></i>Búsqueda de Películas
                     </h6>
-                    <p class="mb-0">{{ $films->count() }} películas disponibles para agregar al inventario</p>
+                    <p class="mb-0">Utiliza el buscador para encontrar películas rápidamente</p>
                 </div>
             </div>
         </div>
@@ -154,9 +150,9 @@
             <div class="card border-0 bg-light">
                 <div class="card-body">
                     <h6 class="fw-bold">
-                        <i class="fas fa-store me-2"></i>Tiendas Disponibles
+                        <i class="fas fa-store me-2"></i>Búsqueda de Tiendas
                     </h6>
-                    <p class="mb-0">{{ $stores->count() }} tiendas disponibles para almacenar</p>
+                    <p class="mb-0">Busca tiendas por ID o dirección para asignar inventario</p>
                 </div>
             </div>
         </div>
@@ -165,38 +161,181 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const filmSelect = document.getElementById('film_id');
-    const filmDetails = document.getElementById('film-details');
-    const filmRating = document.getElementById('film-rating');
-    const filmLanguage = document.getElementById('film-language');
-    const filmRentalRate = document.getElementById('film-rental-rate');
-    const filmCategory = document.getElementById('film-category');
-
-    filmSelect.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
+    let filmTimeout;
+    let storeTimeout;
+    
+    // Autocompletado para películas
+    const filmSearch = document.getElementById('film_search');
+    const filmDropdown = document.getElementById('film_dropdown');
+    const filmIdInput = document.getElementById('film_id');
+    
+    filmSearch.addEventListener('input', function() {
+        clearTimeout(filmTimeout);
+        const query = this.value.trim();
         
-        if (selectedOption.value) {
-            // Mostrar detalles de la película
-            filmDetails.style.display = 'block';
-            
-            // Actualizar detalles
-            const rating = selectedOption.dataset.rating;
-            const language = selectedOption.dataset.language;
-            const rentalRate = selectedOption.dataset.rentalRate;
-            const category = selectedOption.dataset.category;
-            
-            filmRating.textContent = rating;
-            filmRating.className = 'badge bg-' + getRatingColor(rating);
-            
-            filmLanguage.textContent = language;
-            filmRentalRate.textContent = '$' + parseFloat(rentalRate).toFixed(2);
-            filmCategory.textContent = category || 'Sin categoría';
+        if (query.length >= 2) {
+            filmTimeout = setTimeout(() => searchFilms(query), 300);
         } else {
-            // Ocultar detalles de la película
-            filmDetails.style.display = 'none';
+            filmDropdown.style.display = 'none';
         }
     });
-
+    
+    // Autocompletado para tiendas
+    const storeSearch = document.getElementById('store_search');
+    const storeDropdown = document.getElementById('store_dropdown');
+    const storeIdInput = document.getElementById('store_id');
+    
+    storeSearch.addEventListener('input', function() {
+        clearTimeout(storeTimeout);
+        const query = this.value.trim();
+        
+        if (query.length >= 1) {
+            storeTimeout = setTimeout(() => searchStores(query), 300);
+        } else {
+            storeDropdown.style.display = 'none';
+        }
+    });
+    
+    // Funciones de búsqueda
+    function searchFilms(query) {
+        fetch(`{{ route('films.search') }}?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                displayFilmResults(data);
+            })
+            .catch(error => {
+                console.error('Error searching films:', error);
+            });
+    }
+    
+    function searchStores(query) {
+        fetch(`{{ route('stores.search') }}?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                displayStoreResults(data);
+            })
+            .catch(error => {
+                console.error('Error searching stores:', error);
+            });
+    }
+    
+    // Mostrar resultados de películas
+    function displayFilmResults(films) {
+        filmDropdown.innerHTML = '';
+        
+        if (films.length === 0) {
+            filmDropdown.innerHTML = '<div class="dropdown-item-text">No se encontraron películas</div>';
+        } else {
+            films.forEach(film => {
+                const item = document.createElement('a');
+                item.className = 'dropdown-item';
+                item.href = '#';
+                item.innerHTML = `
+                    <div>
+                        <strong>${film.title}</strong>
+                        ${film.release_year ? `<span class="text-muted">(${film.release_year})</span>` : ''}
+                        <span class="badge bg-${getRatingColor(film.rating)} ms-2">${film.rating}</span>
+                    </div>
+                    <div class="small text-muted">
+                        ${film.category} • $${parseFloat(film.rental_rate).toFixed(2)}
+                    </div>
+                `;
+                
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    selectFilm(film);
+                });
+                
+                filmDropdown.appendChild(item);
+            });
+        }
+        
+        filmDropdown.style.display = 'block';
+    }
+    
+    // Mostrar resultados de tiendas
+    function displayStoreResults(stores) {
+        storeDropdown.innerHTML = '';
+        
+        if (stores.length === 0) {
+            storeDropdown.innerHTML = '<div class="dropdown-item-text">No se encontraron tiendas</div>';
+        } else {
+            stores.forEach(store => {
+                const item = document.createElement('a');
+                item.className = 'dropdown-item';
+                item.href = '#';
+                item.innerHTML = `
+                    <div>
+                        <strong>Tienda #${store.store_id}</strong>
+                    </div>
+                    <div class="small text-muted">
+                        ${store.address}${store.district ? ` - ${store.district}` : ''}
+                    </div>
+                `;
+                
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    selectStore(store);
+                });
+                
+                storeDropdown.appendChild(item);
+            });
+        }
+        
+        storeDropdown.style.display = 'block';
+    }
+    
+    // Seleccionar película
+    window.selectFilm = function(film) {
+        filmIdInput.value = film.film_id;
+        filmSearch.value = '';
+        filmDropdown.style.display = 'none';
+        
+        document.getElementById('selected_film_title').textContent = film.title;
+        document.getElementById('selected_film_details').innerHTML = `
+            ${film.release_year ? `${film.release_year} • ` : ''}
+            <span class="badge bg-${getRatingColor(film.rating)}">${film.rating}</span> • 
+            ${film.category} • $${parseFloat(film.rental_rate).toFixed(2)}
+        `;
+        
+        document.getElementById('selected_film').style.display = 'block';
+    };
+    
+    // Seleccionar tienda
+    window.selectStore = function(store) {
+        storeIdInput.value = store.store_id;
+        storeSearch.value = '';
+        storeDropdown.style.display = 'none';
+        
+        document.getElementById('selected_store_name').textContent = `Tienda #${store.store_id}`;
+        document.getElementById('selected_store_address').textContent = `${store.address}${store.district ? ` - ${store.district}` : ''}`;
+        
+        document.getElementById('selected_store').style.display = 'block';
+    };
+    
+    // Limpiar selecciones
+    window.clearFilmSelection = function() {
+        filmIdInput.value = '';
+        filmSearch.value = '';
+        document.getElementById('selected_film').style.display = 'none';
+    };
+    
+    window.clearStoreSelection = function() {
+        storeIdInput.value = '';
+        storeSearch.value = '';
+        document.getElementById('selected_store').style.display = 'none';
+    };
+    
+    // Cerrar dropdowns al hacer clic fuera
+    document.addEventListener('click', function(e) {
+        if (!filmSearch.contains(e.target) && !filmDropdown.contains(e.target)) {
+            filmDropdown.style.display = 'none';
+        }
+        if (!storeSearch.contains(e.target) && !storeDropdown.contains(e.target)) {
+            storeDropdown.style.display = 'none';
+        }
+    });
+    
     function getRatingColor(rating) {
         const colors = {
             'G': 'success',
