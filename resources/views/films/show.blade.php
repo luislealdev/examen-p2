@@ -345,15 +345,26 @@
                             @endif
                             
                             <div class="mb-3">
-                                <label for="customer_id" class="form-label">Cliente <span class="text-danger">*</span></label>
-                                <select class="form-select" id="customer_id" name="customer_id" required>
-                                    <option value="">Seleccionar cliente...</option>
-                                    @foreach(App\Models\Customer::orderBy('last_name')->get() as $customer)
-                                        <option value="{{ $customer->customer_id }}">
-                                            {{ $customer->first_name }} {{ $customer->last_name }} ({{ $customer->email }})
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <label for="customer_search" class="form-label">Cliente <span class="text-danger">*</span></label>
+                                <div class="position-relative">
+                                    <input 
+                                        type="text" 
+                                        class="form-control" 
+                                        id="customer_search" 
+                                        placeholder="Buscar cliente por nombre o email..."
+                                        autocomplete="off"
+                                    >
+                                    <input type="hidden" name="customer_id" id="customer_id" required>
+                                    <div id="customer_results" class="position-absolute w-100 bg-white border rounded-bottom shadow-sm d-none" style="z-index: 1050; max-height: 200px; overflow-y: auto;"></div>
+                                </div>
+                                <div id="selected_customer" class="mt-2 d-none">
+                                    <div class="alert alert-success d-flex justify-content-between align-items-center py-2">
+                                        <span id="selected_customer_info"></span>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearCustomerSelection()">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                             
                             <div class="alert alert-info">
@@ -456,5 +467,106 @@ function checkAvailability(filmId) {
                 '<div class="alert alert-danger">Error al cargar la disponibilidad.</div>';
         });
 }
+
+// Customer search functionality
+let customerSearchTimeout;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const customerSearch = document.getElementById('customer_search');
+    const customerResults = document.getElementById('customer_results');
+    const customerIdInput = document.getElementById('customer_id');
+    const selectedCustomerDiv = document.getElementById('selected_customer');
+    const selectedCustomerInfo = document.getElementById('selected_customer_info');
+
+    customerSearch.addEventListener('input', function() {
+        const query = this.value.trim();
+        
+        clearTimeout(customerSearchTimeout);
+        
+        if (query.length < 2) {
+            customerResults.classList.add('d-none');
+            return;
+        }
+
+        customerSearchTimeout = setTimeout(() => {
+            searchCustomers(query);
+        }, 300);
+    });
+
+    // Hide results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!customerSearch.contains(e.target) && !customerResults.contains(e.target)) {
+            customerResults.classList.add('d-none');
+        }
+    });
+});
+
+function searchCustomers(query) {
+    fetch(`/customers/search?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            const customerResults = document.getElementById('customer_results');
+            
+            if (data.length === 0) {
+                customerResults.innerHTML = '<div class="p-3 text-muted">No se encontraron clientes</div>';
+            } else {
+                customerResults.innerHTML = data.map(customer => `
+                    <div class="customer-result p-3 border-bottom cursor-pointer hover-bg-light" 
+                         onclick="selectCustomer(${customer.id}, '${customer.text}', '${customer.email}')">
+                        <div class="fw-medium">${customer.text}</div>
+                        <small class="text-muted">${customer.email}</small>
+                    </div>
+                `).join('');
+            }
+            
+            customerResults.classList.remove('d-none');
+        })
+        .catch(error => {
+            console.error('Error searching customers:', error);
+            const customerResults = document.getElementById('customer_results');
+            customerResults.innerHTML = '<div class="p-3 text-danger">Error al buscar clientes</div>';
+            customerResults.classList.remove('d-none');
+        });
+}
+
+function selectCustomer(customerId, customerName, customerEmail) {
+    const customerSearch = document.getElementById('customer_search');
+    const customerIdInput = document.getElementById('customer_id');
+    const customerResults = document.getElementById('customer_results');
+    const selectedCustomerDiv = document.getElementById('selected_customer');
+    const selectedCustomerInfo = document.getElementById('selected_customer_info');
+
+    // Set values
+    customerIdInput.value = customerId;
+    customerSearch.value = '';
+    selectedCustomerInfo.textContent = `${customerName} (${customerEmail})`;
+    
+    // Show selected customer and hide search results
+    selectedCustomerDiv.classList.remove('d-none');
+    customerResults.classList.add('d-none');
+    customerSearch.style.display = 'none';
+}
+
+function clearCustomerSelection() {
+    const customerSearch = document.getElementById('customer_search');
+    const customerIdInput = document.getElementById('customer_id');
+    const selectedCustomerDiv = document.getElementById('selected_customer');
+
+    customerIdInput.value = '';
+    customerSearch.value = '';
+    customerSearch.style.display = 'block';
+    selectedCustomerDiv.classList.add('d-none');
+    customerSearch.focus();
+}
 </script>
+
+<style>
+.customer-result:hover {
+    background-color: #f8f9fa !important;
+    cursor: pointer;
+}
+.hover-bg-light:hover {
+    background-color: #f8f9fa;
+}
+</style>
 @endsection

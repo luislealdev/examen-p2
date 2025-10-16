@@ -94,16 +94,54 @@ class WebAuthController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                'unique:users',
+                'unique:customers,email'  // También validar que el email no exista en customers
+            ],
             'password' => 'required|string|min:8|confirmed',
         ]);
 
+        // Crear el usuario
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => User::ROLE_CLIENT, // Por defecto, todos los registros son clientes
         ]);
+
+        // Si es un cliente, crear también el registro en la tabla customers
+        if ($user->role === User::ROLE_CLIENT) {
+            // Separar el nombre en first_name y last_name
+            $nameParts = explode(' ', trim($request->name), 2);
+            $firstName = $nameParts[0];
+            $lastName = isset($nameParts[1]) ? $nameParts[1] : '';
+
+            // Obtener la primera tienda disponible
+            $defaultStore = \App\Models\Store::first();
+            if (!$defaultStore) {
+                throw new \Exception('No hay tiendas disponibles en el sistema');
+            }
+
+            // Obtener la primera dirección disponible
+            $defaultAddress = \DB::table('address')->first();
+            if (!$defaultAddress) {
+                throw new \Exception('No hay direcciones disponibles en el sistema');
+            }
+
+            // Crear el customer asociado
+            \App\Models\Customer::create([
+                'store_id' => $defaultStore->store_id,
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'email' => $request->email,
+                'address_id' => $defaultAddress->address_id,
+                'active' => true,
+            ]);
+        }
 
         Auth::login($user);
 

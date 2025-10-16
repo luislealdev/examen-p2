@@ -56,6 +56,7 @@ Route::middleware(['auth', 'role:employee,admin'])->group(function () {
     Route::post('films/{film}/rent', [RentalController::class, 'rentFilm'])->name('rental.rent');
     Route::put('rentals/{rental}/return', [RentalController::class, 'returnFilm'])->name('rental.return');
     Route::get('films/{film}/availability', [RentalController::class, 'checkAvailability'])->name('rental.availability');
+    Route::get('customers/search', [RentalController::class, 'searchCustomers'])->name('customers.search');
 
     // Gestión de clientes (empleados y administradores)
     Route::resource('customers', CustomerController::class);

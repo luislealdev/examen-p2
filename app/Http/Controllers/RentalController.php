@@ -132,4 +132,36 @@ class RentalController extends Controller
             'inventories' => $availability
         ]);
     }
+
+    /**
+     * Search customers for rental form autocomplete
+     */
+    public function searchCustomers(Request $request)
+    {
+        $query = $request->get('q');
+        
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $customers = Customer::where(function ($q) use ($query) {
+            $q->where('first_name', 'LIKE', '%' . $query . '%')
+              ->orWhere('last_name', 'LIKE', '%' . $query . '%')
+              ->orWhere('email', 'LIKE', '%' . $query . '%')
+              ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $query . '%']);
+        })
+        ->select('customer_id', 'first_name', 'last_name', 'email')
+        ->orderBy('last_name')
+        ->limit(10)
+        ->get();
+
+        return response()->json($customers->map(function ($customer) {
+            return [
+                'id' => $customer->customer_id,
+                'text' => $customer->first_name . ' ' . $customer->last_name,
+                'email' => $customer->email,
+                'full_text' => $customer->first_name . ' ' . $customer->last_name . ' (' . $customer->email . ')'
+            ];
+        }));
+    }
 }
