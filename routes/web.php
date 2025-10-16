@@ -76,21 +76,6 @@ Route::middleware(['auth', 'role:employee,admin'])->group(function () {
     Route::post('films/{film}/rent', [RentalController::class, 'rentFilm'])->name('rental.rent');
     Route::put('rentals/{rental}/return', [RentalController::class, 'returnFilm'])->name('rental.return');
     Route::get('films/{film}/availability', [RentalController::class, 'checkAvailability'])->name('rental.availability');
-    Route::get('inventories-statistics', [InventoryController::class, 'statistics'])->name('inventories.statistics');
-    Route::get('inventories-bulk-create', [InventoryController::class, 'bulkCreate'])->name('inventories.bulk-create');
-    Route::post('inventories-bulk-store', [InventoryController::class, 'bulkStore'])->name('inventories.bulk-store');
-
-    // Gestión de categorías
-    Route::resource('categories', CategoryController::class);
-    Route::get('categories-alphabetical', [CategoryController::class, 'alphabetical'])->name('categories.alphabetical');
-    Route::get('categories-popular', [CategoryController::class, 'popular'])->name('categories.popular');
-
-    // Gestión de idiomas
-    Route::resource('languages', LanguageController::class);
-    Route::get('languages-alphabetical', [LanguageController::class, 'alphabetical'])->name('languages.alphabetical');
-
-    // Gestión de tiendas
-    Route::resource('stores', StoreController::class);
 
     // Gestión de clientes
     Route::resource('customers', CustomerController::class);
@@ -117,7 +102,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // Gestión de tiendas (solo admin)
     Route::resource('stores', StoreController::class);
     
-    // Gestión de usuarios
+    // Gestión de usuarios (solo admin)
     Route::get('admin/users', [AdminController::class, 'users'])->name('admin.users');
     Route::get('admin/users/create', [AdminController::class, 'createUser'])->name('admin.users.create');
     Route::post('admin/users', [AdminController::class, 'storeUser'])->name('admin.users.store');

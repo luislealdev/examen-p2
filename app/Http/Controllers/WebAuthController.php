@@ -53,8 +53,10 @@ class WebAuthController extends Controller
             // Redirect based on user role
             switch ($user->role) {
                 case User::ROLE_ADMIN:
-                case User::ROLE_EMPLOYEE:
                     return redirect()->intended(route('admin.dashboard'))
+                        ->with('success', "¡Bienvenido de vuelta, {$user->name}!");
+                case User::ROLE_EMPLOYEE:
+                    return redirect()->intended(route('films.index'))
                         ->with('success', "¡Bienvenido de vuelta, {$user->name}!");
                 case User::ROLE_CLIENT:
                     return redirect()->intended(route('films.index'))
