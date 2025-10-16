@@ -250,12 +250,10 @@ class InventoryController extends Controller
      */
     public function bulkCreate(): View
     {
-        $films = Film::with(['language', 'category'])
-                    ->orderBy('title')
-                    ->get();
-        $stores = Store::orderBy('store_id')->get();
+        // Cargar tiendas con direcciones y manager para mostrar en checkboxes
+        $stores = Store::with(['address', 'manager'])->orderBy('store_id')->get();
 
-        return view('inventories.bulk-create', compact('films', 'stores'));
+        return view('inventories.bulk-create', compact('stores'));
     }
 
     /**
