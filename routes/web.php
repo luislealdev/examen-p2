@@ -114,6 +114,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // Gestión de personal (solo administradores)
     Route::resource('staff', StaffController::class);
     Route::get('staff/{staff}/picture', [StaffController::class, 'picture'])->name('staff.picture');
+    Route::post('staff/sync-from-users', [StaffController::class, 'syncFromUsers'])->name('staff.sync');
     
     // Auditoría (solo administradores)
     Route::prefix('audit')->name('audit.')->group(function () {

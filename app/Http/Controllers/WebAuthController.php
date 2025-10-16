@@ -113,25 +113,24 @@ class WebAuthController extends Controller
             'role' => User::ROLE_CLIENT, // Por defecto, todos los registros son clientes
         ]);
 
-        // Si es un cliente, crear también el registro en la tabla customers
+        // Separar el nombre en first_name y last_name
+        $nameParts = explode(' ', trim($request->name), 2);
+        $firstName = $nameParts[0];
+        $lastName = isset($nameParts[1]) ? $nameParts[1] : '';
+
+        // Obtener datos por defecto
+        $defaultStore = \App\Models\Store::first();
+        if (!$defaultStore) {
+            throw new \Exception('No hay tiendas disponibles en el sistema');
+        }
+
+        $defaultAddress = \DB::table('address')->first();
+        if (!$defaultAddress) {
+            throw new \Exception('No hay direcciones disponibles en el sistema');
+        }
+
+        // Crear registros según el rol
         if ($user->role === User::ROLE_CLIENT) {
-            // Separar el nombre en first_name y last_name
-            $nameParts = explode(' ', trim($request->name), 2);
-            $firstName = $nameParts[0];
-            $lastName = isset($nameParts[1]) ? $nameParts[1] : '';
-
-            // Obtener la primera tienda disponible
-            $defaultStore = \App\Models\Store::first();
-            if (!$defaultStore) {
-                throw new \Exception('No hay tiendas disponibles en el sistema');
-            }
-
-            // Obtener la primera dirección disponible
-            $defaultAddress = \DB::table('address')->first();
-            if (!$defaultAddress) {
-                throw new \Exception('No hay direcciones disponibles en el sistema');
-            }
-
             // Crear el customer asociado
             \App\Models\Customer::create([
                 'store_id' => $defaultStore->store_id,
@@ -140,6 +139,18 @@ class WebAuthController extends Controller
                 'email' => $request->email,
                 'address_id' => $defaultAddress->address_id,
                 'active' => true,
+            ]);
+        } elseif (in_array($user->role, [User::ROLE_EMPLOYEE, User::ROLE_ADMIN])) {
+            // Crear el staff asociado
+            \App\Models\Staff::create([
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'address_id' => $defaultAddress->address_id,
+                'email' => $request->email,
+                'store_id' => $defaultStore->store_id,
+                'active' => true,
+                'username' => explode('@', $request->email)[0], // Usar parte del email como username
+                'password' => Hash::make($request->password),
             ]);
         }
 

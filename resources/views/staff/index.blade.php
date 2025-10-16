@@ -7,9 +7,18 @@
     <h1 class="text-primary">
         <i class="fas fa-users-cog me-2"></i>Personal
     </h1>
-    <a href="{{ route('staff.create') }}" class="btn btn-gradient-primary">
-        <i class="fas fa-plus me-2"></i>Agregar Nuevo Personal
-    </a>
+    <div>
+        <form method="POST" action="{{ route('staff.sync') }}" class="d-inline">
+            @csrf
+            <button type="submit" class="btn btn-gradient-warning me-2" 
+                    onclick="return confirm('¿Sincronizar empleados de la tabla Users a Staff?')">
+                <i class="fas fa-sync-alt me-2"></i>Sincronizar Empleados
+            </button>
+        </form>
+        <a href="{{ route('staff.create') }}" class="btn btn-gradient-primary">
+            <i class="fas fa-plus me-2"></i>Agregar Nuevo Personal
+        </a>
+    </div>
 </div>
 
 <!-- Advanced Search and Filter Section -->
@@ -120,42 +129,55 @@
                     </thead>
                     <tbody>
                         @foreach($staff as $member)
-                            <tr class="{{ !$member->active ? 'table-secondary' : '' }}">
-                                <td>{{ $member->staff_id }}</td>
+                            <tr class="{{ !$member['active'] ? 'table-secondary' : '' }}">
+                                <td>{{ $member['id'] }}</td>
                                 <td>
-                                    @if($member->picture)
-                                        <img src="{{ route('staff.picture', $member->staff_id) }}" 
+                                    @if($member['source'] === 'staff_table' && isset($member['picture']))
+                                        <img src="{{ route('staff.picture', $member['id']) }}" 
                                              alt="Foto" 
                                              class="rounded-circle"
                                              style="width: 40px; height: 40px; object-fit: cover;">
                                     @else
                                         <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white" 
                                              style="width: 40px; height: 40px;">
-                                            {{ $member->initials }}
+                                            {{ strtoupper(substr($member['first_name'], 0, 1) . substr($member['last_name'], 0, 1)) }}
                                         </div>
                                     @endif
                                 </td>
                                 <td>
-                                    <strong>{{ $member->full_name }}</strong>
-                                </td>
-                                <td>
-                                    <code>{{ $member->username }}</code>
-                                </td>
-                                <td>{{ $member->email ?: 'N/A' }}</td>
-                                <td>
-                                    <span class="badge bg-info">Tienda {{ $member->store_id }}</span>
-                                </td>
-                                <td>
-                                    @if($member->role === 'admin')
-                                        <span class="badge bg-danger">Administrador</span>
-                                    @elseif($member->role === 'employee')
-                                        <span class="badge bg-primary">Empleado</span>
-                                    @else
-                                        <span class="badge bg-light text-dark">{{ ucfirst($member->role) }}</span>
+                                    <strong>{{ $member['full_name'] }}</strong>
+                                    @if($member['source'] === 'users_table')
+                                        <br><small class="text-muted badge bg-warning">Desde Users</small>
                                     @endif
                                 </td>
                                 <td>
-                                    @if($member->active)
+                                    <code>{{ $member['username'] }}</code>
+                                </td>
+                                <td>{{ $member['email'] ?: 'N/A' }}</td>
+                                <td>
+                                    @if($member['store_id'])
+                                        <span class="badge bg-info">{{ $member['store_name'] }}</span>
+                                    @else
+                                        <span class="badge bg-warning">Sin asignar</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($member['role'] === 'admin')
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-crown me-1"></i>Administrador
+                                        </span>
+                                    @elseif($member['role'] === 'employee')
+                                        <span class="badge bg-primary">
+                                            <i class="fas fa-user-tie me-1"></i>Empleado
+                                        </span>
+                                    @else
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-question me-1"></i>{{ ucfirst($member['role']) }}
+                                        </span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($member['active'])
                                         <span class="badge bg-success">Activo</span>
                                     @else
                                         <span class="badge bg-secondary">Inactivo</span>
@@ -163,14 +185,18 @@
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route('staff.show', $member->staff_id) }}" class="btn btn-sm btn-info">Ver</a>
-                                        <a href="{{ route('staff.edit', $member->staff_id) }}" class="btn btn-sm btn-warning">Editar</a>
-                                        @if($member->active)
-                                            <form action="{{ route('staff.destroy', $member->staff_id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres desactivar este miembro del personal?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger">Desactivar</button>
-                                            </form>
+                                        @if($member['source'] === 'staff_table')
+                                            <a href="{{ route('staff.show', $member['id']) }}" class="btn btn-sm btn-info">Ver</a>
+                                            <a href="{{ route('staff.edit', $member['id']) }}" class="btn btn-sm btn-warning">Editar</a>
+                                            @if($member['active'])
+                                                <form action="{{ route('staff.destroy', $member['id']) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres desactivar este miembro del personal?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-danger">Desactivar</button>
+                                                </form>
+                                            @endif
+                                        @else
+                                            <span class="text-muted small">Solo en Users</span>
                                         @endif
                                     </div>
                                 </td>

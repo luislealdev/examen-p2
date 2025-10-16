@@ -19,43 +19,114 @@ class StaffController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = Staff::with('store');
+        // Obtener todos los staff de la tabla staff
+        $staffFromTable = Staff::with('store')
+            ->get()
+            ->map(function ($staff) {
+                // Buscar el usuario correspondiente para obtener su rol
+                $user = User::where('email', $staff->email)->first();
+                $userRole = $user ? $user->role : 'employee'; // Default employee si no encuentra user
+                
+                return [
+                    'id' => $staff->staff_id,
+                    'source' => 'staff_table',
+                    'first_name' => $staff->first_name,
+                    'last_name' => $staff->last_name,
+                    'full_name' => $staff->first_name . ' ' . $staff->last_name,
+                    'email' => $staff->email,
+                    'username' => $staff->username,
+                    'active' => $staff->active,
+                    'store_id' => $staff->store_id,
+                    'store_name' => $staff->store ? 'Tienda #' . $staff->store->store_id : 'N/A',
+                    'role' => $userRole,
+                    'last_update' => $staff->last_update,
+                    'created_at' => $staff->last_update,
+                ];
+            });
 
-        // Search functionality
+        // Obtener empleados y admins de la tabla users que NO estén en staff
+        $existingStaffEmails = $staffFromTable->pluck('email')->toArray();
+        
+        $staffFromUsers = User::whereIn('role', [User::ROLE_EMPLOYEE, User::ROLE_ADMIN])
+            ->whereNotIn('email', $existingStaffEmails)
+            ->get()
+            ->map(function ($user) {
+                $nameParts = explode(' ', trim($user->name), 2);
+                $firstName = $nameParts[0];
+                $lastName = isset($nameParts[1]) ? $nameParts[1] : '';
+                
+                return [
+                    'id' => 'user_' . $user->id,
+                    'source' => 'users_table',
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
+                    'full_name' => $user->name,
+                    'email' => $user->email,
+                    'username' => explode('@', $user->email)[0],
+                    'active' => true, // Los usuarios siempre están activos
+                    'store_id' => null,
+                    'store_name' => 'Sin asignar',
+                    'role' => $user->role,
+                    'last_update' => $user->updated_at,
+                    'created_at' => $user->created_at,
+                ];
+            });
+
+        // Combinar ambas colecciones
+        $allStaff = $staffFromTable->concat($staffFromUsers);
+
+        // Aplicar filtros de búsqueda
         if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('username', 'like', "%{$search}%");
+            $search = strtolower($request->search);
+            $allStaff = $allStaff->filter(function ($staff) use ($search) {
+                return stripos($staff['first_name'], $search) !== false ||
+                       stripos($staff['last_name'], $search) !== false ||
+                       stripos($staff['full_name'], $search) !== false ||
+                       stripos($staff['email'], $search) !== false ||
+                       stripos($staff['username'], $search) !== false;
             });
         }
 
-        // Filter by active status
+        // Filtro por estado
         if ($request->filled('status')) {
             if ($request->status === 'active') {
-                $query->active();
+                $allStaff = $allStaff->where('active', true);
             } elseif ($request->status === 'inactive') {
-                $query->inactive();
+                $allStaff = $allStaff->where('active', false);
             }
         }
 
-        // Filter by store
+        // Filtro por tienda
         if ($request->filled('store_id')) {
-            $query->where('store_id', $request->store_id);
+            $allStaff = $allStaff->where('store_id', $request->store_id);
         }
 
-        // Sort functionality
+        // Ordenamiento
         $sortBy = $request->get('sort', 'last_update');
         $sortDirection = $request->get('direction', 'desc');
         
         if (in_array($sortBy, ['first_name', 'last_name', 'email', 'username', 'active', 'last_update', 'store_id'])) {
-            $query->orderBy($sortBy, $sortDirection);
+            $allStaff = $allStaff->sortBy($sortBy, SORT_REGULAR, $sortDirection === 'desc');
         }
 
-        // Pagination with request parameters preserved
-        $staff = $query->paginate(15)->withQueryString();
+        // Paginación manual
+        $perPage = 15;
+        $currentPage = request()->get('page', 1);
+        $total = $allStaff->count();
+        $items = $allStaff->forPage($currentPage, $perPage)->values();
+        
+        $staff = new \Illuminate\Pagination\LengthAwarePaginator(
+            $items,
+            $total,
+            $perPage,
+            $currentPage,
+            [
+                'path' => request()->url(),
+                'pageName' => 'page',
+            ]
+        );
+        
+        $staff->withQueryString();
 
         // Get stores for filter dropdown
         $stores = Store::orderBy('store_id')->get();
@@ -120,7 +191,12 @@ class StaffController extends Controller
      */
     public function show(Staff $staff): View
     {
-        $staff->load(['store', 'managedStores']);
+        $staff->load([
+            'store.address.city.country',
+            'store.manager',
+            'managedStores.address.city.country'
+        ]);
+        
         return view('staff.show', compact('staff'));
     }
 
@@ -228,5 +304,49 @@ class StaffController extends Controller
 
         return response($staff->picture)
             ->header('Content-Type', 'image/jpeg');
+    }
+
+    /**
+     * Sincronizar empleados de la tabla users que no están en staff
+     */
+    public function syncFromUsers(): RedirectResponse
+    {
+        // Obtener empleados y admins que no están en staff
+        $existingStaffEmails = Staff::pluck('email')->toArray();
+        
+        $usersToSync = User::whereIn('role', [User::ROLE_EMPLOYEE, User::ROLE_ADMIN])
+            ->whereNotIn('email', $existingStaffEmails)
+            ->get();
+
+        if ($usersToSync->isEmpty()) {
+            return redirect()->route('staff.index')
+                ->with('info', 'No hay empleados por sincronizar.');
+        }
+
+        $synced = 0;
+        $defaultStore = Store::first();
+        $defaultAddress = \DB::table('address')->first();
+
+        foreach ($usersToSync as $user) {
+            $nameParts = explode(' ', trim($user->name), 2);
+            $firstName = $nameParts[0];
+            $lastName = isset($nameParts[1]) ? $nameParts[1] : '';
+
+            Staff::create([
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'address_id' => $defaultAddress->address_id,
+                'email' => $user->email,
+                'store_id' => $defaultStore->store_id,
+                'active' => true,
+                'username' => explode('@', $user->email)[0],
+                'password' => '$2y$10$dummy', // Password dummy, usarán el de users
+            ]);
+
+            $synced++;
+        }
+
+        return redirect()->route('staff.index')
+            ->with('success', "Se sincronizaron {$synced} empleados exitosamente.");
     }
 }
