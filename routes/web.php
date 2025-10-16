@@ -52,17 +52,15 @@ Route::middleware(['auth', 'role:employee,admin'])->group(function () {
     Route::put('films/{film}', [FilmController::class, 'update'])->name('films.update');
     Route::delete('films/{film}', [FilmController::class, 'destroy'])->name('films.destroy');
 
-    // OMDB API routes
-    Route::prefix('omdb')->name('omdb.')->group(function () {
-        Route::get('search', [OmdbController::class, 'search'])->name('search');
-        Route::post('search-movies', [OmdbController::class, 'searchMovies'])->name('search-movies');
-        Route::post('movie-details', [OmdbController::class, 'getMovieDetails'])->name('movie-details');
-        Route::post('preview-import', [OmdbController::class, 'previewImport'])->name('preview-import');
-        Route::post('import-movie', [OmdbController::class, 'importMovie'])->name('import-movie');
-        Route::get('check-config', [OmdbController::class, 'checkConfiguration'])->name('check-config');
-    });
+    // Gestión de rentas (empleados y administradores)
+    Route::post('films/{film}/rent', [RentalController::class, 'rentFilm'])->name('rental.rent');
+    Route::put('rentals/{rental}/return', [RentalController::class, 'returnFilm'])->name('rental.return');
+    Route::get('films/{film}/availability', [RentalController::class, 'checkAvailability'])->name('rental.availability');
 
-    // Gestión de inventarios
+    // Gestión de clientes (empleados y administradores)
+    Route::resource('customers', CustomerController::class);
+
+    // Gestión de inventarios (empleados y administradores)
     Route::resource('inventories', InventoryController::class);
     Route::get('inventories-film/{film}', [InventoryController::class, 'byFilm'])->name('inventories.by-film');
     Route::get('inventories-store/{store}', [InventoryController::class, 'byStore'])->name('inventories.by-store');
@@ -72,13 +70,15 @@ Route::middleware(['auth', 'role:employee,admin'])->group(function () {
     Route::get('inventories-bulk-create', [InventoryController::class, 'bulkCreate'])->name('inventories.bulk-create');
     Route::post('inventories-bulk-store', [InventoryController::class, 'bulkStore'])->name('inventories.bulk-store');
 
-    // Gestión de rentas (empleados y administradores)
-    Route::post('films/{film}/rent', [RentalController::class, 'rentFilm'])->name('rental.rent');
-    Route::put('rentals/{rental}/return', [RentalController::class, 'returnFilm'])->name('rental.return');
-    Route::get('films/{film}/availability', [RentalController::class, 'checkAvailability'])->name('rental.availability');
-
-    // Gestión de clientes
-    Route::resource('customers', CustomerController::class);
+    // OMDB API routes (empleados y administradores)
+    Route::prefix('omdb')->name('omdb.')->group(function () {
+        Route::get('search', [OmdbController::class, 'search'])->name('search');
+        Route::post('search-movies', [OmdbController::class, 'searchMovies'])->name('search-movies');
+        Route::post('movie-details', [OmdbController::class, 'getMovieDetails'])->name('movie-details');
+        Route::post('preview-import', [OmdbController::class, 'previewImport'])->name('preview-import');
+        Route::post('import-movie', [OmdbController::class, 'importMovie'])->name('import-movie');
+        Route::get('check-config', [OmdbController::class, 'checkConfiguration'])->name('check-config');
+    });
 });
 
 // === RUTAS SOLO PARA ADMINISTRADORES ===
@@ -114,3 +114,57 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('staff', StaffController::class);
     Route::get('staff/{staff}/picture', [StaffController::class, 'picture'])->name('staff.picture');
 });
+
+// === RUTAS DE DEBUG TEMPORAL ===
+Route::get('/debug-auth', function () {
+    $user = auth()->user();
+    if (!$user) {
+        return response()->json([
+            'authenticated' => false,
+            'message' => 'No user authenticated'
+        ]);
+    }
+    
+    return response()->json([
+        'authenticated' => true,
+        'user_id' => $user->id,
+        'email' => $user->email,
+        'role' => $user->role,
+        'role_type' => gettype($user->role),
+        'role_length' => strlen($user->role),
+        'role_hex' => bin2hex($user->role),
+        'is_admin' => $user->role === 'admin',
+        'middleware_test' => [
+            'employee_admin' => in_array($user->role, ['employee', 'admin']),
+            'admin_only' => in_array($user->role, ['admin'])
+        ]
+    ]);
+});
+
+// Debug específico para middleware employee,admin
+Route::get('/debug-middleware-employee-admin', function () {
+    $user = auth()->user();
+    if (!$user) {
+        return response()->json(['error' => 'Not authenticated']);
+    }
+    
+    return response()->json([
+        'success' => 'Middleware employee,admin passed successfully!',
+        'user' => $user->email,
+        'role' => $user->role
+    ]);
+})->middleware(['auth', 'role:employee,admin']);
+
+// Debug específico para middleware admin-only
+Route::get('/debug-middleware-admin-only', function () {
+    $user = auth()->user();
+    if (!$user) {
+        return response()->json(['error' => 'Not authenticated']);
+    }
+    
+    return response()->json([
+        'success' => 'Middleware admin-only passed successfully!',
+        'user' => $user->email,
+        'role' => $user->role
+    ]);
+})->middleware(['auth', 'role:admin']);

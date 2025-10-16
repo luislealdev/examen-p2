@@ -12,11 +12,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Register Passport middlewares
+        // Register middleware aliases
         $middleware->alias([
-            'scope' => \Laravel\Passport\Http\Middleware\CheckTokenForAnyScope::class,
-            'scopes' => \App\Http\Middleware\CheckScopes::class,
             'role' => \App\Http\Middleware\CheckRole::class,
+        ]);
+        
+        // Alternative registration method for Laravel 11
+        $middleware->appendToGroup('web', [
+            // Additional web middleware if needed
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
