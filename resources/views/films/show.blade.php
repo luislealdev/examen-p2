@@ -322,6 +322,28 @@
                     <form action="{{ route('rental.rent', $film) }}" method="POST">
                         @csrf
                         <div class="modal-body">
+                            @php
+                                $staff = \App\Models\Staff::where('email', Auth::user()->email)
+                                    ->orWhere('username', Auth::user()->email)
+                                    ->with('store')
+                                    ->first();
+                            @endphp
+                            
+                            @if($staff && $staff->store)
+                                <div class="alert alert-info mb-3">
+                                    <i class="fas fa-store me-2"></i>
+                                    <strong>Tienda asignada:</strong> Tienda #{{ $staff->store->store_id }}
+                                    @if($staff->store->manager_staff_id)
+                                        <br><small>Gerente: {{ $staff->store->manager_staff_id }}</small>
+                                    @endif
+                                </div>
+                            @else
+                                <div class="alert alert-warning mb-3">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Advertencia:</strong> No tienes una tienda asignada. Contacta al administrador.
+                                </div>
+                            @endif
+                            
                             <div class="mb-3">
                                 <label for="customer_id" class="form-label">Cliente <span class="text-danger">*</span></label>
                                 <select class="form-select" id="customer_id" name="customer_id" required>
@@ -333,25 +355,15 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="mb-3">
-                                <label for="store_id" class="form-label">Tienda <span class="text-danger">*</span></label>
-                                <select class="form-select" id="store_id" name="store_id" required>
-                                    <option value="">Seleccionar tienda...</option>
-                                    @foreach(App\Models\Store::all() as $store)
-                                        <option value="{{ $store->store_id }}">
-                                            Tienda {{ $store->store_id }} (Gerente: {{ $store->manager_staff_id }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
+                            
                             <div class="alert alert-info">
                                 <i class="fas fa-info-circle me-2"></i>
-                                Se verificará la disponibilidad del inventario antes de procesar la renta.
+                                Se verificará la disponibilidad del inventario en tu tienda antes de procesar la renta.
                             </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-gradient-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="submit" class="btn btn-gradient-success">
+                            <button type="submit" class="btn btn-gradient-success" {{ !($staff && $staff->store) ? 'disabled' : '' }}>
                                 <i class="fas fa-shopping-cart me-2"></i>Procesar Renta
                             </button>
                         </div>
@@ -390,25 +402,51 @@ function checkAvailability(filmId) {
     fetch(`/films/${filmId}/availability`)
         .then(response => response.json())
         .then(data => {
-            let html = '<div class="table-responsive"><table class="table table-striped">';
-            html += '<thead><tr><th>Tienda</th><th>Estado</th><th>Información</th></tr></thead><tbody>';
+            if (data.error) {
+                document.getElementById('availabilityContent').innerHTML = 
+                    `<div class="alert alert-danger">${data.error}</div>`;
+                return;
+            }
             
-            data.forEach(item => {
-                html += `<tr>
-                    <td>Tienda ${item.store_id}</td>
-                    <td>
-                        <span class="badge bg-${item.is_available ? 'success' : 'danger'}">
-                            ${item.is_available ? 'Disponible' : 'Rentada'}
-                        </span>
-                    </td>
-                    <td>${item.is_available ? 'Listo para rentar' : 'Actualmente rentada'}</td>
-                </tr>`;
-            });
+            let html = `
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-store me-2"></i>Tu Tienda: Tienda #${data.employee_store}</h6>
+                    <div class="row text-center mt-2">
+                        <div class="col-4">
+                            <strong class="text-primary">${data.total_copies}</strong><br>
+                            <small>Copias Totales</small>
+                        </div>
+                        <div class="col-4">
+                            <strong class="text-success">${data.available_copies}</strong><br>
+                            <small>Disponibles</small>
+                        </div>
+                        <div class="col-4">
+                            <strong class="text-danger">${data.rented_copies}</strong><br>
+                            <small>Rentadas</small>
+                        </div>
+                    </div>
+                </div>
+            `;
             
-            html += '</tbody></table></div>';
-            
-            if (data.length === 0) {
-                html = '<div class="alert alert-warning">No hay inventario disponible para esta película.</div>';
+            if (data.inventories && data.inventories.length > 0) {
+                html += '<div class="table-responsive"><table class="table table-striped">';
+                html += '<thead><tr><th>ID Inventario</th><th>Estado</th><th>Información</th></tr></thead><tbody>';
+                
+                data.inventories.forEach(item => {
+                    html += `<tr>
+                        <td>INV-${item.inventory_id}</td>
+                        <td>
+                            <span class="badge bg-${item.is_available ? 'success' : 'danger'}">
+                                ${item.is_available ? 'Disponible' : 'Rentada'}
+                            </span>
+                        </td>
+                        <td>${item.is_available ? 'Listo para rentar' : 'Actualmente en renta'}</td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table></div>';
+            } else {
+                html += '<div class="alert alert-warning">No hay inventario disponible para esta película en tu tienda.</div>';
             }
             
             document.getElementById('availabilityContent').innerHTML = html;
