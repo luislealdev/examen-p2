@@ -78,11 +78,15 @@ class CustomerController extends Controller
      */
     public function searchStores(Request $request)
     {
-        $query = $request->get('q');
+        // Validar y sanitizar entrada
+        $request->validate([
+            'q' => 'required|string|min:1|max:100|regex:/^[a-zA-Z0-9\s\-_.,]+$/'
+        ]);
         
-        if (strlen($query) < 1) {
-            return response()->json([]);
-        }
+        $query = trim($request->get('q'));
+        
+        // Escapar caracteres especiales para LIKE
+        $query = str_replace(['%', '_'], ['\%', '\_'], $query);
 
         \Log::info('Searching stores', ['query' => $query]);
 
