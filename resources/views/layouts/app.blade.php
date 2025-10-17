@@ -153,7 +153,7 @@
                             </a>
                         @else
                             {{-- Menú para clientes --}}
-                            <a class="nav-link" href="{{ route('stores.index') }}">
+                            <a class="nav-link" href="{{ route('client.stores.index') }}">
                                 <i class="fas fa-store me-1"></i>Catálogo de Tiendas
                             </a>
                             <a class="nav-link" href="{{ route('rentals.index') }}">

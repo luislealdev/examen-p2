@@ -54,7 +54,13 @@ Route::middleware(['auth'])->group(function () {
     // Rutas accesibles por todos los usuarios autenticados
     Route::get('rentals', [RentalController::class, 'index'])->name('rentals.index');
     Route::post('films/{film}/rent', [RentalController::class, 'rentFilm'])->name('rentals.rent-film');
-    Route::post('inventory/{inventory}/rent', [App\Http\Controllers\Client\StoreController::class, 'rentMovie'])->name('stores.rent');
+    
+    // Rutas de tiendas para clientes
+    Route::prefix('client')->name('client.')->group(function () {
+        Route::get('stores', [App\Http\Controllers\Client\StoreController::class, 'index'])->name('stores.index');
+        Route::get('stores/{store}/inventory', [App\Http\Controllers\Client\StoreController::class, 'inventory'])->name('stores.inventory');
+        Route::post('inventory/{inventory}/rent', [App\Http\Controllers\Client\StoreController::class, 'rentMovie'])->name('stores.rent');
+    });
     
     // Rutas de pagos y cargos
     Route::get('payments', [App\Http\Controllers\Client\PaymentController::class, 'index'])->name('payments.index');
@@ -62,9 +68,6 @@ Route::middleware(['auth'])->group(function () {
     // Rutas de perfil
     Route::get('profile/edit', [WebAuthController::class, 'editProfile'])->name('profile.edit');
     Route::put('profile/update', [WebAuthController::class, 'updateProfile'])->name('profile.update');
-    
-    // Rutas específicas para clientes
-    Route::post('films/{film}/rent', [RentalController::class, 'rentFilm'])->name('rentals.rent-film');
     
     // Rutas de devolución (disponibles para clientes y empleados)
     Route::get('rentals/{rental}/return', [RentalController::class, 'returnForm'])->name('rentals.return-form');
@@ -78,12 +81,12 @@ Route::middleware(['auth', 'role:employee'])->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('/admin/rental-statistics', [AdminController::class, 'rentalStatistics'])->name('admin.rental-statistics');
 
-    // RECURSOS CRUD
+    // RECURSOS CRUD (solo empleados pueden crear/editar/eliminar)
     Route::resource('films', FilmController::class)->except(['index', 'show']);
     Route::resource('languages', LanguageController::class);
     Route::resource('categories', CategoryController::class);
     Route::resource('inventories', InventoryController::class);
-    Route::resource('stores', StoreController::class);
+    Route::resource('stores', StoreController::class); // CRUD completo solo para empleados
     Route::resource('customers', CustomerController::class);
     Route::resource('staff', StaffController::class);
     Route::resource('rentals', RentalController::class)->except(['index', 'store']); // index y store ya están en cliente
