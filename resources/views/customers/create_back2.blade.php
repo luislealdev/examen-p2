@@ -114,72 +114,38 @@
                                         </h5>
                                     </div>
                                     <div class="card-body">
-                                        @if($isAdmin)
-                                            <!-- Solo administradores pueden buscar y seleccionar tienda -->
-                                            <div class="mb-3">
-                                                <label for="store_search" class="form-label fw-bold">Buscar Tienda <span class="text-danger">*</span></label>
-                                                <div class="position-relative">
-                                                    <input type="text" 
-                                                           class="form-control" 
-                                                           id="store_search" 
-                                                           placeholder="Escriba el nombre de la ciudad, tienda ID o país..."
-                                                           autocomplete="off">
-                                                    <div id="store_results" class="position-absolute w-100 bg-white border rounded shadow-sm d-none" style="z-index: 1000; max-height: 200px; overflow-y: auto;"></div>
-                                                </div>
-                                                <input type="hidden" name="store_id" id="store_id" required>
-                                                @error('store_id')
-                                                    <div class="text-danger small mt-1">{{ $message }}</div>
-                                                @enderror
+                                        <div class="mb-3">
+                                            <label for="store_search" class="form-label fw-bold">Buscar Tienda <span class="text-danger">*</span></label>
+                                            <div class="position-relative">
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       id="store_search" 
+                                                       placeholder="Escriba el nombre de la ciudad, tienda ID o país..."
+                                                       autocomplete="off">
+                                                <div id="store_results" class="position-absolute w-100 bg-white border rounded shadow-sm d-none" style="z-index: 1000; max-height: 200px; overflow-y: auto;"></div>
                                             </div>
+                                            <input type="hidden" name="store_id" id="store_id" required>
+                                            @error('store_id')
+                                                <div class="text-danger small mt-1">{{ $message }}</div>
+                                            @enderror
+                                        </div>
 
-                                            <!-- Tienda seleccionada -->
-                                            <div id="selected_store" class="d-none">
-                                                <div class="card border border-info">
-                                                    <div class="card-body">
-                                                        <div class="d-flex justify-content-between align-items-center">
-                                                            <div>
-                                                                <h6 class="mb-1 text-info">Tienda Seleccionada:</h6>
-                                                                <p class="mb-0" id="selected_store_info"></p>
-                                                            </div>
-                                                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearStoreSelection()">
-                                                                <i class="fas fa-times"></i>
-                                                            </button>
+                                        <!-- Tienda seleccionada -->
+                                        <div id="selected_store" class="d-none">
+                                            <div class="card border border-info">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <h6 class="mb-1 text-info">Tienda Seleccionada:</h6>
+                                                            <p class="mb-0" id="selected_store_info"></p>
                                                         </div>
+                                                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearStoreSelection()">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
-                                        @else
-                                            <!-- Empleados ven su tienda asignada automáticamente -->
-                                            @if($employeeStore)
-                                                <div class="alert alert-info border-0">
-                                                    <div class="d-flex align-items-center">
-                                                        <i class="fas fa-info-circle fa-2x me-3"></i>
-                                                        <div>
-                                                            <h6 class="mb-1">Cliente será asignado a tu tienda:</h6>
-                                                            <p class="mb-0">
-                                                                <strong>Tienda {{ $employeeStore->store_id }}</strong>
-                                                                @if($employeeStore->address)
-                                                                    - {{ $employeeStore->address->city->city ?? 'Ciudad' }}, {{ $employeeStore->address->city->country->country ?? 'País' }}
-                                                                @endif
-                                                                @if($employeeStore->manager)
-                                                                    <br><small class="text-muted">Gerente: {{ $employeeStore->manager->full_name }}</small>
-                                                                @endif
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            @else
-                                                <div class="alert alert-warning border-0">
-                                                    <div class="d-flex align-items-center">
-                                                        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
-                                                        <div>
-                                                            <h6 class="mb-1">Error de configuración</h6>
-                                                            <p class="mb-0">No se encontró tu tienda asignada. Contacta al administrador.</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            @endif
-                                        @endif
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -316,15 +282,6 @@
                                                     @error('city_id')
                                                         <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
-                                                    <div class="form-text">Selecciona primero un país para cargar las ciudades</div>
-                                                    
-                                                    <!-- Debug info -->
-                                                    <div id="debug-info" style="margin-top: 10px; padding: 10px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; font-family: monospace; font-size: 12px;">
-                                                        <strong>Debug Info:</strong><br>
-                                                        <span id="debug-status">Esperando selección de país...</span><br>
-                                                        <span id="debug-disabled">Disabled: true</span><br>
-                                                        <span id="debug-options">Opciones: 1</span>
-                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -353,99 +310,127 @@
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ Script loaded successfully');
+    console.log('Script loaded');
     
-    // Test básico de elementos
+    // Elementos del DOM
+    const storeSearch = document.getElementById('store_search');
+    const storeResults = document.getElementById('store_results');
+    const storeIdInput = document.getElementById('store_id');
+    const selectedStoreDiv = document.getElementById('selected_store');
+    const selectedStoreInfo = document.getElementById('selected_store_info');
+    
     const countrySelect = document.getElementById('country_id');
     const citySelect = document.getElementById('city_id');
-    
-    console.log('✅ Country select found:', !!countrySelect);
-    console.log('✅ City select found:', !!citySelect);
-    
-    if (!countrySelect) {
-        console.error('❌ NO SE ENCONTRÓ EL SELECT DE PAÍS');
-        return;
-    }
-    
-    if (!citySelect) {
-        console.error('❌ NO SE ENCONTRÓ EL SELECT DE CIUDAD');
-        return;
-    }
-    
-    console.log('✅ Registrando event listener...');
-    
-    // Event listener simplificado
-    countrySelect.addEventListener('change', function() {
-        console.log('🔥 PAÍS CAMBIADO! Valor:', this.value);
-        
-        // Actualizar debug info
-        const debugStatus = document.getElementById('debug-status');
-        if (debugStatus) {
-            debugStatus.textContent = `País seleccionado: ${this.value}`;
-            debugStatus.style.color = 'green';
-        }
-        
-        const countryId = this.value;
-        
-        if (!countryId) {
-            citySelect.innerHTML = '<option value="">Primero selecciona un país...</option>';
-            citySelect.disabled = true;
-            return;
-        }
-        
-        // Mostrar carga
-        citySelect.innerHTML = '<option value="">Cargando ciudades...</option>';
-        citySelect.disabled = true;
-        
-        // Petición fetch simplificada
-        fetch(`/cities/by-country?country_id=${countryId}`)
-            .then(response => {
-                console.log('✅ Response recibida:', response.status);
-                return response.json();
-            })
-            .then(cities => {
-                console.log('✅ Ciudades recibidas:', cities);
-                
-                citySelect.innerHTML = '<option value="">Seleccionar ciudad...</option>';
-                
-                if (cities && cities.length > 0) {
-                    cities.forEach(city => {
-                        const option = document.createElement('option');
-                        option.value = city.city_id;
-                        option.textContent = city.city;
-                        citySelect.appendChild(option);
-                    });
-                }
-                
-                // Habilitar select
-                citySelect.disabled = false;
-                console.log('✅ Select habilitado');
-                
-                // Update debug
-                const debugStatus = document.getElementById('debug-status');
-                if (debugStatus) {
-                    debugStatus.textContent = `Ciudades cargadas: ${cities.length}`;
-                    debugStatus.style.color = 'blue';
-                }
-            })
-            .catch(error => {
-                console.error('❌ Error:', error);
-                citySelect.innerHTML = '<option value="">Error al cargar</option>';
-                citySelect.disabled = false;
-            });
+
+    console.log('Elements found:', {
+        storeSearch: !!storeSearch,
+        countrySelect: !!countrySelect,
+        citySelect: !!citySelect
     });
-    
-    console.log('✅ Event listener registrado correctamente');
-});
-</script>
+
+    let searchTimeout;
+
+    // Búsqueda de tiendas con autocompletado
+    if (storeSearch) {
+        storeSearch.addEventListener('input', function() {
+            const query = this.value.trim();
+            console.log('Store search query:', query);
+            
+            clearTimeout(searchTimeout);
+            
+            if (query.length < 2) {
+                storeResults.classList.add('d-none');
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                searchStores(query);
+            }, 300);
+        });
+
+        // Cerrar resultados al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            if (!storeSearch.contains(e.target) && !storeResults.contains(e.target)) {
+                storeResults.classList.add('d-none');
+            }
+        });
+    }
+
+    // Cargar ciudades cuando cambia el país
+    if (countrySelect && citySelect) {
+        countrySelect.addEventListener('change', function() {
+            const countryId = this.value;
+            console.log('País seleccionado:', countryId);
+            
+            if (!countryId) {
+                citySelect.innerHTML = '<option value="">Primero selecciona un país...</option>';
+                citySelect.disabled = true;
+                return;
+            }
+
+            // Mostrar estado de carga
+            citySelect.innerHTML = '<option value="">Cargando ciudades...</option>';
+            citySelect.disabled = true;
+
+            // Hacer la petición AJAX
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', `/cities/by-country?country_id=${countryId}`, true);
+            xhr.setRequestHeader('Accept', 'application/json');
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    console.log('XHR status:', xhr.status);
+                    console.log('XHR response:', xhr.responseText);
+                    
+                    if (xhr.status === 200) {
+                        try {
+                            const cities = JSON.parse(xhr.responseText);
+                            console.log('Cities parsed:', cities);
+                            
+                            // Limpiar select
+                            citySelect.innerHTML = '<option value="">Seleccionar ciudad...</option>';
+                            
+                            if (cities.length === 0) {
+                                citySelect.innerHTML = '<option value="">No hay ciudades disponibles</option>';
+                            } else {
+                                cities.forEach(city => {
+                                    const option = document.createElement('option');
+                                    option.value = city.city_id;
+                                    option.textContent = city.city;
+                                    citySelect.appendChild(option);
+                                });
+                            }
+                            
+                            citySelect.disabled = false;
+                        } catch (e) {
+                            console.error('Error parsing JSON:', e);
+                            citySelect.innerHTML = '<option value="">Error al procesar respuesta</option>';
+                            citySelect.disabled = false;
+                        }
+                    } else {
+                        console.error('Error en petición:', xhr.status, xhr.statusText);
+                        citySelect.innerHTML = '<option value="">Error al cargar ciudades</option>';
+                        citySelect.disabled = false;
+                    }
+                }
+            };
+            
+            xhr.onerror = function() {
+                console.error('Error de red');
+                citySelect.innerHTML = '<option value="">Error de conexión</option>';
+                citySelect.disabled = false;
+            };
+            
+            xhr.send();
+        });
+    }
 
     // Validación del formulario
     const customerForm = document.getElementById('customerForm');
     if (customerForm) {
         customerForm.addEventListener('submit', function(e) {
-            // Solo validar tienda para admins
-            const isAdmin = @json($isAdmin);
-            if (isAdmin && !storeIdInput.value) {
+            if (!storeIdInput.value) {
                 e.preventDefault();
                 alert('Por favor selecciona una tienda principal.');
                 if (storeSearch) storeSearch.focus();

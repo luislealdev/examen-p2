@@ -55,10 +55,92 @@ class CustomerController extends Controller
      */
     public function create(): View
     {
-        $stores = Store::with('address.city.country', 'manager')->get();
-        $addresses = \App\Models\Address::with('city.country')->get();
+        $countries = \App\Models\Country::orderBy('country')->get();
+        $isAdmin = auth()->user()->isAdmin();
+        $employeeStore = null;
         
-        return view('customers.create', compact('stores', 'addresses'));
+        // Si es empleado, obtener su tienda asignada
+        if (!$isAdmin) {
+            $staff = \App\Models\Staff::where('email', auth()->user()->email)
+                ->orWhere('username', auth()->user()->email)
+                ->first();
+            
+            if ($staff && $staff->store) {
+                $employeeStore = $staff->store->load(['address.city.country', 'manager']);
+            }
+        }
+        
+        return view('customers.create', compact('countries', 'isAdmin', 'employeeStore'));
+    }
+
+    /**
+     * Search stores for autocomplete
+     */
+    public function searchStores(Request $request)
+    {
+        $query = $request->get('q');
+        
+        if (strlen($query) < 1) {
+            return response()->json([]);
+        }
+
+        \Log::info('Searching stores', ['query' => $query]);
+
+        $stores = Store::with(['address.city.country', 'manager'])
+            ->where(function($q) use ($query) {
+                $q->where('store_id', 'LIKE', '%' . $query . '%')
+                  ->orWhereHas('address.city', function ($subQ) use ($query) {
+                      $subQ->where('city', 'LIKE', '%' . $query . '%');
+                  })
+                  ->orWhereHas('address.city.country', function ($subQ) use ($query) {
+                      $subQ->where('country', 'LIKE', '%' . $query . '%');
+                  });
+            })
+            ->orderBy('store_id')
+            ->limit(10)
+            ->get();
+
+        \Log::info('Stores found', ['count' => $stores->count()]);
+
+        $result = $stores->map(function ($store) {
+            $cityName = optional(optional($store->address)->city)->city ?? 'Ciudad desconocida';
+            $countryName = optional(optional(optional($store->address)->city)->country)->country ?? 'País desconocido';
+            $managerName = $store->manager ? $store->manager->full_name : 'Sin gerente';
+            $address = optional($store->address)->address ?? 'Sin dirección';
+            
+            return [
+                'id' => $store->store_id,
+                'text' => "Tienda {$store->store_id} - {$cityName}, {$countryName}",
+                'manager' => $managerName,
+                'address' => $address,
+                'full_text' => "Tienda {$store->store_id} - {$cityName}, {$countryName} (Gerente: {$managerName})"
+            ];
+        });
+
+        return response()->json($result);
+    }
+
+    /**
+     * Get cities by country for dynamic dropdown
+     */
+    public function getCitiesByCountry(Request $request)
+    {
+        $countryId = $request->get('country_id');
+        
+        if (!$countryId) {
+            return response()->json(['error' => 'country_id is required'], 400);
+        }
+        
+        $cities = \App\Models\City::where('country_id', $countryId)
+            ->orderBy('city')
+            ->get(['city_id', 'city']);
+
+        \Log::info('Cities loaded for country', [
+            'country_id' => $countryId,
+            'cities_count' => $cities->count()
+        ]);
+
+        return response()->json($cities);
     }
 
     /**
@@ -66,21 +148,74 @@ class CustomerController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'store_id' => 'required|integer|exists:stores,store_id',
+        $isAdmin = auth()->user()->isAdmin();
+        
+        // Reglas de validación base
+        $validationRules = [
             'first_name' => 'required|string|max:45',
             'last_name' => 'required|string|max:45',
             'email' => 'nullable|email|max:50|unique:customers,email',
-            'address_id' => 'required|integer|min:1',
             'active' => 'boolean',
-        ]);
-
+            // Campos de dirección
+            'address_line1' => 'required|string|max:50',
+            'address_line2' => 'nullable|string|max:50',
+            'district' => 'required|string|max:20',
+            'postal_code' => 'required|string|max:10',
+            'phone' => 'nullable|string|max:20',
+            'city_id' => 'required|integer|exists:city,city_id',
+        ];
+        
+        // Solo administradores pueden seleccionar tienda
+        if ($isAdmin) {
+            $validationRules['store_id'] = 'required|integer|exists:stores,store_id';
+        }
+        
+        $validated = $request->validate($validationRules);
         $validated['active'] = $request->boolean('active', true);
 
-        Customer::create($validated);
+        // Determinar la tienda
+        if ($isAdmin) {
+            $storeId = $validated['store_id'];
+        } else {
+            // Para empleados, usar su tienda asignada
+            $staff = \App\Models\Staff::where('email', auth()->user()->email)
+                ->orWhere('username', auth()->user()->email)
+                ->first();
+                
+            if (!$staff || !$staff->store_id) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'No se encontró la tienda asignada al empleado.');
+            }
+            
+            $storeId = $staff->store_id;
+        }
 
+        // Crear la dirección primero
+        $address = \App\Models\Address::create([
+            'address' => $validated['address_line1'],
+            'address2' => $validated['address_line2'],
+            'district' => $validated['district'],
+            'postal_code' => $validated['postal_code'],
+            'phone' => $validated['phone'],
+            'city_id' => $validated['city_id'],
+            'last_update' => now(),
+        ]);
+
+        // Crear el cliente con la dirección creada
+        Customer::create([
+            'store_id' => $storeId,
+            'first_name' => $validated['first_name'],
+            'last_name' => $validated['last_name'],
+            'email' => $validated['email'],
+            'address_id' => $address->address_id,
+            'active' => $validated['active'],
+        ]);
+
+        $storeText = $isAdmin ? 'con la tienda seleccionada' : "asignado a tu tienda (Tienda #{$storeId})";
+        
         return redirect()->route('customers.index')
-            ->with('success', 'Customer created successfully!');
+            ->with('success', "Cliente creado exitosamente {$storeText}!");
     }
 
     /**
@@ -247,5 +382,129 @@ class CustomerController extends Controller
 
         return redirect()->route('customers.index')
             ->with('success', 'Customer deactivated successfully!');
+    }
+
+    /**
+     * Display blocked customers management interface
+     */
+    public function blocked(Request $request): View
+    {
+        // Solo admins pueden acceder a esta funcionalidad
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'Solo administradores pueden gestionar bloqueos de clientes.');
+        }
+
+        // Obtener todos los clientes con rentas activas
+        $customers = Customer::with(['rentals' => function($query) {
+            $query->whereNull('return_date')->with('inventory.film');
+        }])
+        ->whereHas('rentals', function($query) {
+            $query->whereNull('return_date');
+        })
+        ->get()
+        ->filter(function($customer) {
+            return $customer->shouldBeBlocked();
+        })
+        ->map(function($customer) {
+            $overdueRentals = $customer->overdueRentals;
+            return [
+                'customer' => $customer,
+                'overdue_count' => count($overdueRentals),
+                'total_late_fees' => $customer->getTotalLateFees(),
+                'overdue_rentals' => $overdueRentals
+            ];
+        })
+        ->sortByDesc('total_late_fees');
+
+        return view('customers.blocked', compact('customers'));
+    }
+
+    /**
+     * Force unblock a customer (admin only)
+     */
+    public function forceUnblock(Customer $customer, Request $request): RedirectResponse
+    {
+        // Solo admins pueden forzar desbloqueos
+        if (!auth()->user()->isAdmin()) {
+            return redirect()->back()->with('error', 'Solo administradores pueden desbloquear clientes.');
+        }
+
+        $request->validate([
+            'reason' => 'required|string|max:255'
+        ]);
+
+        // Marcar todas las rentas vencidas como devueltas con override administrativo
+        $overdueRentals = $customer->rentals()->whereNull('return_date')->get()->filter(function($rental) {
+            $dueDate = $rental->rental_date->addDays(7);
+            return now()->isAfter($dueDate);
+        });
+
+        foreach ($overdueRentals as $rental) {
+            $rental->update([
+                'return_date' => now()
+            ]);
+        }
+
+        // Log de la acción administrativa (simplificado)
+        \Log::info("Cliente desbloqueado por admin", [
+            'customer_id' => $customer->customer_id,
+            'customer_name' => $customer->full_name,
+            'admin_user' => auth()->user()->email,
+            'reason' => $request->reason,
+            'rentals_returned' => count($overdueRentals),
+            'timestamp' => now()
+        ]);
+
+        return redirect()->back()->with('success', 
+            "Cliente {$customer->full_name} desbloqueado exitosamente. " . 
+            count($overdueRentals) . " rentas fueron marcadas como devueltas por override administrativo."
+        );
+    }
+
+    /**
+     * Extend rental period for a customer (admin only)
+     */
+    public function extendRental(Customer $customer, Request $request): RedirectResponse
+    {
+        // Solo admins pueden extender rentas
+        if (!auth()->user()->isAdmin()) {
+            return redirect()->back()->with('error', 'Solo administradores pueden extender rentas.');
+        }
+
+        $request->validate([
+            'rental_id' => 'required|exists:rental,rental_id',
+            'extension_days' => 'required|integer|min:1|max:30',
+            'reason' => 'required|string|max:255'
+        ]);
+
+        $rental = \App\Models\Rental::find($request->rental_id);
+        
+        if ($rental->customer_id !== $customer->customer_id) {
+            return redirect()->back()->with('error', 'La renta no pertenece a este cliente.');
+        }
+
+        if ($rental->return_date) {
+            return redirect()->back()->with('error', 'Esta renta ya ha sido devuelta.');
+        }
+
+        // Por simplicidad, ajustamos la fecha de renta para simular extensión
+        $rental->update([
+            'rental_date' => $rental->rental_date->addDays($request->extension_days)
+        ]);
+
+        // Log de la extensión
+        \Log::info("Renta extendida por admin", [
+            'rental_id' => $rental->rental_id,
+            'customer_name' => $customer->full_name,
+            'film_title' => $rental->inventory->film->title,
+            'extension_days' => $request->extension_days,
+            'admin_user' => auth()->user()->email,
+            'reason' => $request->reason,
+            'timestamp' => now()
+        ]);
+
+        return redirect()->back()->with('success', 
+            "Renta de '{$rental->inventory->film->title}' extendida por {$request->extension_days} días."
+        );
     }
 }

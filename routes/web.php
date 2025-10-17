@@ -61,9 +61,24 @@ Route::middleware(['auth', 'role:employee,admin'])->group(function () {
     Route::put('rentals/{rental}/return', [RentalController::class, 'returnFilm'])->name('rental.return');
     Route::get('films/{film}/availability', [RentalController::class, 'checkAvailability'])->name('rental.availability');
     Route::get('customers/search', [RentalController::class, 'searchCustomers'])->name('customers.search');
-
+    
+    // Rutas para manejo de direcciones y clientes (necesarias para empleados)
+    Route::get('cities/by-country', [CustomerController::class, 'getCitiesByCountry'])->name('cities.by-country');
+    
     // Gestión de clientes (empleados y administradores)
     Route::resource('customers', CustomerController::class);
+    
+    // Búsqueda de tiendas (solo para administradores que pueden seleccionar tienda)
+    Route::middleware('role:admin')->group(function () {
+        Route::get('stores/search', [CustomerController::class, 'searchStores'])->name('stores.search-for-customers');
+    });
+    
+    // Gestión de bloqueos de clientes (solo administradores)
+    Route::middleware('role:admin')->group(function () {
+        Route::get('customers-blocked', [CustomerController::class, 'blocked'])->name('customers.blocked');
+        Route::post('customers/{customer}/force-unblock', [CustomerController::class, 'forceUnblock'])->name('customers.force-unblock');
+        Route::post('customers/{customer}/extend-rental', [CustomerController::class, 'extendRental'])->name('customers.extend-rental');
+    });
 
     // Gestión de inventarios (empleados y administradores)
     Route::resource('inventories', InventoryController::class);
