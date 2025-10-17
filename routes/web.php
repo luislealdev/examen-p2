@@ -56,6 +56,11 @@ Route::get('search/stores', [InventoryController::class, 'searchStores'])->name(
 // Ruta para cargar ciudades por país (necesaria para registro público)
 Route::get('cities/by-country', [CustomerController::class, 'getCitiesByCountry'])->name('cities.by-country');
 
+// // Ruta temporal de test para debugging
+// Route::get('test-country-city', function() {
+//     return view('test-country-city');
+// })->name('test.country-city');
+
 // === RUTAS PARA EMPLEADOS Y ADMINISTRADORES ===
 Route::middleware(['auth', 'role:employee,admin'])->group(function () {
     

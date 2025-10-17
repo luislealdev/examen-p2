@@ -319,12 +319,12 @@
                                                     <div class="form-text">Selecciona primero un país para cargar las ciudades</div>
                                                     
                                                     <!-- Debug info -->
-                                                    <div id="debug-info" style="margin-top: 10px; padding: 10px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; font-family: monospace; font-size: 12px;">
+                                                    <!-- <div id="debug-info" style="margin-top: 10px; padding: 10px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; font-family: monospace; font-size: 12px;">
                                                         <strong>Debug Info:</strong><br>
                                                         <span id="debug-status">Esperando selección de país...</span><br>
                                                         <span id="debug-disabled">Disabled: true</span><br>
                                                         <span id="debug-options">Opciones: 1</span>
-                                                    </div>
+                                                    </div> -->
                                                 </div>
                                             </div>
                                         </div>
@@ -350,7 +350,7 @@
 </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Script loaded successfully');
@@ -436,8 +436,37 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     console.log('✅ Event listener registrado correctamente');
-});
-</script>
+
+    // Búsqueda de tiendas (solo para admins)
+    const storeSearch = document.getElementById('store_search');
+    const storeIdInput = document.getElementById('store_id');
+    
+    if (storeSearch) {
+        let searchTimeout;
+        
+        storeSearch.addEventListener('input', function() {
+            const query = this.value.trim();
+            
+            clearTimeout(searchTimeout);
+            
+            if (query.length >= 2) {
+                searchTimeout = setTimeout(() => {
+                    searchStores(query);
+                }, 300);
+            } else {
+                const storeResults = document.getElementById('store_results');
+                storeResults.classList.add('d-none');
+            }
+        });
+
+        // Hide results when clicking outside
+        document.addEventListener('click', function(e) {
+            const storeResults = document.getElementById('store_results');
+            if (!storeSearch.contains(e.target) && !storeResults.contains(e.target)) {
+                storeResults.classList.add('d-none');
+            }
+        });
+    }
 
     // Validación del formulario
     const customerForm = document.getElementById('customerForm');
@@ -577,4 +606,4 @@ function escapeHtml(text) {
     -webkit-text-fill-color: transparent;
 }
 </style>
-@endsection
+@endpush
