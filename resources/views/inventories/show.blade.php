@@ -165,7 +165,9 @@
                             <strong>Category:</strong><br>
                             <span class="badge bg-secondary">{{ $inventory->film->category->name }}</span>
                         </div>
-                    @endif                    <!-- Special Features -->
+                    @endif
+
+                    <!-- Special Features -->
                     @if($inventory->film->special_features && count($inventory->film->special_features) > 0)
                         <div class="mt-3">
                             <strong>Special Features:</strong><br>
@@ -227,11 +229,21 @@
                 </div>
                 <div class="card-body">
                     @php
-                        $otherCopies = \App\Models\Inventory::where('film_id', $inventory->film_id)
+                        // Filtrar por tienda si es empleado
+                        $user = Auth::user();
+                        $otherCopiesQuery = \App\Models\Inventory::where('film_id', $inventory->film_id)
                             ->where('inventory_id', '!=', $inventory->inventory_id)
-                            ->with('store')
-                            ->take(5)
-                            ->get();
+                            ->with('store');
+                        
+                        // Si es empleado, solo mostrar copias de su tienda
+                        if ($user->role === 'employee') {
+                            $staff = \App\Models\Staff::where('email', $user->email)->first();
+                            if ($staff) {
+                                $otherCopiesQuery->where('store_id', $staff->store_id);
+                            }
+                        }
+                        
+                        $otherCopies = $otherCopiesQuery->take(5)->get();
                     @endphp
                     
                     @if($otherCopies->count() > 0)
@@ -248,7 +260,14 @@
                         @endforeach
                         
                         @php
-                            $totalCopies = \App\Models\Inventory::where('film_id', $inventory->film_id)->count();
+                            // Contar total de copias según rol
+                            $totalCopiesQuery = \App\Models\Inventory::where('film_id', $inventory->film_id);
+                            
+                            if ($user->role === 'employee' && isset($staff)) {
+                                $totalCopiesQuery->where('store_id', $staff->store_id);
+                            }
+                            
+                            $totalCopies = $totalCopiesQuery->count();
                         @endphp
                         
                         @if($totalCopies > 5)
@@ -259,7 +278,13 @@
                             </div>
                         @endif
                     @else
-                        <p class="text-muted text-center">This is the only copy of this film in inventory.</p>
+                        <p class="text-muted text-center">
+                            @if($user->role === 'employee')
+                                This is the only copy of this film in your store.
+                            @else
+                                This is the only copy of this film in inventory.
+                            @endif
+                        </p>
                     @endif
                 </div>
             </div>

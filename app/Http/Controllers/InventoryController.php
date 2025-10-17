@@ -7,18 +7,58 @@ use App\Models\Film;
 use App\Models\Store;
 use App\Models\Category;
 use App\Models\Language;
+use App\Models\Staff;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 
 class InventoryController extends Controller
 {
+    /**
+     * Get the store ID for the current user based on their role.
+     */
+    private function getUserStoreId(): ?int
+    {
+        $user = Auth::user();
+        
+        // Si es admin, puede ver todo
+        if ($user->role === 'admin') {
+            return null;
+        }
+        
+        // Si es empleado, obtener su tienda del registro de staff
+        if ($user->role === 'employee') {
+            $staff = Staff::where('email', $user->email)->first();
+            return $staff ? $staff->store_id : null;
+        }
+        
+        return null;
+    }
+
+    /**
+     * Apply store filter based on user role.
+     */
+    private function applyStoreFilter($query)
+    {
+        $userStoreId = $this->getUserStoreId();
+        
+        if ($userStoreId !== null) {
+            $query->byStore($userStoreId);
+        }
+        
+        return $query;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request): View
     {
         $query = Inventory::with(['film.language', 'film.category', 'store']);
+
+        // Aplicar filtro por tienda del empleado
+        $query = $this->applyStoreFilter($query);
 
         // Search functionality
         if ($request->filled('search')) {
@@ -30,8 +70,8 @@ class InventoryController extends Controller
             $query->byFilm($request->film_id);
         }
 
-        // Filter by store
-        if ($request->filled('store_id')) {
+        // Filter by store (solo si es admin)
+        if ($request->filled('store_id') && Auth::user()->role === 'admin') {
             $query->byStore($request->store_id);
         }
 
@@ -87,15 +127,33 @@ class InventoryController extends Controller
         // Pagination with request parameters preserved
         $inventories = $query->paginate(20)->withQueryString();
 
-        // Get filter data
-        $films = Film::with('language')->orderBy('title')->get();
-        $stores = Store::orderBy('store_id')->get();
+        // Get filter data (filtrar películas solo de su tienda para empleados)
+        $userStoreId = $this->getUserStoreId();
+        
+        if ($userStoreId !== null) {
+            // Empleado: solo películas disponibles en su tienda
+            $films = Film::with('language')
+                ->whereHas('inventories', function($q) use ($userStoreId) {
+                    $q->where('store_id', $userStoreId);
+                })
+                ->orderBy('title')
+                ->get();
+        } else {
+            // Admin: todas las películas
+            $films = Film::with('language')->orderBy('title')->get();
+        }
+        
+        // Stores: solo mostrar selector si es admin
+        $stores = Auth::user()->role === 'admin' 
+            ? Store::orderBy('store_id')->get() 
+            : collect();
+            
         $categories = Category::alphabetical()->get();
         $languages = Language::alphabetical()->get();
         $ratings = Film::RATINGS;
 
-        // Get statistics
-        $stats = Inventory::getStatistics();
+        // Get statistics (filtradas por tienda si es empleado)
+        $stats = $this->getFilteredStatistics($userStoreId);
 
         return view('inventories.index', compact(
             'inventories', 'films', 'stores', 'categories', 'languages', 'ratings', 'stats'
@@ -103,16 +161,62 @@ class InventoryController extends Controller
     }
 
     /**
+     * Get statistics filtered by store if needed.
+     */
+    private function getFilteredStatistics(?int $storeId): array
+    {
+        $query = Inventory::query();
+        
+        if ($storeId !== null) {
+            $query->where('store_id', $storeId);
+        }
+        
+        return [
+            'total_items' => $query->count(),
+            'by_store' => $storeId !== null 
+                ? [$storeId => $query->count()]
+                : Inventory::selectRaw('store_id, COUNT(*) as count')
+                    ->groupBy('store_id')
+                    ->with('store')
+                    ->get()
+                    ->mapWithKeys(fn($item) => [
+                        $item->store->store_id ?? 'Unknown' => $item->count
+                    ]),
+            'by_rating' => (clone $query)
+                ->join('film', 'inventory.film_id', '=', 'film.film_id')
+                ->selectRaw('film.rating, COUNT(*) as count')
+                ->groupBy('film.rating')
+                ->get()
+                ->mapWithKeys(fn($item) => [$item->rating => $item->count]),
+            'recent_additions' => (clone $query)->recent(7)->count(),
+            'avg_rental_rate' => (clone $query)
+                ->join('film', 'inventory.film_id', '=', 'film.film_id')
+                ->avg('film.rental_rate'),
+            'high_value_items' => (clone $query)->highValue()->count(),
+        ];
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create(): View
     {
+        $userStoreId = $this->getUserStoreId();
+        
         $films = Film::with(['language', 'category'])
                     ->orderBy('title')
                     ->get();
-        $stores = Store::with(['address', 'manager'])
-                    ->orderBy('store_id')
-                    ->get();
+        
+        // Si es empleado, solo puede agregar a su tienda
+        if ($userStoreId !== null) {
+            $stores = Store::with(['address', 'manager'])
+                        ->where('store_id', $userStoreId)
+                        ->get();
+        } else {
+            $stores = Store::with(['address', 'manager'])
+                        ->orderBy('store_id')
+                        ->get();
+        }
 
         return view('inventories.create', compact('films', 'stores'));
     }
@@ -127,6 +231,14 @@ class InventoryController extends Controller
             'store_id' => 'required|exists:stores,store_id',
         ]);
 
+        // Verificar que el empleado solo puede agregar a su tienda
+        $userStoreId = $this->getUserStoreId();
+        if ($userStoreId !== null && $validated['store_id'] != $userStoreId) {
+            return redirect()->back()
+                ->withErrors(['store_id' => 'No puedes agregar inventario a una tienda diferente a la tuya.'])
+                ->withInput();
+        }
+
         $inventory = Inventory::create($validated);
 
         return redirect()->route('inventories.index')
@@ -138,6 +250,12 @@ class InventoryController extends Controller
      */
     public function show(Inventory $inventory): View
     {
+        // Verificar que el empleado solo pueda ver inventario de su tienda
+        $userStoreId = $this->getUserStoreId();
+        if ($userStoreId !== null && $inventory->store_id != $userStoreId) {
+            abort(403, 'No tienes permiso para ver este inventario.');
+        }
+
         $inventory->load(['film.language', 'film.category', 'store']);
         
         return view('inventories.show', compact('inventory'));
@@ -148,13 +266,28 @@ class InventoryController extends Controller
      */
     public function edit(Inventory $inventory): View
     {
+        // Verificar que el empleado solo pueda editar inventario de su tienda
+        $userStoreId = $this->getUserStoreId();
+        if ($userStoreId !== null && $inventory->store_id != $userStoreId) {
+            abort(403, 'No tienes permiso para editar este inventario.');
+        }
+
         $inventory->load(['film.category', 'film.language', 'store.address', 'store.manager']);
+        
         $films = Film::with(['language', 'category'])
                     ->orderBy('title')
                     ->get();
-        $stores = Store::with(['address', 'manager'])
-                    ->orderBy('store_id')
-                    ->get();
+        
+        // Si es empleado, solo puede mover a su tienda
+        if ($userStoreId !== null) {
+            $stores = Store::with(['address', 'manager'])
+                        ->where('store_id', $userStoreId)
+                        ->get();
+        } else {
+            $stores = Store::with(['address', 'manager'])
+                        ->orderBy('store_id')
+                        ->get();
+        }
 
         return view('inventories.edit', compact('inventory', 'films', 'stores'));
     }
@@ -164,10 +297,23 @@ class InventoryController extends Controller
      */
     public function update(Request $request, Inventory $inventory): RedirectResponse
     {
+        // Verificar que el empleado solo pueda actualizar inventario de su tienda
+        $userStoreId = $this->getUserStoreId();
+        if ($userStoreId !== null && $inventory->store_id != $userStoreId) {
+            abort(403, 'No tienes permiso para actualizar este inventario.');
+        }
+
         $validated = $request->validate([
             'film_id' => 'required|exists:film,film_id',
             'store_id' => 'required|exists:stores,store_id',
         ]);
+
+        // Verificar que el empleado solo puede mover a su tienda
+        if ($userStoreId !== null && $validated['store_id'] != $userStoreId) {
+            return redirect()->back()
+                ->withErrors(['store_id' => 'No puedes mover inventario a una tienda diferente a la tuya.'])
+                ->withInput();
+        }
 
         $inventory->update($validated);
 
@@ -180,6 +326,12 @@ class InventoryController extends Controller
      */
     public function destroy(Inventory $inventory): RedirectResponse
     {
+        // Verificar que el empleado solo pueda eliminar inventario de su tienda
+        $userStoreId = $this->getUserStoreId();
+        if ($userStoreId !== null && $inventory->store_id != $userStoreId) {
+            abort(403, 'No tienes permiso para eliminar este inventario.');
+        }
+
         $inventoryId = $inventory->inventory_id;
         
         $inventory->delete();
@@ -193,10 +345,13 @@ class InventoryController extends Controller
      */
     public function byFilm(Film $film): View
     {
-        $inventories = Inventory::with(['film.language', 'film.category', 'store'])
-            ->byFilm($film->film_id)
-            ->orderBy('store_id')
-            ->paginate(20);
+        $query = Inventory::with(['film.language', 'film.category', 'store'])
+            ->byFilm($film->film_id);
+        
+        // Aplicar filtro por tienda del empleado
+        $query = $this->applyStoreFilter($query);
+        
+        $inventories = $query->orderBy('store_id')->paginate(20);
 
         return view('inventories.by-film', compact('inventories', 'film'));
     }
@@ -206,6 +361,12 @@ class InventoryController extends Controller
      */
     public function byStore(Store $store): View
     {
+        // Verificar que el empleado solo pueda ver inventario de su tienda
+        $userStoreId = $this->getUserStoreId();
+        if ($userStoreId !== null && $store->store_id != $userStoreId) {
+            abort(403, 'No tienes permiso para ver el inventario de esta tienda.');
+        }
+
         $inventories = Inventory::with(['film.language', 'film.category', 'store'])
             ->byStore($store->store_id)
             ->alphabetical()
@@ -221,10 +382,13 @@ class InventoryController extends Controller
     {
         $days = $request->get('days', 30);
         
-        $inventories = Inventory::with(['film.language', 'film.category', 'store'])
-            ->recent($days)
-            ->newest()
-            ->paginate(20);
+        $query = Inventory::with(['film.language', 'film.category', 'store'])
+            ->recent($days);
+        
+        // Aplicar filtro por tienda del empleado
+        $query = $this->applyStoreFilter($query);
+        
+        $inventories = $query->newest()->paginate(20);
 
         return view('inventories.recent', compact('inventories', 'days'));
     }
@@ -234,10 +398,13 @@ class InventoryController extends Controller
      */
     public function highValue(): View
     {
-        $inventories = Inventory::with(['film.language', 'film.category', 'store'])
-            ->highValue()
-            ->alphabetical()
-            ->paginate(20);
+        $query = Inventory::with(['film.language', 'film.category', 'store'])
+            ->highValue();
+        
+        // Aplicar filtro por tienda del empleado
+        $query = $this->applyStoreFilter($query);
+        
+        $inventories = $query->alphabetical()->paginate(20);
 
         return view('inventories.high-value', compact('inventories'));
     }
@@ -247,8 +414,23 @@ class InventoryController extends Controller
      */
     public function statistics(): View
     {
-        $stats = Inventory::getStatistics();
-        $storeInventory = Inventory::getStoreInventorySummary();
+        $userStoreId = $this->getUserStoreId();
+        
+        $stats = $this->getFilteredStatistics($userStoreId);
+        
+        if ($userStoreId !== null) {
+            $storeInventory = [
+                $userStoreId => [
+                    'store' => Store::find($userStoreId),
+                    'total_items' => Inventory::where('store_id', $userStoreId)->count(),
+                    'unique_films' => Inventory::where('store_id', $userStoreId)
+                        ->distinct('film_id')
+                        ->count('film_id')
+                ]
+            ];
+        } else {
+            $storeInventory = Inventory::getStoreInventorySummary();
+        }
 
         return view('inventories.statistics', compact('stats', 'storeInventory'));
     }
@@ -258,12 +440,22 @@ class InventoryController extends Controller
      */
     public function bulkCreate(): View
     {
+        $userStoreId = $this->getUserStoreId();
+        
         $films = Film::with(['language', 'category'])
                     ->orderBy('title')
                     ->get();
-        $stores = Store::with(['address', 'manager'])
-                    ->orderBy('store_id')
-                    ->get();
+        
+        // Si es empleado, solo puede agregar a su tienda
+        if ($userStoreId !== null) {
+            $stores = Store::with(['address', 'manager'])
+                        ->where('store_id', $userStoreId)
+                        ->get();
+        } else {
+            $stores = Store::with(['address', 'manager'])
+                        ->orderBy('store_id')
+                        ->get();
+        }
 
         return view('inventories.bulk-create', compact('films', 'stores'));
     }
@@ -279,6 +471,18 @@ class InventoryController extends Controller
             'stores.*' => 'exists:stores,store_id',
             'quantity' => 'required|integer|min:1|max:50',
         ]);
+
+        // Verificar que el empleado solo puede agregar a su tienda
+        $userStoreId = $this->getUserStoreId();
+        if ($userStoreId !== null) {
+            foreach ($validated['stores'] as $storeId) {
+                if ($storeId != $userStoreId) {
+                    return redirect()->back()
+                        ->withErrors(['stores' => 'No puedes agregar inventario a tiendas diferentes a la tuya.'])
+                        ->withInput();
+                }
+            }
+        }
 
         $totalAdded = 0;
         
