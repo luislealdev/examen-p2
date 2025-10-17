@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Api\FilmController;
+use App\Http\Controllers\Api\InventoryController;
+use App\Http\Controllers\Api\RankingController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -27,6 +30,92 @@ Route::get('test', function () {
         'message' => 'API is working!',
         'timestamp' => now()
     ]);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Public API Routes (No Authentication Required)
+|--------------------------------------------------------------------------
+*/
+
+// API version prefix
+Route::prefix('v1')->group(function () {
+    
+    // Films API
+    Route::prefix('films')->group(function () {
+        Route::get('/', [FilmController::class, 'index']);
+        Route::get('/{film}', [FilmController::class, 'show']);
+        Route::get('/{film}/inventory', [FilmController::class, 'inventory']);
+        
+        // Filter routes
+        Route::get('/category/{categoryId}', [FilmController::class, 'byCategory']);
+        Route::get('/language/{languageId}', [FilmController::class, 'byLanguage']); 
+        Route::get('/rating/{rating}', [FilmController::class, 'byRating']);
+        Route::get('/recent', [FilmController::class, 'recent']);
+    });
+
+    // Inventory API
+    Route::prefix('inventory')->group(function () {
+        Route::get('/', [InventoryController::class, 'index']);
+        Route::get('/{inventory}', [InventoryController::class, 'show']);
+        Route::get('/store/{store}', [InventoryController::class, 'byStore']);
+        Route::get('/availability/by-store', [InventoryController::class, 'availabilityByStore']);
+        Route::get('/popular-films', [InventoryController::class, 'popularFilms']);
+        Route::get('/movements', [InventoryController::class, 'movements']);
+    });
+
+    // Rankings & Statistics API
+    Route::prefix('rankings')->group(function () {
+        Route::get('/films/popular', [RankingController::class, 'popularFilms']);
+        Route::get('/films/top-rated', [RankingController::class, 'topRatedFilms']);
+        Route::get('/films/revenue', [RankingController::class, 'topRevenueFilms']);
+        Route::get('/categories/popular', [RankingController::class, 'popularCategories']);
+        Route::get('/customers/top', [RankingController::class, 'topCustomers']);
+        Route::get('/stores/performance', [RankingController::class, 'storePerformance']);
+        Route::get('/stats/overall', [RankingController::class, 'overallStats']);
+    });
+
+    // Helper endpoints for metadata
+    Route::prefix('metadata')->group(function () {
+        Route::get('/categories', function () {
+            return response()->json([
+                'data' => \App\Models\Category::orderBy('name')->get(['category_id', 'name']),
+            ]);
+        });
+        
+        Route::get('/languages', function () {
+            return response()->json([
+                'data' => \App\Models\Language::orderBy('name')->get(['language_id', 'name']),
+            ]);
+        });
+        
+        Route::get('/ratings', function () {
+            return response()->json([
+                'data' => \App\Models\Film::select('rating')
+                                         ->whereNotNull('rating')
+                                         ->distinct()
+                                         ->orderBy('rating')
+                                         ->pluck('rating'),
+            ]);
+        });
+
+        Route::get('/stores', function () {
+            return response()->json([
+                'data' => \App\Models\Store::with(['address.city.country'])
+                                          ->get()
+                                          ->map(function($store) {
+                                              return [
+                                                  'store_id' => $store->store_id,
+                                                  'address' => $store->address ? [
+                                                      'address' => $store->address->address,
+                                                      'city' => $store->address->city->city ?? null,
+                                                      'country' => $store->address->city->country->country ?? null,
+                                                  ] : null,
+                                              ];
+                                          }),
+            ]);
+        });
+    });
 });
 
 // Public routes (no authentication required)
