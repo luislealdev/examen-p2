@@ -98,6 +98,9 @@
                     @auth
                         @if(Auth::user()->isStaff())
                             <!-- Staff and Admin links -->
+                            <a class="nav-link" href="{{ route('rentals.index') }}">
+                                <i class="fas fa-handshake me-1"></i>Rentas
+                            </a>
                             <a class="nav-link" href="{{ route('inventories.index') }}">
                                 <i class="fas fa-boxes me-1"></i>Inventario
                             </a>

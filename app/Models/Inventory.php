@@ -31,6 +31,9 @@ class Inventory extends Model
     protected $fillable = [
         'film_id',
         'store_id',
+        'condition',
+        'condition_updated_at',
+        'condition_notes',
     ];
 
     /**
@@ -38,6 +41,7 @@ class Inventory extends Model
      */
     protected $casts = [
         'last_update' => 'datetime',
+        'condition_updated_at' => 'datetime',
         'inventory_id' => 'integer',
         'film_id' => 'integer',
         'store_id' => 'integer',
@@ -337,5 +341,142 @@ class Inventory extends Model
                       ]
                   ])
                   ->toArray();
+    }
+
+    /**
+     * Condition constants
+     */
+    const CONDITIONS = [
+        'available' => 'Disponible',
+        'damaged' => 'Dañada',
+        'lost' => 'Perdida',
+    ];
+
+    /**
+     * Get the inventory movements
+     */
+    public function movements()
+    {
+        return $this->hasMany(InventoryMovement::class, 'inventory_id', 'inventory_id')
+                    ->orderBy('movement_date', 'desc');
+    }
+
+    /**
+     * Check if inventory item is in good condition (available)
+     */
+    public function isInGoodCondition(): bool
+    {
+        return $this->condition === 'available';
+    }
+
+    /**
+     * Check if inventory item is damaged
+     */
+    public function isDamaged(): bool
+    {
+        return $this->condition === 'damaged';
+    }
+
+    /**
+     * Check if inventory item is lost
+     */
+    public function isLost(): bool
+    {
+        return $this->condition === 'lost';
+    }
+
+    /**
+     * Check if item can be rented (available and not rented)
+     */
+    public function canBeRented(): bool
+    {
+        return $this->isInGoodCondition() && $this->isAvailable();
+    }
+
+    /**
+     * Scope: Filter by condition
+     */
+    public function scopeByCondition(Builder $query, string $condition): Builder
+    {
+        return $query->where('condition', $condition);
+    }
+
+    /**
+     * Scope: Only items in good condition
+     */
+    public function scopeInGoodCondition(Builder $query): Builder
+    {
+        return $query->where('condition', 'available');
+    }
+
+    /**
+     * Scope: Only damaged items
+     */
+    public function scopeDamaged(Builder $query): Builder
+    {
+        return $query->where('condition', 'damaged');
+    }
+
+    /**
+     * Scope: Only lost items
+     */
+    public function scopeLost(Builder $query): Builder
+    {
+        return $query->where('condition', 'lost');
+    }
+
+    /**
+     * Scope: Items that can be rented (good condition and available)
+     */
+    public function scopeRentable(Builder $query): Builder
+    {
+        return $query->inGoodCondition()->available();
+    }
+
+    /**
+     * Get condition label
+     */
+    public function getConditionLabel(): string
+    {
+        return self::CONDITIONS[$this->condition] ?? ucfirst($this->condition);
+    }
+
+    /**
+     * Update condition and log the change
+     */
+    public function updateCondition(string $newCondition, ?string $notes = null, array $metadata = []): void
+    {
+        $oldCondition = $this->condition;
+        
+        $this->update([
+            'condition' => $newCondition,
+            'condition_updated_at' => now(),
+            'condition_notes' => $notes,
+        ]);
+
+        // Log the condition change
+        InventoryMovement::create([
+            'inventory_id' => $this->inventory_id,
+            'movement_type' => $this->getMovementTypeForCondition($newCondition),
+            'condition_from' => $oldCondition,
+            'condition_to' => $newCondition,
+            'user_id' => auth()->id(),
+            'staff_id' => session('staff_id'),
+            'notes' => $notes,
+            'metadata' => $metadata,
+        ]);
+    }
+
+    /**
+     * Get movement type based on condition change
+     */
+    private function getMovementTypeForCondition(string $condition): string
+    {
+        return match($condition) {
+            'damaged' => 'damage',
+            'lost' => 'loss',
+            'available' => 'repair',
+            default => 'restock'
+        };
     }
 }

@@ -6,12 +6,109 @@ use App\Models\Rental;
 use App\Models\Inventory;
 use App\Models\Film;
 use App\Models\Customer;
+use App\Models\InventoryMovement;
+use App\Services\InventoryManagementService;
+use App\Services\BusinessActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 class RentalController extends Controller
 {
+    /**
+     * Display all active rentals with return management
+     */
+    public function index(Request $request): View
+    {
+        $query = Rental::with(['inventory.film.category', 'customer', 'staff.store'])
+                      ->orderBy('rental_date', 'desc');
+
+        // Filter by status
+        if ($request->filled('status')) {
+            if ($request->status === 'active') {
+                $query->whereNull('return_date');
+            } elseif ($request->status === 'returned') {
+                $query->whereNotNull('return_date');
+            }
+        } else {
+            // Por defecto mostrar solo activas
+            $query->whereNull('return_date');
+        }
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('customer', function($sq) use ($search) {
+                    $sq->where('first_name', 'like', '%' . $search . '%')
+                       ->orWhere('last_name', 'like', '%' . $search . '%')
+                       ->orWhere('email', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('inventory.film', function($sq) use ($search) {
+                    $sq->where('title', 'like', '%' . $search . '%');
+                })
+                ->orWhere('rental_id', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Filter by overdue (más de 7 días)
+        if ($request->filled('overdue') && $request->overdue) {
+            $query->where('rental_date', '<', now()->subDays(7))
+                  ->whereNull('return_date');
+        }
+
+        // Filter by customer
+        if ($request->filled('customer_id')) {
+            $query->where('customer_id', $request->customer_id);
+        }
+
+        $rentals = $query->paginate(20);
+
+        // Stats for dashboard
+        $stats = [
+            'active' => Rental::whereNull('return_date')->count(),
+            'overdue' => Rental::whereNull('return_date')
+                              ->where('rental_date', '<', now()->subDays(7))
+                              ->count(),
+            'today' => Rental::whereDate('rental_date', today())->count(),
+            'this_week' => Rental::whereBetween('rental_date', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+        ];
+
+        return view('rentals.index', compact('rentals', 'stats'));
+    }
+
+    /**
+     * Process a rental return directly from rentals view
+     */
+    public function processReturn(Request $request, Rental $rental): RedirectResponse
+    {
+        $request->validate([
+            'condition' => 'required|in:available,damaged,lost',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        if ($rental->isReturned()) {
+            return redirect()->back()
+                           ->with('error', 'Esta renta ya ha sido devuelta.');
+        }
+
+        $inventoryService = app(InventoryManagementService::class);
+        $result = $inventoryService->processReturn(
+            $rental->rental_id,
+            $request->condition,
+            $request->notes
+        );
+
+        if ($result['success']) {
+            return redirect()->back()
+                           ->with('success', $result['message']);
+        } else {
+            return redirect()->back()
+                           ->with('error', $result['message'])
+                           ->withInput();
+        }
+    }
+
     /**
      * Rent a film (for employees and admins only)
      */
@@ -55,24 +152,77 @@ class RentalController extends Controller
             return redirect()->back()->with('error', 'El empleado no tiene una tienda asignada.');
         }
 
-        // Find available inventory for this film in the employee's store
+        // Find available inventory for this film in the employee's store (in good condition and not rented)
         $inventory = Inventory::where('film_id', $film->film_id)
             ->where('store_id', $employeeStoreId)
+            ->where('condition', 'available') // Only allow rentals of items in good condition
             ->whereDoesntHave('rentals', function ($query) {
                 $query->whereNull('return_date');
             })
             ->first();
 
         if (!$inventory) {
-            return redirect()->back()->with('error', 'No hay copias disponibles de esta película en tu tienda (Tienda #' . $employeeStoreId . ').');
+            // Check if there are copies but they're damaged or lost
+            $damagedOrLostCount = Inventory::where('film_id', $film->film_id)
+                ->where('store_id', $employeeStoreId)
+                ->whereIn('condition', ['damaged', 'lost'])
+                ->count();
+            
+            $rentedCount = Inventory::where('film_id', $film->film_id)
+                ->where('store_id', $employeeStoreId)
+                ->where('condition', 'available')
+                ->whereHas('rentals', function ($query) {
+                    $query->whereNull('return_date');
+                })
+                ->count();
+
+            $errorMessage = 'No hay copias disponibles de esta película en tu tienda (Tienda #' . $employeeStoreId . ').';
+            
+            if ($damagedOrLostCount > 0 || $rentedCount > 0) {
+                $errorMessage .= ' ';
+                if ($rentedCount > 0) {
+                    $errorMessage .= $rentedCount . ' copia(s) están rentadas. ';
+                }
+                if ($damagedOrLostCount > 0) {
+                    $errorMessage .= $damagedOrLostCount . ' copia(s) están dañadas o perdidas.';
+                }
+            }
+            
+            return redirect()->back()->with('error', $errorMessage);
         }
 
         // Create the rental
-        Rental::create([
+        $rental = Rental::create([
             'rental_date' => now(),
             'inventory_id' => $inventory->inventory_id,
             'customer_id' => $request->customer_id,
             'staff_id' => $staff->staff_id,
+        ]);
+
+        // Log the rental movement
+        InventoryMovement::create([
+            'inventory_id' => $inventory->inventory_id,
+            'rental_id' => $rental->rental_id,
+            'movement_type' => 'rental',
+            'condition_from' => 'available',
+            'condition_to' => 'available', // Still available but rented
+            'user_id' => Auth::id(),
+            'staff_id' => $staff->staff_id,
+            'customer_id' => $request->customer_id,
+            'notes' => 'Película rentada desde la tienda #' . $employeeStoreId,
+            'metadata' => [
+                'store_id' => $employeeStoreId,
+                'film_title' => $film->title,
+                'rental_date' => now()->toISOString(),
+            ],
+        ]);
+
+        // Log business activity
+        BusinessActivityLogger::logRental('create', $rental->rental_id, $request->customer_id, 
+            $film->film_id, $staff->staff_id, [
+            'inventory_id' => $inventory->inventory_id,
+            'film_title' => $film->title,
+            'store_id' => $employeeStoreId,
         ]);
 
         return redirect()->back()->with('success', 'Película rentada exitosamente desde la Tienda #' . $employeeStoreId . '.');

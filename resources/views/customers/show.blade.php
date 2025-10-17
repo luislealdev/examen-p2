@@ -183,6 +183,9 @@
                                         <th>Días Restantes</th>
                                         <th>Cargo por Retraso</th>
                                         <th>Estado</th>
+                                        @if(auth()->user()->isStaff())
+                                            <th>Acciones</th>
+                                        @endif
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -230,7 +233,72 @@
                                                     <span class="badge bg-success">A Tiempo</span>
                                                 @endif
                                             </td>
+                                            @if(auth()->user()->isStaff())
+                                                <td>
+                                                    <button type="button" class="btn btn-sm btn-success" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#returnModalCustomer{{ $rental->rental_id }}">
+                                                        <i class="fas fa-undo"></i> Devolver
+                                                    </button>
+                                                </td>
+                                            @endif
                                         </tr>
+                                        
+                                        @if(auth()->user()->isStaff())
+                                            <!-- Modal para procesar devolución desde perfil del cliente -->
+                                            <div class="modal fade" id="returnModalCustomer{{ $rental->rental_id }}" tabindex="-1">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <form method="POST" action="{{ route('rentals.process-return', $rental) }}">
+                                                            @csrf
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">Procesar Devolución</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <div class="alert alert-info">
+                                                                    <strong>Cliente:</strong> {{ $customer->first_name }} {{ $customer->last_name }}<br>
+                                                                    <strong>Película:</strong> {{ $rental->inventory->film->title }}<br>
+                                                                    <strong>Rentada:</strong> {{ \Carbon\Carbon::parse($rental->rental_date)->format('d/m/Y H:i') }}<br>
+                                                                    <strong>Días transcurridos:</strong> {{ \Carbon\Carbon::parse($rental->rental_date)->diffInDays(now()) }} días
+                                                                    @if($isOverdue)
+                                                                        <br><strong class="text-danger">Cargo por retraso:</strong> ${{ number_format($lateFee, 2) }}
+                                                                    @endif
+                                                                </div>
+                                                                
+                                                                <div class="mb-3">
+                                                                    <label for="conditionCustomer{{ $rental->rental_id }}" class="form-label">Estado de la película</label>
+                                                                    <select name="condition" id="conditionCustomer{{ $rental->rental_id }}" class="form-select" required>
+                                                                        <option value="available">Buenas condiciones (disponible para renta)</option>
+                                                                        <option value="damaged">Dañada (no disponible hasta reparación)</option>
+                                                                        <option value="lost">Perdida (no se devolvió)</option>
+                                                                    </select>
+                                                                </div>
+                                                                
+                                                                <div class="mb-3">
+                                                                    <label for="notesCustomer{{ $rental->rental_id }}" class="form-label">Notas (opcional)</label>
+                                                                    <textarea name="notes" id="notesCustomer{{ $rental->rental_id }}" class="form-control" rows="3" 
+                                                                              placeholder="Describe cualquier daño o situación especial..."></textarea>
+                                                                </div>
+
+                                                                @if($isOverdue)
+                                                                    <div class="alert alert-warning">
+                                                                        <i class="fas fa-exclamation-triangle"></i>
+                                                                        <strong>Película con retraso:</strong> Se aplicará un cargo de ${{ number_format($lateFee, 2) }} por {{ abs($daysRemaining) }} días de retraso.
+                                                                    </div>
+                                                                @endif
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                                <button type="submit" class="btn btn-success">
+                                                                    <i class="fas fa-check"></i> Procesar Devolución
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>

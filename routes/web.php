@@ -4,6 +4,7 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\ActorController;
 use App\Http\Controllers\FilmController;
 use App\Http\Controllers\RentalController;
+use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\InventoryController;
@@ -72,6 +73,10 @@ Route::middleware(['auth', 'role:employee,admin'])->group(function () {
     Route::delete('films/{film}', [FilmController::class, 'destroy'])->name('films.destroy');
 
     // Gestión de rentas (empleados y administradores)
+    // Gestión de rentas integrada
+    Route::get('rentals', [RentalController::class, 'index'])->name('rentals.index');
+    Route::post('rentals/{rental}/return', [RentalController::class, 'processReturn'])->name('rentals.process-return');
+    
     Route::post('films/{film}/rent', [RentalController::class, 'rentFilm'])->name('rental.rent');
     Route::put('rentals/{rental}/return', [RentalController::class, 'returnFilm'])->name('rental.return');
     Route::get('films/{film}/availability', [RentalController::class, 'checkAvailability'])->name('rental.availability');
@@ -202,6 +207,23 @@ Route::get('/debug-middleware-employee-admin', function () {
         'role' => $user->role
     ]);
 })->middleware(['auth', 'role:employee,admin']);
+
+// === RUTAS DE GESTIÓN DE DEVOLUCIONES E INVENTARIO ===
+Route::middleware(['auth', 'role:employee,admin'])->group(function () {
+    // Devoluciones
+    Route::get('/returns', [ReturnController::class, 'index'])->name('returns.index');
+    Route::get('/returns/{rental}', [ReturnController::class, 'show'])->name('returns.show');
+    Route::post('/returns/{rental}', [ReturnController::class, 'store'])->name('returns.store');
+    
+    // Gestión de inventario
+    Route::get('/inventory', [ReturnController::class, 'inventory'])->name('inventory.index');
+    Route::get('/inventory/{inventory}/movements', [ReturnController::class, 'movements'])->name('inventory.movements');
+    
+    // Acciones de inventario
+    Route::post('/inventory/{inventory}/mark-damaged', [ReturnController::class, 'markDamaged'])->name('inventory.mark-damaged');
+    Route::post('/inventory/{inventory}/mark-lost', [ReturnController::class, 'markLost'])->name('inventory.mark-lost');
+    Route::post('/inventory/{inventory}/repair', [ReturnController::class, 'repair'])->name('inventory.repair');
+});
 
 // Debug específico para middleware admin-only
 Route::get('/debug-middleware-admin-only', function () {
