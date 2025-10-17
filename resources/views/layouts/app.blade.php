@@ -148,9 +148,16 @@
                                 <i class="fas fa-user-tie me-1"></i>Personal
                             </a>
                             @endif
+                            @if(!Auth::user()->isAdmin())
                             <a class="nav-link" href="{{ route('films.statistics') }}">
                                 <i class="fas fa-chart-bar me-1"></i>Estadísticas
                             </a>
+                            @endif
+                            @if(Auth::user()->isAdmin())
+                            <a class="nav-link" href="{{ route('admin.dashboard') }}">
+                                <i class="fas fa-user-tie me-1"></i>Dashboard
+                            </a>
+                            @endif
                         @else
                             {{-- Menú para clientes --}}
                             <a class="nav-link" href="{{ route('client.stores.index') }}">
