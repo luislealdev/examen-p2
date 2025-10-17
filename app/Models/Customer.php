@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Builder;
 
 class Customer extends Model
@@ -93,5 +94,71 @@ class Customer extends Model
     public function address(): BelongsTo
     {
         return $this->belongsTo(Address::class, 'address_id', 'address_id');
+    }
+
+    /**
+     * Get all rentals for this customer.
+     */
+    public function rentals(): HasMany
+    {
+        return $this->hasMany(Rental::class, 'customer_id', 'customer_id');
+    }
+
+    /**
+     * Get active rentals (not returned yet).
+     */
+    public function activeRentals(): HasMany
+    {
+        return $this->rentals()->whereNull('return_date');
+    }
+
+    /**
+     * Get returned rentals.
+     */
+    public function returnedRentals(): HasMany
+    {
+        return $this->rentals()->whereNotNull('return_date');
+    }
+
+    /**
+     * Check if customer has overdue rentals.
+     */
+    public function hasOverdueRentals(): bool
+    {
+        return $this->activeRentals()
+            ->where('rental_date', '<', now()->subDays(7)) // 7 days rental period
+            ->exists();
+    }
+
+    /**
+     * Get overdue rentals with calculated late fees.
+     */
+    public function getOverdueRentalsAttribute()
+    {
+        return $this->activeRentals()
+            ->with(['inventory.film'])
+            ->where('rental_date', '<', now()->subDays(7))
+            ->get()
+            ->map(function($rental) {
+                $rental->days_overdue = now()->diffInDays($rental->rental_date->addDays(7));
+                $rental->late_fee = $rental->days_overdue * 1.50; // $1.50 per day late fee
+                return $rental;
+            });
+    }
+
+    /**
+     * Calculate total late fees for this customer.
+     */
+    public function getTotalLateFees(): float
+    {
+        return $this->overdue_rentals->sum('late_fee');
+    }
+
+    /**
+     * Check if customer should be blocked (has overdue rentals).
+     */
+    public function shouldBeBlocked(): bool
+    {
+        return $this->hasOverdueRentals();
     }
 }

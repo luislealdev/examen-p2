@@ -26,6 +26,19 @@ class RentalController extends Controller
             'customer_id' => 'required|exists:customers,customer_id',
         ]);
 
+        // Verify customer is not blocked due to overdue rentals
+        $customer = Customer::find($request->customer_id);
+        if ($customer->shouldBeBlocked()) {
+            $overdueRentals = $customer->overdueRentals;
+            $totalLateFees = $customer->getTotalLateFees();
+            
+            return redirect()->back()->with('error', 
+                "Cliente bloqueado: {$customer->full_name} tiene " . 
+                count($overdueRentals) . " película(s) en retraso con cargos de \${$totalLateFees}. " .
+                "Debe devolver las películas pendientes antes de rentar nuevas películas."
+            );
+        }
+
         // Find the staff record for the current user
         $staff = \App\Models\Staff::where('email', Auth::user()->email)
             ->orWhere('username', Auth::user()->email)

@@ -88,12 +88,60 @@ class CustomerController extends Controller
      */
     public function show(Customer $customer): View
     {
+        // Cargar relaciones básicas del cliente
         $customer->load([
             'store.address.city.country',
             'store.manager', 
             'address.city.country'
         ]);
-        return view('customers.show', compact('customer'));
+
+        // Cargar rentals activos con información detallada
+        $activeRentals = $customer->rentals()
+            ->with(['inventory.film.category', 'inventory.store', 'staff'])
+            ->whereNull('return_date')
+            ->orderBy('rental_date', 'desc')
+            ->get()
+            ->map(function($rental) {
+                // Calcular días de renta y retraso
+                $rentalDays = now()->diffInDays($rental->rental_date);
+                $dueDate = $rental->rental_date->addDays(7); // 7 días período de renta
+                $rental->rental_days = $rentalDays;
+                $rental->due_date = $dueDate;
+                $rental->is_overdue = now()->isAfter($dueDate);
+                $rental->days_overdue = $rental->is_overdue ? now()->diffInDays($dueDate) : 0;
+                $rental->late_fee = $rental->days_overdue * 1.50; // $1.50 por día de retraso
+                return $rental;
+            });
+
+        // Cargar historial de rentals devueltos (últimos 20)
+        $rentalHistory = $customer->rentals()
+            ->with(['inventory.film.category', 'inventory.store', 'staff'])
+            ->whereNotNull('return_date')
+            ->orderBy('return_date', 'desc')
+            ->take(20)
+            ->get()
+            ->map(function($rental) {
+                // Calcular días que tuvo la película
+                $rental->rental_days = $rental->rental_date->diffInDays($rental->return_date);
+                $dueDate = $rental->rental_date->addDays(7);
+                $rental->due_date = $dueDate;
+                $rental->was_late = $rental->return_date->isAfter($dueDate);
+                $rental->days_late = $rental->was_late ? $dueDate->diffInDays($rental->return_date) : 0;
+                $rental->late_fee_paid = $rental->days_late * 1.50;
+                return $rental;
+            });
+
+        // Calcular estadísticas del cliente
+        $stats = [
+            'total_rentals' => $customer->rentals()->count(),
+            'active_rentals' => $activeRentals->count(),
+            'overdue_rentals' => $activeRentals->where('is_overdue', true)->count(),
+            'total_late_fees' => $activeRentals->sum('late_fee'),
+            'is_blocked' => $customer->shouldBeBlocked(),
+            'lifetime_late_fees' => $rentalHistory->sum('late_fee_paid') + $activeRentals->sum('late_fee')
+        ];
+
+        return view('customers.show', compact('customer', 'activeRentals', 'rentalHistory', 'stats'));
     }
 
     /**

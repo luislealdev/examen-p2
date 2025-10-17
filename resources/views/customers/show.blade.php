@@ -3,182 +3,384 @@
 @section('title', 'Detalles del Cliente')
 
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h3>Detalles del Cliente</h3>
+<div class="container">
+    <!-- Encabezado -->
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ route('customers.index') }}">Clientes</a></li>
+                    <li class="breadcrumb-item active">{{ $customer->full_name }}</li>
+                </ol>
+            </nav>
+            <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <a href="{{ route('customers.edit', $customer->customer_id) }}" class="btn btn-warning btn-sm">Editar</a>
-                    <a href="{{ route('customers.index') }}" class="btn btn-secondary btn-sm">Volver a la Lista</a>
+                    <h1 class="display-6 fw-bold text-gradient">
+                        <i class="fas fa-user me-3"></i>{{ $customer->full_name }}
+                    </h1>
+                    <p class="lead text-muted">Cliente ID: {{ $customer->customer_id }}</p>
                 </div>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h5>Información Básica</h5>
-                        <table class="table table-borderless">
-                            <tr>
-                                <td><strong>ID del Cliente:</strong></td>
-                                <td>{{ $customer->customer_id }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Nombre Completo:</strong></td>
-                                <td>{{ $customer->full_name }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Nombre:</strong></td>
-                                <td>{{ $customer->first_name }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Apellido:</strong></td>
-                                <td>{{ $customer->last_name }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Email:</strong></td>
-                                <td>{{ $customer->email ?: 'N/A' }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Estado:</strong></td>
-                                <td>
-                                    @if($customer->active)
-                                        <span class="badge bg-success">Activo</span>
-                                    @else
-                                        <span class="badge bg-secondary">Inactivo</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <h5>Ubicación y Fechas</h5>
-                        <table class="table table-borderless">
-                            <tr>
-                                <td><strong>Tienda Principal:</strong></td>
-                                <td>
-                                    @if($customer->store && $customer->store->address)
-                                        <strong>{{ $customer->store->address->city->city ?? 'Ciudad desconocida' }}</strong><br>
-                                        <small class="text-muted">{{ $customer->store->address->address ?? 'Dirección no disponible' }}</small><br>
-                                        <small class="text-muted">Encargado: {{ $customer->store->manager ? $customer->store->manager->full_name : 'No asignado' }}</small>
-                                    @else
-                                        <span class="text-muted">Tienda ID: {{ $customer->store_id }}</span>
-                                    @endif
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>Dirección:</strong></td>
-                                <td>
-                                    @if($customer->address)
-                                        <strong>{{ $customer->address->address }}</strong><br>
-                                        @if($customer->address->address2)
-                                            {{ $customer->address->address2 }}<br>
-                                        @endif
-                                        {{ $customer->address->district }}, {{ $customer->address->city->city ?? 'Ciudad desconocida' }}<br>
-                                        {{ $customer->address->city->country->country ?? 'País desconocido' }}<br>
-                                        <small class="text-muted">CP: {{ $customer->address->postal_code }}</small>
-                                        @if($customer->address->phone)
-                                            <br><small class="text-muted">Tel: {{ $customer->address->phone }}</small>
-                                        @endif
-                                    @else
-                                        <span class="text-muted">Dirección ID: {{ $customer->address_id }}</span>
-                                    @endif
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>Fecha de Registro:</strong></td>
-                                <td>{{ $customer->create_date ? $customer->create_date->format('d/m/Y H:i:s') : 'N/A' }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Última Actualización:</strong></td>
-                                <td>{{ $customer->last_update ? $customer->last_update->format('d/m/Y H:i:s') : 'N/A' }}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-
-                @if($customer->store)
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <h5>Información de la Tienda Principal</h5>
-                            <div class="alert alert-info">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <strong>Tienda:</strong> 
-                                        @if($customer->store->address)
-                                            {{ $customer->store->address->city->city ?? 'Ciudad desconocida' }}
-                                        @else
-                                            Tienda ID {{ $customer->store->store_id }}
-                                        @endif
-                                        <br>
-                                        <strong>Encargado:</strong> 
-                                        @if($customer->store->manager)
-                                            {{ $customer->store->manager->full_name }}
-                                        @else
-                                            ID {{ $customer->store->manager_staff_id }}
-                                        @endif
-                                    </div>
-                                    <div class="col-md-6">
-                                        @if($customer->store->address)
-                                            <strong>Dirección de la Tienda:</strong><br>
-                                            {{ $customer->store->address->address }}<br>
-                                            {{ $customer->store->address->district }}, {{ $customer->store->address->city->city ?? 'Ciudad desconocida' }}<br>
-                                            {{ $customer->store->address->city->country->country ?? 'País desconocido' }}
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
-                @if($customer->address)
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <h5>Información Completa de Dirección</h5>
-                            <div class="alert alert-secondary">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <strong>Dirección:</strong> {{ $customer->address->address }}<br>
-                                        @if($customer->address->address2)
-                                            <strong>Dirección 2:</strong> {{ $customer->address->address2 }}<br>
-                                        @endif
-                                        <strong>Distrito:</strong> {{ $customer->address->district }}<br>
-                                        <strong>Código Postal:</strong> {{ $customer->address->postal_code }}
-                                    </div>
-                                    <div class="col-md-6">
-                                        <strong>Ciudad:</strong> {{ $customer->address->city->city ?? 'Ciudad desconocida' }}<br>
-                                        <strong>País:</strong> {{ $customer->address->city->country->country ?? 'País desconocido' }}<br>
-                                        @if($customer->address->phone)
-                                            <strong>Teléfono:</strong> {{ $customer->address->phone }}<br>
-                                        @endif
-                                        @if($customer->address->coordinates)
-                                            <strong>Coordenadas:</strong> {{ $customer->address->coordinates['lat'] }}, {{ $customer->address->coordinates['lng'] }}
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
-                <div class="mt-4">
-                    <h5>Acciones</h5>
-                    <div class="btn-group" role="group">
-                        <a href="{{ route('customers.edit', $customer->customer_id) }}" class="btn btn-warning">Editar Cliente</a>
-                        @if($customer->active)
-                            <form action="{{ route('customers.destroy', $customer->customer_id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres desactivar este cliente? Esto no eliminará el cliente pero lo marcará como inactivo.')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger">Desactivar Cliente</button>
-                            </form>
-                        @else
-                            <span class="text-muted">El cliente ya está inactivo</span>
-                        @endif
-                    </div>
+                <div>
+                    @if($stats['is_blocked'])
+                        <span class="badge bg-danger fs-6 me-2">
+                            <i class="fas fa-ban me-1"></i>BLOQUEADO
+                        </span>
+                    @endif
+                    <a href="{{ route('customers.edit', $customer->customer_id) }}" class="btn btn-warning">
+                        <i class="fas fa-edit me-2"></i>Editar
+                    </a>
+                    <a href="{{ route('customers.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Volver
+                    </a>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Alerta de Bloqueo -->
+    @if($stats['is_blocked'])
+        <div class="alert alert-danger border-0 shadow-sm mb-4">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                <div>
+                    <h5 class="alert-heading mb-1">Cliente Bloqueado Automáticamente</h5>
+                    <p class="mb-0">Este cliente tiene {{ $stats['overdue_rentals'] }} películas en retraso con un cargo total de <strong>${{ number_format($stats['total_late_fees'], 2) }}</strong>. No puede rentar más películas hasta devolver las películas pendientes.</p>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Estadísticas Rápidas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-film fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ $stats['total_rentals'] }}</h3>
+                    <small>Total de Rentas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-info text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-play-circle fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ $stats['active_rentals'] }}</h3>
+                    <small>Rentas Activas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-{{ $stats['overdue_rentals'] > 0 ? 'danger' : 'success' }} text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ $stats['overdue_rentals'] }}</h3>
+                    <small>En Retraso</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-warning text-dark">
+                <div class="card-body text-center">
+                    <i class="fas fa-dollar-sign fa-2x mb-2"></i>
+                    <h3 class="mb-0">${{ number_format($stats['total_late_fees'], 2) }}</h3>
+                    <small>Cargos Pendientes</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Información del Cliente -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>Información del Cliente
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Estado:</strong>
+                        @if($customer->active)
+                            <span class="badge bg-success ms-2">Activo</span>
+                        @else
+                            <span class="badge bg-secondary ms-2">Inactivo</span>
+                        @endif
+                        @if($stats['is_blocked'])
+                            <span class="badge bg-danger ms-1">Bloqueado</span>
+                        @endif
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Email:</strong><br>
+                        <span class="text-muted">{{ $customer->email ?: 'No disponible' }}</span>
+                    </div>
+
+                    @if($customer->address)
+                        <div class="mb-3">
+                            <strong>Dirección:</strong><br>
+                            <span class="text-muted">
+                                {{ $customer->address->address }}<br>
+                                @if($customer->address->address2)
+                                    {{ $customer->address->address2 }}<br>
+                                @endif
+                                {{ $customer->address->district }}<br>
+                                {{ $customer->address->city->city ?? 'Ciudad' }}, {{ $customer->address->city->country->country ?? 'País' }}<br>
+                                CP: {{ $customer->address->postal_code }}
+                                @if($customer->address->phone)
+                                    <br>Tel: {{ $customer->address->phone }}
+                                @endif
+                            </span>
+                        </div>
+                    @endif
+
+                    @if($customer->store)
+                        <div class="mb-3">
+                            <strong>Tienda Principal:</strong><br>
+                            <span class="text-muted">
+                                @if($customer->store->address)
+                                    {{ $customer->store->address->city->city ?? 'Ciudad' }}<br>
+                                    {{ $customer->store->address->address }}<br>
+                                @endif
+                                @if($customer->store->manager)
+                                    Gerente: {{ $customer->store->manager->full_name }}
+                                @endif
+                            </span>
+                        </div>
+                    @endif
+
+                    <div class="mb-3">
+                        <strong>Registrado:</strong><br>
+                        <span class="text-muted">{{ $customer->create_date ? $customer->create_date->format('d/m/Y H:i') : 'N/A' }}</span>
+                    </div>
+
+                    <div class="mb-0">
+                        <strong>Cargos Totales de por Vida:</strong><br>
+                        <span class="text-danger fw-bold">${{ number_format($stats['lifetime_late_fees'], 2) }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rentas Activas -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-gradient-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-play-circle me-2"></i>Rentas Activas
+                        <span class="badge bg-white text-dark ms-2">{{ count($activeRentals) }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if(count($activeRentals) > 0)
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Película</th>
+                                        <th>Fecha de Renta</th>
+                                        <th>Días Restantes</th>
+                                        <th>Cargo por Retraso</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($activeRentals as $rental)
+                                        @php
+                                            $daysRemaining = 7 - \Carbon\Carbon::parse($rental->rental_date)->diffInDays(now());
+                                            $isOverdue = $daysRemaining < 0;
+                                            $lateFee = $isOverdue ? abs($daysRemaining) * 1.50 : 0;
+                                        @endphp
+                                        <tr class="{{ $isOverdue ? 'table-danger' : ($daysRemaining <= 1 ? 'table-warning' : '') }}">
+                                            <td>
+                                                <strong>{{ $rental->inventory->film->title }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ $rental->inventory->film->release_year }}</small>
+                                            </td>
+                                            <td>{{ \Carbon\Carbon::parse($rental->rental_date)->format('d/m/Y') }}</td>
+                                            <td>
+                                                @if($isOverdue)
+                                                    <span class="text-danger fw-bold">
+                                                        {{ abs($daysRemaining) }} días de retraso
+                                                    </span>
+                                                @elseif($daysRemaining <= 1)
+                                                    <span class="text-warning fw-bold">
+                                                        Vence {{ $daysRemaining == 0 ? 'hoy' : 'mañana' }}
+                                                    </span>
+                                                @else
+                                                    <span class="text-success">
+                                                        {{ $daysRemaining }} días restantes
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($lateFee > 0)
+                                                    <span class="text-danger fw-bold">${{ number_format($lateFee, 2) }}</span>
+                                                @else
+                                                    <span class="text-muted">$0.00</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($isOverdue)
+                                                    <span class="badge bg-danger">En Retraso</span>
+                                                @elseif($daysRemaining <= 1)
+                                                    <span class="badge bg-warning text-dark">Por Vencer</span>
+                                                @else
+                                                    <span class="badge bg-success">A Tiempo</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h6 class="text-muted">No hay rentas activas</h6>
+                            <p class="text-muted">Este cliente no tiene películas rentadas actualmente.</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial de Rentas -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-gradient-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Historial de Rentas
+                        <span class="badge bg-white text-dark ms-2">{{ $stats['total_rentals'] }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if(count($rentalHistory) > 0)
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Película</th>
+                                        <th>Fecha de Renta</th>
+                                        <th>Fecha de Devolución</th>
+                                        <th>Días de Retraso</th>
+                                        <th>Cargo por Retraso</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($rentalHistory as $rental)
+                                        @php
+                                            $dueDate = \Carbon\Carbon::parse($rental->rental_date)->addDays(7);
+                                            $returnDate = $rental->return_date ? \Carbon\Carbon::parse($rental->return_date) : now();
+                                            $daysLate = $returnDate->gt($dueDate) ? $returnDate->diffInDays($dueDate) : 0;
+                                            $lateFee = $daysLate * 1.50;
+                                        @endphp
+                                        <tr>
+                                            <td>
+                                                <strong>{{ $rental->inventory->film->title }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ $rental->inventory->film->release_year }}</small>
+                                            </td>
+                                            <td>{{ \Carbon\Carbon::parse($rental->rental_date)->format('d/m/Y') }}</td>
+                                            <td>
+                                                @if($rental->return_date)
+                                                    {{ \Carbon\Carbon::parse($rental->return_date)->format('d/m/Y') }}
+                                                @else
+                                                    <span class="badge bg-warning text-dark">No devuelta</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($daysLate > 0)
+                                                    <span class="text-danger fw-bold">{{ $daysLate }} días</span>
+                                                @else
+                                                    <span class="text-success">A tiempo</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($lateFee > 0)
+                                                    <span class="text-danger fw-bold">${{ number_format($lateFee, 2) }}</span>
+                                                @else
+                                                    <span class="text-muted">$0.00</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if(!$rental->return_date)
+                                                    @if($daysLate > 0)
+                                                        <span class="badge bg-danger">En Retraso</span>
+                                                    @else
+                                                        <span class="badge bg-info">Activa</span>
+                                                    @endif
+                                                @else
+                                                    @if($daysLate > 0)
+                                                        <span class="badge bg-warning text-dark">Devuelta con Retraso</span>
+                                                    @else
+                                                        <span class="badge bg-success">Devuelta a Tiempo</span>
+                                                    @endif
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        @if($stats['total_rentals'] > 20)
+                            <div class="text-center mt-3">
+                                <small class="text-muted">
+                                    Mostrando las últimas 20 rentas de {{ $stats['total_rentals'] }} totales
+                                </small>
+                            </div>
+                        @endif
+                    @else
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h6 class="text-muted">No hay historial de rentas</h6>
+                            <p class="text-muted">Este cliente aún no ha rentado películas.</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="d-flex gap-2">
+                <a href="{{ route('customers.edit', $customer) }}" class="btn btn-primary">
+                    <i class="fas fa-edit me-1"></i>Editar Cliente
+                </a>
+                <a href="{{ route('customers.index') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Volver a Clientes
+                </a>
+                @if($stats['is_blocked'])
+                    <button class="btn btn-warning" onclick="alert('Funcionalidad de desbloqueo en desarrollo')">
+                        <i class="fas fa-unlock me-1"></i>Desbloquear Cliente
+                    </button>
+                @endif
+            </div>
+        </div>
+    </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh para cargos en tiempo real (cada 5 minutos)
+    setTimeout(function() {
+        location.reload();
+    }, 300000);
+    
+    // Tooltip para información adicional
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
 @endsection
