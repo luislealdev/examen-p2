@@ -163,17 +163,22 @@ class RentalController extends Controller
               ->orWhere('email', 'LIKE', '%' . $query . '%')
               ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $query . '%']);
         })
+        ->with('rentals')
         ->select('customer_id', 'first_name', 'last_name', 'email')
         ->orderBy('last_name')
         ->limit(10)
         ->get();
 
         return response()->json($customers->map(function ($customer) {
+            $isBlocked = $customer->shouldBeBlocked();
+            $blockedText = $isBlocked ? ' 🚫 BLOQUEADO' : '';
+            
             return [
                 'id' => $customer->customer_id,
-                'text' => $customer->first_name . ' ' . $customer->last_name,
+                'text' => $customer->first_name . ' ' . $customer->last_name . $blockedText,
                 'email' => $customer->email,
-                'full_text' => $customer->first_name . ' ' . $customer->last_name . ' (' . $customer->email . ')'
+                'full_text' => $customer->first_name . ' ' . $customer->last_name . ' (' . $customer->email . ')' . $blockedText,
+                'is_blocked' => $isBlocked
             ];
         }));
     }

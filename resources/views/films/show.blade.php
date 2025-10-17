@@ -510,13 +510,22 @@ function searchCustomers(query) {
             if (data.length === 0) {
                 customerResults.innerHTML = '<div class="p-3 text-muted">No se encontraron clientes</div>';
             } else {
-                customerResults.innerHTML = data.map(customer => `
-                    <div class="customer-result p-3 border-bottom cursor-pointer hover-bg-light" 
-                         onclick="selectCustomer(${customer.id}, '${customer.text}', '${customer.email}')">
-                        <div class="fw-medium">${customer.text}</div>
-                        <small class="text-muted">${customer.email}</small>
-                    </div>
-                `).join('');
+                customerResults.innerHTML = data.map(customer => {
+                    const isBlocked = customer.is_blocked;
+                    const blockClass = isBlocked ? 'bg-danger bg-opacity-10 text-danger' : '';
+                    const cursorClass = isBlocked ? 'cursor-not-allowed' : 'cursor-pointer hover-bg-light';
+                    const onclick = isBlocked ? 
+                        `onclick="showBlockedCustomerAlert('${customer.text}')"` : 
+                        `onclick="selectCustomer(${customer.id}, '${customer.text}', '${customer.email}')"`;
+                    
+                    return `
+                        <div class="customer-result p-3 border-bottom ${cursorClass} ${blockClass}" ${onclick}>
+                            <div class="fw-medium">${customer.text}</div>
+                            <small class="${isBlocked ? 'text-danger' : 'text-muted'}">${customer.email}</small>
+                            ${isBlocked ? '<small class="d-block text-danger mt-1"><i class="fas fa-ban me-1"></i>Cliente bloqueado por retrasos</small>' : ''}
+                        </div>
+                    `;
+                }).join('');
             }
             
             customerResults.classList.remove('d-none');
@@ -545,6 +554,10 @@ function selectCustomer(customerId, customerName, customerEmail) {
     selectedCustomerDiv.classList.remove('d-none');
     customerResults.classList.add('d-none');
     customerSearch.style.display = 'none';
+}
+
+function showBlockedCustomerAlert(customerName) {
+    alert(`⚠️ Cliente Bloqueado\n\n${customerName} tiene películas en retraso y no puede rentar más películas hasta devolverlas.\n\nRevisa el perfil del cliente para más detalles sobre los cargos por retraso.`);
 }
 
 function clearCustomerSelection() {
