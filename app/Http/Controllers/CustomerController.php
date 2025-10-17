@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\Store;
+use App\Services\BusinessActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -207,13 +208,22 @@ class CustomerController extends Controller
         ]);
 
         // Crear el cliente con la dirección creada
-        Customer::create([
+        $customer = Customer::create([
             'store_id' => $storeId,
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
             'email' => $validated['email'],
             'address_id' => $address->address_id,
             'active' => $validated['active'],
+        ]);
+
+        // Log de actividad de negocio
+        BusinessActivityLogger::logCustomer('create', $customer->customer_id, [
+            'customer_name' => $customer->full_name,
+            'email' => $customer->email,
+            'store_id' => $storeId,
+            'active' => $validated['active'],
+            'created_by_admin' => $isAdmin,
         ]);
 
         $storeText = $isAdmin ? 'con la tienda seleccionada' : "asignado a tu tienda (Tienda #{$storeId})";
@@ -227,6 +237,12 @@ class CustomerController extends Controller
      */
     public function show(Customer $customer): View
     {
+        // Log de visualización del cliente
+        BusinessActivityLogger::logCustomer('view', $customer->customer_id, [
+            'customer_name' => $customer->full_name,
+            'viewed_by_user_id' => auth()->id(),
+        ]);
+
         // Cargar relaciones básicas del cliente
         $customer->load([
             'store.address.city.country',

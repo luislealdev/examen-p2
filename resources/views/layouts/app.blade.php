@@ -129,6 +129,9 @@
                             <a class="nav-link" href="{{ route('audit.index') }}">
                                 <i class="fas fa-clipboard-list me-1"></i>Auditoría
                             </a>
+                            <a class="nav-link" href="{{ route('business-activity.dashboard') }}">
+                                <i class="fas fa-chart-line me-1"></i>Actividad de Negocio
+                            </a>
                         @endif
                     @endauth
                 </div>

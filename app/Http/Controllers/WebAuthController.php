@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\BusinessActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -51,7 +52,7 @@ class WebAuthController extends Controller
             
             $user = Auth::user();
             
-            // Registrar evento de login en auditoría
+            // Registrar evento de login en auditoría general
             \DB::table('audit_logs')->insert([
                 'user_id' => $user->id,
                 'action' => 'login',
@@ -64,6 +65,15 @@ class WebAuthController extends Controller
                 'response_code' => 200,
                 'created_at' => now(),
                 'updated_at' => now(),
+            ]);
+
+            // Registrar login en logs de actividad de negocio
+            BusinessActivityLogger::logAccess('login', [
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'user_email' => $user->email,
+                'user_role' => $user->role,
+                'remember_me' => $remember,
             ]);
             
             // Redirect based on user role
@@ -82,6 +92,13 @@ class WebAuthController extends Controller
                         ->with('success', "¡Bienvenido, {$user->name}!");
             }
         }
+
+        // Log de login fallido
+        BusinessActivityLogger::logAccess('failed_login', [
+            'attempted_email' => $request->email,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return back()->withErrors([
             'email' => 'Las credenciales proporcionadas no coinciden con nuestros registros.',
@@ -236,6 +253,14 @@ class WebAuthController extends Controller
                 'response_code' => 200,
                 'created_at' => now(),
                 'updated_at' => now(),
+            ]);
+
+            // Registrar logout en logs de actividad de negocio
+            BusinessActivityLogger::logAccess('logout', [
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'user_email' => $user->email,
+                'user_role' => $user->role,
             ]);
         }
         

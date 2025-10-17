@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Film;
 use App\Models\Language;
 use App\Models\Category;
+use App\Services\BusinessActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -162,6 +163,13 @@ class FilmController extends Controller
     public function show(Film $film): View
     {
         $film->load(['language', 'originalLanguage', 'category']);
+        
+        // Log film viewing activity
+        BusinessActivityLogger::logFilm('view', $film->film_id, [
+            'film_title' => $film->title,
+            'category' => $film->category->name ?? null,
+            'rating' => $film->rating,
+        ]);
         
         return view('films.show', compact('film'));
     }

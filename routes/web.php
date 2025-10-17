@@ -154,6 +154,13 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('/{id}', [App\Http\Controllers\AuditController::class, 'show'])->name('show');
         Route::post('/cleanup', [App\Http\Controllers\AuditController::class, 'cleanup'])->name('cleanup');
     });
+    
+    // Logs de Actividad de Negocio (solo administradores)
+    Route::prefix('business-activity')->name('business-activity.')->group(function () {
+        Route::get('/', [App\Http\Controllers\BusinessActivityController::class, 'index'])->name('index');
+        Route::get('/dashboard', [App\Http\Controllers\BusinessActivityController::class, 'dashboard'])->name('dashboard');
+        Route::get('/{id}', [App\Http\Controllers\BusinessActivityController::class, 'show'])->name('show');
+    });
 });
 
 // === RUTAS DE DEBUG TEMPORAL ===
