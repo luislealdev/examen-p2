@@ -159,7 +159,7 @@
                             <a class="nav-link" href="{{ route('rentals.index') }}">
                                 <i class="fas fa-ticket-alt me-1"></i>Mis Alquileres
                             </a>
-                            <a class="nav-link" href="{{ route('client.payments.index') }}">
+                            <a class="nav-link" href="{{ route('payments.index') }}">
                                 <i class="fas fa-file-invoice-dollar me-1"></i>Mis Pagos
                             </a>
                         @endif
