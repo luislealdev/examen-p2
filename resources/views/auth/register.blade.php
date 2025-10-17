@@ -325,13 +325,19 @@
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Register form JavaScript loaded');
+    
     const countrySelect = document.getElementById('country_id');
     const citySelect = document.getElementById('city_id');
+    
+    console.log('Country select found:', !!countrySelect);
+    console.log('City select found:', !!citySelect);
     
     // Event listener para cargar ciudades cuando se selecciona un país
     if (countrySelect && citySelect) {
         countrySelect.addEventListener('change', function() {
             const countryId = this.value;
+            console.log('🌍 País seleccionado:', countryId);
             
             if (!countryId) {
                 citySelect.innerHTML = '<option value="">Primero selecciona un país...</option>';
@@ -343,6 +349,8 @@ document.addEventListener('DOMContentLoaded', function() {
             citySelect.innerHTML = '<option value="">Cargando ciudades...</option>';
             citySelect.disabled = true;
             
+            console.log('📡 Iniciando petición para obtener ciudades...');
+            
             // Petición para obtener ciudades
             fetch(`/cities/by-country?country_id=${countryId}`, {
                 method: 'GET',
@@ -353,12 +361,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .then(response => {
+                console.log('📡 Respuesta recibida:', response.status);
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 return response.json();
             })
             .then(cities => {
+                console.log('🏙️ Ciudades recibidas:', cities);
+                
                 citySelect.innerHTML = '<option value="">Seleccionar ciudad...</option>';
                 
                 if (cities && cities.length > 0) {
@@ -368,17 +379,23 @@ document.addEventListener('DOMContentLoaded', function() {
                         option.textContent = city.city;
                         citySelect.appendChild(option);
                     });
+                    console.log(`✅ ${cities.length} ciudades cargadas correctamente`);
+                } else {
+                    console.log('⚠️ No se encontraron ciudades para el país seleccionado');
                 }
                 
                 // Habilitar select
                 citySelect.disabled = false;
+                console.log('✅ Select de ciudades habilitado');
             })
             .catch(error => {
-                console.error('Error cargando ciudades:', error);
+                console.error('❌ Error cargando ciudades:', error);
                 citySelect.innerHTML = '<option value="">Error al cargar ciudades</option>';
                 citySelect.disabled = false;
             });
         });
+    } else {
+        console.error('❌ No se encontraron los selects de país o ciudad');
     }
 
     // Validación de contraseñas coincidentes

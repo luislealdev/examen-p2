@@ -53,6 +53,9 @@ Route::get('films-recent', [FilmController::class, 'recent'])->name('films.recen
 Route::get('search/films', [InventoryController::class, 'searchFilms'])->name('films.search');
 Route::get('search/stores', [InventoryController::class, 'searchStores'])->name('stores.search');
 
+// Ruta para cargar ciudades por país (necesaria para registro público)
+Route::get('cities/by-country', [CustomerController::class, 'getCitiesByCountry'])->name('cities.by-country');
+
 // === RUTAS PARA EMPLEADOS Y ADMINISTRADORES ===
 Route::middleware(['auth', 'role:employee,admin'])->group(function () {
     
@@ -68,9 +71,6 @@ Route::middleware(['auth', 'role:employee,admin'])->group(function () {
     Route::put('rentals/{rental}/return', [RentalController::class, 'returnFilm'])->name('rental.return');
     Route::get('films/{film}/availability', [RentalController::class, 'checkAvailability'])->name('rental.availability');
     Route::get('customers/search', [RentalController::class, 'searchCustomers'])->name('customers.search');
-    
-    // Rutas para manejo de direcciones y clientes (necesarias para empleados)
-    Route::get('cities/by-country', [CustomerController::class, 'getCitiesByCountry'])->name('cities.by-country');
     
     // Gestión de clientes (empleados y administradores)
     Route::resource('customers', CustomerController::class);
