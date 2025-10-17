@@ -13,6 +13,7 @@ use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OmdbController;
 use App\Http\Controllers\WebAuthController;
+use App\Http\Controllers\PasswordResetController;
 use Illuminate\Support\Facades\Route;
 
 // Redirección principal
@@ -26,6 +27,12 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [WebAuthController::class, 'login'])->name('auth.login');
     Route::get('/register', [WebAuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [WebAuthController::class, 'register'])->name('auth.register');
+    
+    // Rutas de recuperación de contraseña
+    Route::get('/forgot-password', [PasswordResetController::class, 'showRequestForm'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.update');
 });
 
 Route::post('/logout', [WebAuthController::class, 'logout'])

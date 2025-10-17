@@ -58,13 +58,20 @@
                                 <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
                             </button>
                         </div>
+                        
+                        <!-- Enlace de recuperación de contraseña -->
+                        <div class="text-center mt-3">
+                            <a href="{{ route('password.request') }}" class="text-decoration-none">
+                                <i class="fas fa-key me-1"></i>¿Olvidaste tu contraseña?
+                            </a>
+                        </div>
                     </form>
 
                     <hr class="my-4">
 
                     <div class="text-center">
                         <p class="mb-2">¿No tienes una cuenta?</p>
-                        <a href="{{ route('auth.register') }}" class="btn btn-outline-primary">
+                        <a href="{{ route('register') }}" class="btn btn-outline-primary">
                             <i class="fas fa-user-plus me-1"></i>Registrarse
                         </a>
                     </div>
