@@ -90,17 +90,90 @@ class FilmImportService
         if (empty($languages)) {
             // Idioma por defecto si no hay información
             return Language::firstOrCreate(
-                ['name' => 'English'],
-                ['name' => 'English']
+                ['code' => 'en'],
+                ['name' => 'English', 'code' => 'en']
             );
         }
 
         $primaryLanguage = $languages[0];
+        $languageCode = $this->getLanguageCode($primaryLanguage);
         
         return Language::firstOrCreate(
-            ['name' => $primaryLanguage],
-            ['name' => $primaryLanguage]
+            ['code' => $languageCode],
+            ['name' => $primaryLanguage, 'code' => $languageCode]
         );
+    }
+
+    /**
+     * Obtener código ISO 639-1 para un idioma
+     */
+    private function getLanguageCode(string $languageName): string
+    {
+        $languageCodes = [
+            'English' => 'en',
+            'Spanish' => 'es',
+            'French' => 'fr',
+            'German' => 'de',
+            'Italian' => 'it',
+            'Portuguese' => 'pt',
+            'Japanese' => 'ja',
+            'Chinese' => 'zh',
+            'Korean' => 'ko',
+            'Russian' => 'ru',
+            'Arabic' => 'ar',
+            'Hindi' => 'hi',
+            'Turkish' => 'tr',
+            'Dutch' => 'nl',
+            'Swedish' => 'sv',
+            'Danish' => 'da',
+            'Norwegian' => 'no',
+            'Finnish' => 'fi',
+            'Polish' => 'pl',
+            'Czech' => 'cs',
+            'Greek' => 'el',
+            'Hebrew' => 'he',
+            'Thai' => 'th',
+            'Vietnamese' => 'vi',
+            'Indonesian' => 'id',
+            'Malay' => 'ms',
+            'Romanian' => 'ro',
+            'Hungarian' => 'hu',
+            'Ukrainian' => 'uk',
+            'Serbian' => 'sr',
+            'Croatian' => 'hr',
+            'Bulgarian' => 'bg',
+            'Slovak' => 'sk',
+            'Slovenian' => 'sl',
+            'Lithuanian' => 'lt',
+            'Latvian' => 'lv',
+            'Estonian' => 'et',
+            'Icelandic' => 'is',
+            'Persian' => 'fa',
+            'Urdu' => 'ur',
+            'Bengali' => 'bn',
+            'Tamil' => 'ta',
+            'Telugu' => 'te',
+            'Marathi' => 'mr',
+            'Gujarati' => 'gu',
+            'Kannada' => 'kn',
+            'Malayalam' => 'ml',
+            'Punjabi' => 'pa',
+            'Swahili' => 'sw',
+            'Afrikaans' => 'af',
+            'Welsh' => 'cy',
+            'Irish' => 'ga',
+            'Basque' => 'eu',
+            'Catalan' => 'ca',
+            'Galician' => 'gl',
+        ];
+
+        // Si existe en el mapeo, retornar código
+        if (isset($languageCodes[$languageName])) {
+            return $languageCodes[$languageName];
+        }
+
+        // Fallback: usar primeras dos letras en minúsculas
+        return strtolower(substr($languageName, 0, 2));
     }
 
     /**
