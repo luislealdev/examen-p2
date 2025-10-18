@@ -43,12 +43,23 @@ Route::post('/logout', [WebAuthController::class, 'logout'])
 // === RUTAS PÚBLICAS (TODOS LOS USUARIOS) ===
 // Películas - solo visualización pública
 Route::get('films', [FilmController::class, 'index'])->name('films.index');
-Route::get('films/{film}', [FilmController::class, 'show'])->name('films.show');
 Route::get('films-category/{category}', [FilmController::class, 'byCategory'])->name('films.by-category');
 Route::get('films-language/{language}', [FilmController::class, 'byLanguage'])->name('films.by-language');
 Route::get('films-rating/{rating}', [FilmController::class, 'byRating'])->name('films.by-rating');
 Route::get('films-decade/{decade}', [FilmController::class, 'byDecade'])->name('films.by-decade');
 Route::get('films-recent', [FilmController::class, 'recent'])->name('films.recent');
+
+// === RUTAS PROTEGIDAS PARA FILMS (DEBEN IR ANTES DE films/{film}) ===
+Route::middleware(['auth', 'role:employee,admin'])->group(function () {
+    Route::get('films/create', [FilmController::class, 'create'])->name('films.create');
+    Route::post('films', [FilmController::class, 'store'])->name('films.store');
+    Route::get('films/{film}/edit', [FilmController::class, 'edit'])->name('films.edit');
+    Route::put('films/{film}', [FilmController::class, 'update'])->name('films.update');
+    Route::delete('films/{film}', [FilmController::class, 'destroy'])->name('films.destroy');
+});
+
+// Ruta pública para ver película específica (DEBE IR DESPUÉS de las rutas específicas)
+Route::get('films/{film}', [FilmController::class, 'show'])->name('films.show');
 
 // Rutas de búsqueda para autocompletado (disponibles para todos)
 Route::get('search/films', [InventoryController::class, 'searchFilms'])->name('films.search');
@@ -65,13 +76,6 @@ Route::get('cities/by-country', [CustomerController::class, 'getCitiesByCountry'
 // === RUTAS PARA EMPLEADOS Y ADMINISTRADORES ===
 Route::middleware(['auth', 'role:employee,admin'])->group(function () {
     
-    // Gestión de películas (crear, editar, eliminar)
-    Route::get('films/create', [FilmController::class, 'create'])->name('films.create');
-    Route::post('films', [FilmController::class, 'store'])->name('films.store');
-    Route::get('films/{film}/edit', [FilmController::class, 'edit'])->name('films.edit');
-    Route::put('films/{film}', [FilmController::class, 'update'])->name('films.update');
-    Route::delete('films/{film}', [FilmController::class, 'destroy'])->name('films.destroy');
-
     // Gestión de rentas (empleados y administradores)
     // Gestión de rentas integrada
     Route::get('rentals', [RentalController::class, 'index'])->name('rentals.index');
