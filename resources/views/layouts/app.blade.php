@@ -136,6 +136,16 @@
                                 <i class="fas fa-chart-line me-1"></i>Actividad de Negocio
                             </a>
                         @endif
+                        
+                        @if(Auth::user()->isClient())
+                            <!-- Client only links -->
+                            <a class="nav-link" href="{{ route('payments.index') }}">
+                                <i class="fas fa-credit-card me-1"></i>Mis Pagos
+                            </a>
+                            <a class="nav-link" href="{{ route('payments.pending') }}">
+                                <i class="fas fa-clock me-1"></i>Cargos Pendientes
+                            </a>
+                        @endif
                     @endauth
                 </div>
                 

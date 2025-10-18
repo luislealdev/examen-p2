@@ -26,7 +26,15 @@
                             <i class="fas fa-ban me-1"></i>BLOQUEADO
                         </span>
                     @endif
-                    <a href="{{ route('customers.edit', $customer->customer_id) }}" class="btn btn-warning">
+                    <div class="btn-group me-2">
+                        <a href="{{ route('payments.client-payments', $customer) }}" class="btn btn-success">
+                            <i class="fas fa-credit-card me-2"></i>Ver Pagos
+                        </a>
+                        <a href="{{ route('payments.client-pending', $customer) }}" class="btn btn-warning">
+                            <i class="fas fa-clock me-2"></i>Cargos Pendientes
+                        </a>
+                    </div>
+                    <a href="{{ route('customers.edit', $customer->customer_id) }}" class="btn btn-outline-warning">
                         <i class="fas fa-edit me-2"></i>Editar
                     </a>
                     <a href="{{ route('customers.index') }}" class="btn btn-secondary">

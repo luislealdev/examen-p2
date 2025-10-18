@@ -34,7 +34,24 @@ class Payment extends Model
         'rental_id',
         'amount',
         'payment_date',
+        'payment_type',
+        'notes',
         'last_update'
+    ];
+
+    /**
+     * Payment types constants
+     */
+    public const TYPE_RENTAL = 'rental';
+    public const TYPE_LATE_FEE = 'late_fee';
+    public const TYPE_DAMAGE = 'damage';
+    public const TYPE_OTHER = 'other';
+
+    public const PAYMENT_TYPES = [
+        self::TYPE_RENTAL => 'Alquiler',
+        self::TYPE_LATE_FEE => 'Mora',
+        self::TYPE_DAMAGE => 'Daño',
+        self::TYPE_OTHER => 'Otro'
     ];
 
     /**
@@ -45,6 +62,38 @@ class Payment extends Model
         'payment_date' => 'datetime',
         'last_update' => 'datetime',
     ];
+
+    /**
+     * Get formatted amount
+     */
+    public function getFormattedAmountAttribute(): string
+    {
+        return '$' . number_format((float)$this->amount, 2);
+    }
+
+    /**
+     * Get payment type label
+     */
+    public function getPaymentTypeLabelAttribute(): string
+    {
+        return self::PAYMENT_TYPES[$this->payment_type] ?? 'Desconocido';
+    }
+
+    /**
+     * Get payment status based on rental
+     */
+    public function getStatusAttribute(): string
+    {
+        if (!$this->rental_id) {
+            return 'Pago manual';
+        }
+
+        if ($this->rental && $this->rental->return_date) {
+            return 'Completado';
+        }
+
+        return 'Pendiente';
+    }
 
     /**
      * Get the customer that made this payment.

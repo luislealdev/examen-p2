@@ -15,6 +15,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OmdbController;
 use App\Http\Controllers\WebAuthController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 
 // Redirección principal
@@ -99,6 +100,13 @@ Route::middleware(['auth', 'role:employee,admin'])->group(function () {
         Route::get('customers-blocked', [CustomerController::class, 'blocked'])->name('customers.blocked');
         Route::post('customers/{customer}/force-unblock', [CustomerController::class, 'forceUnblock'])->name('customers.force-unblock');
         Route::post('customers/{customer}/extend-rental', [CustomerController::class, 'extendRental'])->name('customers.extend-rental');
+    });
+
+    // Gestión de pagos de clientes (empleados y administradores)
+    Route::prefix('customers/{customer}')->name('payments.')->group(function () {
+        Route::get('payments', [PaymentController::class, 'clientPayments'])->name('client-payments');
+        Route::get('pending', [PaymentController::class, 'clientPending'])->name('client-pending');
+        Route::post('payments', [PaymentController::class, 'processPayment'])->name('process');
     });
 
     // Gestión de inventarios (empleados y administradores)
@@ -250,6 +258,13 @@ Route::middleware(['auth', 'role:employee,admin'])->group(function () {
     Route::post('/inventory/{inventory}/mark-damaged', [ReturnController::class, 'markDamaged'])->name('inventory.mark-damaged');
     Route::post('/inventory/{inventory}/mark-lost', [ReturnController::class, 'markLost'])->name('inventory.mark-lost');
     Route::post('/inventory/{inventory}/repair', [ReturnController::class, 'repair'])->name('inventory.repair');
+});
+
+// === RUTAS PARA CLIENTES AUTENTICADOS ===
+Route::middleware(['auth', 'role:client'])->group(function () {
+    // Consulta de pagos y cargos pendientes del cliente
+    Route::get('my-payments', [PaymentController::class, 'index'])->name('payments.index');
+    Route::get('my-pending', [PaymentController::class, 'pending'])->name('payments.pending');
 });
 
 // Debug específico para middleware admin-only
