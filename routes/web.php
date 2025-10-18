@@ -265,6 +265,7 @@ Route::middleware(['auth', 'role:client'])->group(function () {
     // Consulta de pagos y cargos pendientes del cliente
     Route::get('my-payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::get('my-pending', [PaymentController::class, 'pending'])->name('payments.pending');
+    Route::get('my-rentals', [PaymentController::class, 'rentals'])->name('payments.rentals');
 });
 
 // Debug específico para middleware admin-only

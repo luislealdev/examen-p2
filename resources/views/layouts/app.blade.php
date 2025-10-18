@@ -139,6 +139,9 @@
                         
                         @if(Auth::user()->isClient())
                             <!-- Client only links -->
+                            <a class="nav-link" href="{{ route('payments.rentals') }}">
+                                <i class="fas fa-history me-1"></i>Mis Rentas
+                            </a>
                             <a class="nav-link" href="{{ route('payments.index') }}">
                                 <i class="fas fa-credit-card me-1"></i>Mis Pagos
                             </a>

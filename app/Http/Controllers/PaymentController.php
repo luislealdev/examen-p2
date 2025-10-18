@@ -13,6 +13,70 @@ use Carbon\Carbon;
 class PaymentController extends Controller
 {
     /**
+     * Display customer's rental history (for authenticated clients)
+     */
+    public function rentals(Request $request): View
+    {
+        $user = Auth::user();
+        
+        // Find customer associated with this user
+        $customer = Customer::where('email', $user->email)->first();
+        
+        if (!$customer) {
+            abort(404, 'No se encontró información del cliente.');
+        }
+
+        $query = Rental::with(['film', 'customer', 'staff', 'inventory.store'])
+            ->where('customer_id', $customer->customer_id);
+
+        // Apply filters
+        if ($request->filled('date_from')) {
+            $query->whereDate('rental_date', '>=', $request->date_from);
+        }
+        
+        if ($request->filled('date_to')) {
+            $query->whereDate('rental_date', '<=', $request->date_to);
+        }
+
+        if ($request->filled('status')) {
+            if ($request->status === 'returned') {
+                $query->whereNotNull('return_date');
+            } elseif ($request->status === 'pending') {
+                $query->whereNull('return_date');
+            } elseif ($request->status === 'overdue') {
+                $query->join('inventory', 'rental.inventory_id', '=', 'inventory.inventory_id')
+                      ->join('film', 'inventory.film_id', '=', 'film.film_id')
+                      ->whereNull('rental.return_date')
+                      ->whereRaw("date(rental.rental_date, '+' || film.rental_duration || ' days') < date('now')")
+                      ->select('rental.*'); // Ensure we only select rental columns
+            }
+        }
+
+        if ($request->filled('store_id')) {
+            $query->whereHas('inventory', function($q) use ($request) {
+                $q->where('store_id', $request->store_id);
+            });
+        }
+
+        $rentals = $query->orderBy('rental_date', 'desc')->paginate(15);
+        
+        // Calculate statistics
+        $totalRentals = Rental::where('customer_id', $customer->customer_id)->count();
+        $pendingRentals = Rental::where('customer_id', $customer->customer_id)
+            ->whereNull('return_date')->count();
+        $returnedRentals = Rental::where('customer_id', $customer->customer_id)
+            ->whereNotNull('return_date')->count();
+        $overdueRentals = Rental::join('inventory', 'rental.inventory_id', '=', 'inventory.inventory_id')
+            ->join('film', 'inventory.film_id', '=', 'film.film_id')
+            ->where('rental.customer_id', $customer->customer_id)
+            ->whereNull('rental.return_date')
+            ->whereRaw("date(rental.rental_date, '+' || film.rental_duration || ' days') < date('now')")
+            ->count();
+
+        return view('payments.rentals', compact('rentals', 'customer', 'totalRentals', 'pendingRentals', 'returnedRentals', 'overdueRentals'));
+    }
+
+    /**
      * Display customer's own payments (for authenticated clients)
      */
     public function index(Request $request): View
@@ -76,7 +140,8 @@ class PaymentController extends Controller
 
         // Apply filters
         if ($request->filled('overdue_only') && $request->overdue_only == '1') {
-            $query->whereRaw('DATE_ADD(rental_date, INTERVAL rental_duration DAY) < CURDATE()');
+            $query->join('film', 'rental.film_id', '=', 'film.film_id')
+                  ->whereRaw("date(rental.rental_date, '+' || film.rental_duration || ' days') < date('now')");
         }
 
         if ($request->filled('store_id')) {
@@ -91,7 +156,8 @@ class PaymentController extends Controller
         $totalPendingCount = $query->count();
         $overdueCount = Rental::where('customer_id', $customer->customer_id)
             ->whereNull('return_date')
-            ->whereRaw('DATE_ADD(rental_date, INTERVAL rental_duration DAY) < CURDATE()')
+            ->join('film', 'rental.film_id', '=', 'film.film_id')
+            ->whereRaw("date(rental.rental_date, '+' || film.rental_duration || ' days') < date('now')")
             ->count();
 
         return view('payments.pending', compact('pendingRentals', 'customer', 'totalPendingCount', 'overdueCount'));
@@ -150,7 +216,10 @@ class PaymentController extends Controller
 
         // Apply filters
         if ($request->filled('overdue_only') && $request->overdue_only == '1') {
-            $query->whereRaw('DATE_ADD(rental_date, INTERVAL rental_duration DAY) < CURDATE()');
+            $query->join('inventory', 'rental.inventory_id', '=', 'inventory.inventory_id')
+                  ->join('film', 'inventory.film_id', '=', 'film.film_id')
+                  ->whereRaw("date(rental.rental_date, '+' || film.rental_duration || ' days') < date('now')")
+                  ->select('rental.*'); // Ensure we only select rental columns
         }
 
         if ($request->filled('store_id')) {
@@ -167,9 +236,11 @@ class PaymentController extends Controller
         
         // Calculate totals and late fees
         $totalPendingCount = $query->count();
-        $overdueCount = Rental::where('customer_id', $customer->customer_id)
-            ->whereNull('return_date')
-            ->whereRaw('DATE_ADD(rental_date, INTERVAL rental_duration DAY) < CURDATE()')
+        $overdueCount = Rental::join('inventory', 'rental.inventory_id', '=', 'inventory.inventory_id')
+            ->join('film', 'inventory.film_id', '=', 'film.film_id')
+            ->where('rental.customer_id', $customer->customer_id)
+            ->whereNull('rental.return_date')
+            ->whereRaw("date(rental.rental_date, '+' || film.rental_duration || ' days') < date('now')")
             ->count();
 
         // Get staff and stores for filters

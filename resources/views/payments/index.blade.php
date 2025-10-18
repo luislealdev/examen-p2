@@ -13,9 +13,14 @@
             <p class="lead text-muted">Historial de pagos realizados</p>
         </div>
         <div class="col-auto">
-            <a href="{{ route('payments.pending') }}" class="btn btn-outline-warning">
-                <i class="fas fa-clock me-2"></i>Ver Cargos Pendientes
-            </a>
+            <div class="btn-group">
+                <a href="{{ route('payments.rentals') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-history me-2"></i>Mi Historial
+                </a>
+                <a href="{{ route('payments.pending') }}" class="btn btn-outline-warning">
+                    <i class="fas fa-clock me-2"></i>Ver Cargos Pendientes
+                </a>
+            </div>
         </div>
     </div>
 

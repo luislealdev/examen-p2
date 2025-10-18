@@ -1,24 +1,24 @@
 @extends('layouts.app')
 
-@section('title', 'Cargos Pendientes')
+@section('title', 'Mi Historial de Rentas')
 
 @section('content')
 <div class="container">
     <!-- Header -->
     <div class="row mb-4">
         <div class="col">
-            <h1 class="display-5 fw-bold text-warning">
-                <i class="fas fa-clock me-3"></i>Cargos Pendientes
+            <h1 class="display-5 fw-bold text-primary">
+                <i class="fas fa-history me-3"></i>Mi Historial de Rentas
             </h1>
-            <p class="lead text-muted">Películas alquiladas que aún no han sido devueltas</p>
+            <p class="lead text-muted">Todas mis películas alquiladas</p>
         </div>
         <div class="col-auto">
             <div class="btn-group">
-                <a href="{{ route('payments.rentals') }}" class="btn btn-outline-primary">
-                    <i class="fas fa-history me-2"></i>Mi Historial
-                </a>
                 <a href="{{ route('payments.index') }}" class="btn btn-outline-success">
-                    <i class="fas fa-credit-card me-2"></i>Ver Mis Pagos
+                    <i class="fas fa-credit-card me-2"></i>Ver Pagos
+                </a>
+                <a href="{{ route('payments.pending') }}" class="btn btn-outline-warning">
+                    <i class="fas fa-clock me-2"></i>Cargos Pendientes
                 </a>
             </div>
         </div>
@@ -26,24 +26,34 @@
 
     <!-- Filters -->
     <div class="card shadow-custom border-0 mb-4">
-        <div class="card-header bg-gradient-warning text-white border-0">
+        <div class="card-header bg-gradient-primary text-white border-0">
             <h5 class="mb-0">
                 <i class="fas fa-filter me-2"></i>Filtros de Búsqueda
             </h5>
         </div>
         <div class="card-body">
-            <form method="GET" action="{{ route('payments.pending') }}">
+            <form method="GET" action="{{ route('payments.rentals') }}">
                 <div class="row g-3">
-                    <div class="col-md-4">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="overdue_only" name="overdue_only" 
-                                   value="1" {{ request('overdue_only') ? 'checked' : '' }}>
-                            <label class="form-check-label fw-bold text-danger" for="overdue_only">
-                                Solo mostrar alquileres vencidos
-                            </label>
-                        </div>
+                    <div class="col-md-2">
+                        <label for="date_from" class="form-label fw-bold">Fecha Desde</label>
+                        <input type="date" class="form-control" id="date_from" name="date_from" 
+                               value="{{ request('date_from') }}">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-2">
+                        <label for="date_to" class="form-label fw-bold">Fecha Hasta</label>
+                        <input type="date" class="form-control" id="date_to" name="date_to" 
+                               value="{{ request('date_to') }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="status" class="form-label fw-bold">Estado</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">Todos</option>
+                            <option value="returned" {{ request('status') === 'returned' ? 'selected' : '' }}>Devueltas</option>
+                            <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pendientes</option>
+                            <option value="overdue" {{ request('status') === 'overdue' ? 'selected' : '' }}>Vencidas</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
                         <label for="store_id" class="form-label fw-bold">Tienda</label>
                         <select class="form-select" id="store_id" name="store_id">
                             <option value="">Todas las tiendas</option>
@@ -55,18 +65,18 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-4 d-flex align-items-end">
+                    <div class="col-md-3 d-flex align-items-end">
                         <div class="w-100">
-                            <button type="submit" class="btn btn-warning w-100">
+                            <button type="submit" class="btn btn-primary w-100">
                                 <i class="fas fa-search me-1"></i>Filtrar
                             </button>
                         </div>
                     </div>
                 </div>
                 
-                @if(request()->hasAny(['overdue_only', 'store_id']))
+                @if(request()->hasAny(['date_from', 'date_to', 'status', 'store_id']))
                     <div class="mt-2">
-                        <a href="{{ route('payments.pending') }}" class="btn btn-outline-secondary btn-sm">
+                        <a href="{{ route('payments.rentals') }}" class="btn btn-outline-secondary btn-sm">
                             <i class="fas fa-times me-1"></i>Limpiar Filtros
                         </a>
                     </div>
@@ -77,13 +87,43 @@
 
     <!-- Summary Cards -->
     <div class="row mb-4">
-        <div class="col-md-6">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-custom bg-gradient-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="text-white-50 mb-1">Total Rentas</h5>
+                            <h3 class="mb-0">{{ $totalRentals }}</h3>
+                        </div>
+                        <div class="fs-1 opacity-50">
+                            <i class="fas fa-film"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-custom bg-gradient-success text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="text-white-50 mb-1">Devueltas</h5>
+                            <h3 class="mb-0">{{ $returnedRentals }}</h3>
+                        </div>
+                        <div class="fs-1 opacity-50">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
             <div class="card border-0 shadow-custom bg-gradient-warning text-white">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
-                            <h5 class="text-white-50 mb-1">Total Pendientes</h5>
-                            <h3 class="mb-0">{{ $totalPendingCount }}</h3>
+                            <h5 class="text-white-50 mb-1">Pendientes</h5>
+                            <h3 class="mb-0">{{ $pendingRentals }}</h3>
                         </div>
                         <div class="fs-1 opacity-50">
                             <i class="fas fa-clock"></i>
@@ -92,13 +132,13 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-3">
             <div class="card border-0 shadow-custom bg-gradient-danger text-white">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
-                            <h5 class="text-white-50 mb-1">Alquileres Vencidos</h5>
-                            <h3 class="mb-0">{{ $overdueCount }}</h3>
+                            <h5 class="text-white-50 mb-1">Vencidas</h5>
+                            <h3 class="mb-0">{{ $overdueRentals }}</h3>
                         </div>
                         <div class="fs-1 opacity-50">
                             <i class="fas fa-exclamation-triangle"></i>
@@ -109,15 +149,15 @@
         </div>
     </div>
 
-    <!-- Pending Rentals Table -->
+    <!-- Rentals Table -->
     <div class="card shadow-custom border-0">
         <div class="card-header bg-gradient-dark text-white border-0">
             <h5 class="mb-0">
-                <i class="fas fa-list me-2"></i>Alquileres Pendientes
+                <i class="fas fa-list me-2"></i>Historial de Alquileres
             </h5>
         </div>
         <div class="card-body p-0">
-            @if($pendingRentals->count() > 0)
+            @if($rentals->count() > 0)
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
@@ -126,6 +166,7 @@
                                 <th>Fecha Alquiler</th>
                                 <th>Duración</th>
                                 <th>Fecha Límite</th>
+                                <th>Fecha Devolución</th>
                                 <th>Estado</th>
                                 <th>Tarifa</th>
                                 <th>Tienda</th>
@@ -133,13 +174,28 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($pendingRentals as $rental)
+                            @foreach($rentals as $rental)
                                 @php
                                     $dueDate = $rental->rental_date->addDays($rental->film->rental_duration);
-                                    $isOverdue = $dueDate->isPast();
+                                    $isReturned = !is_null($rental->return_date);
+                                    $isOverdue = !$isReturned && $dueDate->isPast();
                                     $daysLate = $isOverdue ? $dueDate->diffInDays(now()) : 0;
+                                    
+                                    if ($isReturned) {
+                                        $status = 'Devuelta';
+                                        $statusClass = 'success';
+                                        $statusIcon = 'check-circle';
+                                    } elseif ($isOverdue) {
+                                        $status = 'Vencida';
+                                        $statusClass = 'danger';
+                                        $statusIcon = 'exclamation-triangle';
+                                    } else {
+                                        $status = 'Pendiente';
+                                        $statusClass = 'warning';
+                                        $statusIcon = 'clock';
+                                    }
                                 @endphp
-                                <tr class="{{ $isOverdue ? 'table-danger' : '' }}">
+                                <tr class="{{ $isOverdue && !$isReturned ? 'table-danger' : '' }}">
                                     <td>
                                         <div class="d-flex align-items-center">
                                             @if($rental->film->poster_url)
@@ -171,31 +227,33 @@
                                         <span class="badge bg-info">{{ $rental->film->rental_duration }} días</span>
                                     </td>
                                     <td>
-                                        <div class="fw-bold {{ $isOverdue ? 'text-danger' : 'text-warning' }}">
+                                        <div class="fw-bold {{ $isOverdue && !$isReturned ? 'text-danger' : 'text-warning' }}">
                                             {{ $dueDate->format('d/m/Y') }}
                                         </div>
-                                        @if($isOverdue)
+                                        @if($isOverdue && !$isReturned)
                                             <small class="text-danger">{{ $daysLate }} día(s) tarde</small>
-                                        @else
+                                        @elseif(!$isReturned)
                                             <small class="text-muted">{{ $dueDate->diffInDays(now()) }} día(s) restantes</small>
                                         @endif
                                     </td>
                                     <td>
-                                        @if($isOverdue)
-                                            <span class="badge bg-danger">
-                                                <i class="fas fa-exclamation-triangle me-1"></i>Vencido
-                                            </span>
+                                        @if($rental->return_date)
+                                            <div class="fw-bold text-success">{{ $rental->return_date->format('d/m/Y') }}</div>
+                                            <small class="text-muted">{{ $rental->return_date->format('H:i') }}</small>
                                         @else
-                                            <span class="badge bg-success">
-                                                <i class="fas fa-clock me-1"></i>Activo
-                                            </span>
+                                            <span class="text-muted">No devuelta</span>
                                         @endif
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ $statusClass }}">
+                                            <i class="fas fa-{{ $statusIcon }} me-1"></i>{{ $status }}
+                                        </span>
                                     </td>
                                     <td>
                                         <div class="fw-bold text-success">
                                             ${{ number_format($rental->film->rental_rate, 2) }}
                                         </div>
-                                        @if($isOverdue)
+                                        @if($isOverdue && !$isReturned)
                                             <small class="text-danger">
                                                 + Mora: ${{ number_format($daysLate * 1.50, 2) }}
                                             </small>
@@ -207,6 +265,7 @@
                                     </td>
                                     <td>
                                         <div class="fw-bold">{{ $rental->staff->first_name }} {{ $rental->staff->last_name }}</div>
+                                        <small class="text-muted">ID: {{ $rental->staff->staff_id }}</small>
                                     </td>
                                 </tr>
                             @endforeach
@@ -216,26 +275,29 @@
 
                 <!-- Pagination -->
                 <div class="card-footer bg-light border-0">
-                    {{ $pendingRentals->withQueryString()->links() }}
+                    {{ $rentals->withQueryString()->links() }}
                 </div>
             @else
                 <div class="text-center py-5">
-                    <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
-                    <h5 class="text-success mt-3">¡Excelente!</h5>
-                    <p class="text-muted">{{ request()->hasAny(['overdue_only', 'store_id']) ? 'No hay alquileres que coincidan con los filtros.' : 'No tienes alquileres pendientes.' }}</p>
+                    <i class="fas fa-film text-muted" style="font-size: 4rem;"></i>
+                    <h5 class="text-muted mt-3">No se encontraron alquileres</h5>
+                    <p class="text-muted">{{ request()->hasAny(['date_from', 'date_to', 'status', 'store_id']) ? 'Intenta ajustar los filtros de búsqueda.' : 'Aún no has alquilado ninguna película.' }}</p>
+                    <a href="{{ route('films.index') }}" class="btn btn-primary">
+                        <i class="fas fa-film me-2"></i>Explorar Películas
+                    </a>
                 </div>
             @endif
         </div>
     </div>
 
-    @if($overdueCount > 0)
+    @if($overdueRentals > 0)
         <!-- Warning Notice -->
         <div class="alert alert-warning mt-4" role="alert">
             <div class="d-flex align-items-center">
                 <i class="fas fa-exclamation-triangle me-3 fs-4"></i>
                 <div>
                     <h6 class="alert-heading mb-1">¡Atención!</h6>
-                    <p class="mb-0">Tienes {{ $overdueCount }} alquiler(es) vencido(s). Por favor, devuelve las películas lo antes posible para evitar cargos adicionales por mora.</p>
+                    <p class="mb-0">Tienes {{ $overdueRentals }} alquiler(es) vencido(s). Por favor, devuelve las películas lo antes posible para evitar cargos adicionales por mora.</p>
                 </div>
             </div>
         </div>
@@ -243,6 +305,14 @@
 </div>
 
 <style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+}
+
+.bg-gradient-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
 .bg-gradient-warning {
     background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
 }
