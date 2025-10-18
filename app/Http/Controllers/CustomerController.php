@@ -16,7 +16,7 @@ class CustomerController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = Customer::query();
+        $query = Customer::with(['store.address', 'address.city.country']);
 
         // Search functionality
         if ($request->filled('search')) {

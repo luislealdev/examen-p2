@@ -86,10 +86,10 @@
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Nombre</th>
+                            <th>Nombre Completo</th>
                             <th>Email</th>
-                            <th>ID de Tienda</th>
-                            <th>ID de Dirección</th>
+                            <th>Tienda</th>
+                            <th>Dirección</th>
                             <th>Estado</th>
                             <th>Creado</th>
                             <th>Acciones</th>
@@ -103,8 +103,41 @@
                                     <strong>{{ $customer->full_name }}</strong>
                                 </td>
                                 <td>{{ $customer->email ?: 'N/A' }}</td>
-                                <td>{{ $customer->store_id }}</td>
-                                <td>{{ $customer->address_id }}</td>
+                                <td>
+                                    @if($customer->store)
+                                        <div class="small">
+                                            <strong>Tienda #{{ $customer->store->store_id }}</strong>
+                                            @if($customer->store->address)
+                                                <br><span class="text-muted">{{ $customer->store->address->address }}</span>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <span class="text-muted">Sin tienda asignada</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($customer->address)
+                                        <div class="small">
+                                            <strong>{{ $customer->address->address }}</strong>
+                                            @if($customer->address->address2)
+                                                <br>{{ $customer->address->address2 }}
+                                            @endif
+                                            @if($customer->address->city)
+                                                <br><span class="text-muted">
+                                                    {{ $customer->address->city->city }}
+                                                    @if($customer->address->city->country)
+                                                        , {{ $customer->address->city->country->country }}
+                                                    @endif
+                                                </span>
+                                            @endif
+                                            @if($customer->address->postal_code)
+                                                <br><span class="text-muted">CP: {{ $customer->address->postal_code }}</span>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <span class="text-muted">Sin dirección</span>
+                                    @endif
+                                </td>
                                 <td>
                                     @if($customer->active)
                                         <span class="badge bg-success">Activo</span>
@@ -155,4 +188,27 @@
         @endif
     </div>
 </div>
+
+@push('styles')
+<style>
+/* Mejoras para la vista de clientes */
+.table td {
+    vertical-align: middle;
+}
+
+.table td:nth-child(4), 
+.table td:nth-child(5) {
+    min-width: 200px;
+    max-width: 250px;
+}
+
+.table .small {
+    line-height: 1.3;
+}
+
+.table .text-muted {
+    font-size: 0.85em;
+}
+</style>
+@endpush
 @endsection
