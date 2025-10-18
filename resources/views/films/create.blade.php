@@ -64,6 +64,29 @@
                     @enderror
                 </div>
 
+                <!-- Poster URL -->
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <label for="poster_url" class="form-label fw-bold">URL del Poster</label>
+                        <input type="url" class="form-control @error('poster_url') is-invalid @enderror" 
+                               id="poster_url" name="poster_url" value="{{ old('poster_url') }}"
+                               placeholder="https://ejemplo.com/poster.jpg">
+                        @error('poster_url')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <div class="form-text">URL de la imagen del poster de la película</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Vista Previa</label>
+                        <div class="text-center">
+                            <img id="poster-preview" src="/placeholder-movie.svg" 
+                                 alt="Imagen no disponible" 
+                                 class="img-fluid rounded"
+                                 style="max-height: 120px;">
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Language Information -->
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
@@ -232,4 +255,24 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const posterUrlInput = document.getElementById('poster_url');
+    const posterPreview = document.getElementById('poster-preview');
+    
+    if (posterUrlInput && posterPreview) {
+        posterUrlInput.addEventListener('input', function() {
+            const url = this.value.trim();
+            if (url) {
+                posterPreview.src = url;
+                posterPreview.alt = 'Vista previa del poster';
+            } else {
+                posterPreview.src = '/placeholder-movie.svg';
+                posterPreview.alt = 'Imagen no disponible';
+            }
+        });
+    }
+});
+</script>
 @endsection

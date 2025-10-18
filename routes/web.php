@@ -66,8 +66,8 @@ Route::get('cities/by-country', [CustomerController::class, 'getCitiesByCountry'
 Route::middleware(['auth', 'role:employee,admin'])->group(function () {
     
     // Gestión de películas (crear, editar, eliminar)
-    Route::post('films', [FilmController::class, 'store'])->name('films.store');
     Route::get('films/create', [FilmController::class, 'create'])->name('films.create');
+    Route::post('films', [FilmController::class, 'store'])->name('films.store');
     Route::get('films/{film}/edit', [FilmController::class, 'edit'])->name('films.edit');
     Route::put('films/{film}', [FilmController::class, 'update'])->name('films.update');
     Route::delete('films/{film}', [FilmController::class, 'destroy'])->name('films.destroy');

@@ -55,8 +55,34 @@
     </div>
 
     <div class="row">
+        <!-- Movie Poster -->
+        <div class="col-lg-4 order-lg-2">
+            <div class="card shadow-custom border-0 mb-4">
+                <div class="card-body text-center">
+                    @if($film->poster_url)
+                        <img src="{{ $film->poster_url }}" 
+                             alt="{{ $film->title }} Poster" 
+                             class="img-fluid rounded"
+                             style="max-height: 400px;"
+                             onerror="this.onerror=null; this.src='/placeholder-movie.svg'; this.alt='Imagen no disponible';">
+                    @else
+                        <img src="/placeholder-movie.svg" 
+                             alt="Imagen no disponible" 
+                             class="img-fluid rounded"
+                             style="max-height: 400px;">
+                    @endif
+                    <div class="mt-3">
+                        <h6 class="text-muted">{{ $film->title }}</h6>
+                        @if($film->release_year)
+                            <small class="text-muted">({{ $film->release_year }})</small>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Main Content -->
-        <div class="col-lg-8">
+        <div class="col-lg-8 order-lg-1">
             <!-- Film Details Card -->
             <div class="card shadow-custom border-0 mb-4">
                 <div class="card-header bg-gradient-primary text-white border-0">
@@ -157,9 +183,12 @@
             </div>
             @endif
         </div>
+    </div>
 
-        <!-- Sidebar -->
-        <div class="col-lg-4">
+    <!-- Additional Information Row -->
+    <div class="row">
+        <!-- Rental Information and Actions -->
+        <div class="col-lg-6">
             <!-- Rental Information Card -->
             <div class="card shadow-custom border-0 mb-4">
                 <div class="card-header bg-gradient-success text-white border-0">
@@ -269,7 +298,6 @@
                             <div class="border rounded p-2">
                                 <div class="fw-bold text-danger">Ratio de Costo</div>
                                 <div class="h6 mb-0">{{ number_format($film->replacement_cost / $film->rental_rate, 1) }}x</div>
-                            </div>
                         </div>
                     </div>
                 </div>

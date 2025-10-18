@@ -289,12 +289,33 @@
             @foreach($films as $film)
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="card h-100 shadow-custom border-0 hover-shadow">
-                        <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-start">
-                            <div>
+                        <!-- Movie Poster -->
+                        <div class="position-relative" style="height: 300px; overflow: hidden;">
+                            @if($film->poster_url)
+                                <img src="{{ $film->poster_url }}" 
+                                     class="card-img-top w-100 h-100" 
+                                     style="object-fit: cover;" 
+                                     alt="{{ $film->title }}"
+                                     onerror="this.src='/placeholder-movie.svg'; this.onerror=null;">
+                            @else
+                                <img src="/placeholder-movie.svg" 
+                                     class="card-img-top w-100 h-100" 
+                                     style="object-fit: cover;" 
+                                     alt="Poster no disponible para {{ $film->title }}">
+                            @endif
+                            
+                            <!-- Overlay with rating and year -->
+                            <div class="position-absolute top-0 start-0 p-2">
                                 <span class="badge bg-{{ $film->rating_color }} fs-6">{{ $film->rating }}</span>
                                 @if($film->release_year)
                                     <span class="badge bg-secondary ms-1">{{ $film->release_year }}</span>
                                 @endif
+                            </div>
+                        </div>
+                        
+                        <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <!-- Moved badges to image overlay above -->
                             </div>
                             <div class="dropdown">
                                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 

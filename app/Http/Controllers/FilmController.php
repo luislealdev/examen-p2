@@ -155,11 +155,13 @@ class FilmController extends Controller
             'special_features' => 'nullable|array',
             'special_features.*' => Rule::in(Film::SPECIAL_FEATURES),
             'category_id' => 'nullable|exists:category,category_id',
+            'poster_url' => 'nullable|url|max:500',
         ]);
 
         // Clean and format data
         $validated['title'] = trim($validated['title']);
         $validated['description'] = $validated['description'] ? trim($validated['description']) : null;
+        $validated['poster_url'] = $validated['poster_url'] ? trim($validated['poster_url']) : null;
 
         // Create the film
         $film = Film::create($validated);
@@ -218,11 +220,13 @@ class FilmController extends Controller
             'special_features' => 'nullable|array',
             'special_features.*' => Rule::in(Film::SPECIAL_FEATURES),
             'category_id' => 'nullable|exists:category,category_id',
+            'poster_url' => 'nullable|url|max:500',
         ]);
 
         // Clean and format data
         $validated['title'] = trim($validated['title']);
         $validated['description'] = $validated['description'] ? trim($validated['description']) : null;
+        $validated['poster_url'] = $validated['poster_url'] ? trim($validated['poster_url']) : null;
 
         // Update the film
         $film->update($validated);
