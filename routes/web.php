@@ -124,6 +124,29 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // Panel de administración
     Route::get('admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     
+    // Estadísticas y reportes (solo admin)
+    Route::prefix('admin/reports')->name('admin.reports.')->group(function () {
+        // Estadísticas por sucursal
+        Route::get('stores', [AdminController::class, 'rentalsByStore'])->name('stores');
+        
+        // Estadísticas por categoría
+        Route::get('categories', [AdminController::class, 'rentalsByCategory'])->name('categories');
+        
+        // Estadísticas por actor
+        Route::get('actors', [AdminController::class, 'rentalsByActor'])->name('actors');
+        
+        // Reportes de ingresos
+        Route::get('revenue/stores', [AdminController::class, 'revenueByStore'])->name('revenue.stores');
+        Route::get('revenue/global', [AdminController::class, 'globalRevenue'])->name('revenue.global');
+        
+        // Top clientes
+        Route::get('customers', [AdminController::class, 'topCustomers'])->name('customers');
+        
+        // Exportaciones
+        Route::get('export/csv', [AdminController::class, 'exportCSV'])->name('export.csv');
+        Route::get('export/pdf', [AdminController::class, 'exportPDF'])->name('export.pdf');
+    });
+    
     // Estadísticas de películas (solo admin)
     Route::get('films-statistics', [FilmController::class, 'statistics'])->name('films.statistics');
     
