@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Str;
 
 class Film extends Model
@@ -159,6 +161,30 @@ class Film extends Model
     }
 
     /**
+     * Get the inventory items for this film.
+     */
+    public function inventory(): HasMany
+    {
+        return $this->hasMany(Inventory::class, 'film_id', 'film_id');
+    }
+
+    /**
+     * Get available inventory items for this film.
+     */
+    public function availableInventory()
+    {
+        return $this->inventory()->available();
+    }
+
+    /**
+     * Get rentals for this film.
+     */
+    public function rentals(): HasManyThrough
+    {
+        return $this->hasManyThrough(Rental::class, Inventory::class, 'film_id', 'inventory_id', 'film_id', 'inventory_id');
+    }
+
+    /**
      * Query Scopes
      */
 
@@ -247,6 +273,41 @@ class Film extends Model
     public function scopeWithSpecialFeatures(Builder $query): Builder
     {
         return $query->whereNotNull('special_features');
+    }
+
+    /**
+     * Scope a query to get films with available inventory.
+     */
+    public function scopeWithAvailableInventory(Builder $query): Builder
+    {
+        return $query->whereHas('inventory', function ($q) {
+            $q->available();
+        });
+    }
+
+    /**
+     * Scope a query to get films without available inventory.
+     */
+    public function scopeWithoutAvailableInventory(Builder $query): Builder
+    {
+        return $query->whereDoesntHave('inventory', function ($q) {
+            $q->available();
+        });
+    }
+
+    /**
+     * Scope a query to filter by availability status.
+     */
+    public function scopeByAvailability(Builder $query, string $availability): Builder
+    {
+        switch ($availability) {
+            case 'available':
+                return $query->withAvailableInventory();
+            case 'unavailable':
+                return $query->withoutAvailableInventory();
+            default:
+                return $query;
+        }
     }
 
     /**
@@ -397,6 +458,76 @@ class Film extends Model
         if ($age < 30) return 'Classic';
         
         return 'Vintage';
+    }
+
+    /**
+     * Check if film has available inventory.
+     */
+    public function getHasAvailableInventoryAttribute(): bool
+    {
+        return $this->availableInventory()->exists();
+    }
+
+    /**
+     * Get count of available inventory items.
+     */
+    public function getAvailableInventoryCountAttribute(): int
+    {
+        return $this->availableInventory()->count();
+    }
+
+    /**
+     * Get total inventory count.
+     */
+    public function getTotalInventoryCountAttribute(): int
+    {
+        return $this->inventory()->count();
+    }
+
+    /**
+     * Get availability status.
+     */
+    public function getAvailabilityStatusAttribute(): string
+    {
+        $available = $this->available_inventory_count;
+        $total = $this->total_inventory_count;
+
+        if ($total === 0) {
+            return 'Sin inventario';
+        }
+
+        if ($available === 0) {
+            return 'No disponible';
+        }
+
+        if ($available === $total) {
+            return 'Totalmente disponible';
+        }
+
+        return "Parcialmente disponible ({$available}/{$total})";
+    }
+
+    /**
+     * Get availability class for UI styling.
+     */
+    public function getAvailabilityClassAttribute(): string
+    {
+        $available = $this->available_inventory_count;
+        $total = $this->total_inventory_count;
+
+        if ($total === 0) {
+            return 'warning';
+        }
+
+        if ($available === 0) {
+            return 'danger';
+        }
+
+        if ($available === $total) {
+            return 'success';
+        }
+
+        return 'info';
     }
 
     /**

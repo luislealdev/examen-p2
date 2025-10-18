@@ -18,7 +18,13 @@ class FilmController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = Film::with(['language', 'originalLanguage', 'category']);
+        $query = Film::with(['language', 'originalLanguage', 'category'])
+                    ->withCount([
+                        'inventory',
+                        'inventory as available_inventory_count' => function ($query) {
+                            $query->available();
+                        }
+                    ]);
 
         // Search functionality
         if ($request->filled('search')) {
@@ -58,6 +64,11 @@ class FilmController extends Controller
         // Filter by special features
         if ($request->filled('has_special_features')) {
             $query->withSpecialFeatures();
+        }
+
+        // Filter by availability
+        if ($request->filled('availability')) {
+            $query->byAvailability($request->availability);
         }
 
         // Sorting

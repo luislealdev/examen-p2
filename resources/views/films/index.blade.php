@@ -206,6 +206,20 @@
                     </div>
                 </div>
 
+                <!-- Availability Filter -->
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">Disponibilidad</label>
+                    <select name="availability" class="form-select">
+                        <option value="">Todas</option>
+                        <option value="available" {{ request('availability') == 'available' ? 'selected' : '' }}>
+                            <i class="fas fa-check text-success"></i> Disponibles
+                        </option>
+                        <option value="unavailable" {{ request('availability') == 'unavailable' ? 'selected' : '' }}>
+                            <i class="fas fa-times text-danger"></i> No Disponibles
+                        </option>
+                    </select>
+                </div>
+
                 <!-- Special Features -->
                 <div class="col-md-2">
                     <label class="form-label fw-bold">Características Especiales</label>
@@ -322,6 +336,36 @@
                         <div class="card-body">
                             <h5 class="card-title fw-bold">{{ $film->title }}</h5>
                             
+                            <!-- Availability Banner -->
+                            <div class="mb-3">
+                                @php
+                                    $availableCount = $film->available_inventory_count ?? 0;
+                                    $totalCount = $film->inventory_count ?? 0;
+                                @endphp
+                                
+                                @if($totalCount === 0)
+                                    <div class="alert alert-warning alert-sm py-2 mb-2" role="alert">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Sin inventario</strong> - No hay copias disponibles
+                                    </div>
+                                @elseif($availableCount === 0)
+                                    <div class="alert alert-danger alert-sm py-2 mb-2" role="alert">
+                                        <i class="fas fa-times-circle me-2"></i>
+                                        <strong>No disponible</strong> - Todas las copias están rentadas ({{ $totalCount }})
+                                    </div>
+                                @elseif($availableCount === $totalCount)
+                                    <div class="alert alert-success alert-sm py-2 mb-2" role="alert">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        <strong>Totalmente disponible</strong> - {{ $availableCount }} copias disponibles
+                                    </div>
+                                @else
+                                    <div class="alert alert-info alert-sm py-2 mb-2" role="alert">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Parcialmente disponible</strong> - {{ $availableCount }}/{{ $totalCount }} copias disponibles
+                                    </div>
+                                @endif
+                            </div>
+                            
                             @if($film->description)
                                 <p class="card-text text-muted small">
                                     {{ Str::limit($film->description, 120) }}
@@ -400,4 +444,29 @@
         </div>
     @endif
 </div>
+
+<style>
+.alert-sm {
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+}
+
+.alert-sm .fas {
+    font-size: 0.875rem;
+}
+
+.card:hover .alert-sm {
+    transform: translateY(-1px);
+    transition: transform 0.2s ease-in-out;
+}
+
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    transition: all 0.3s ease-in-out;
+}
+</style>
+
 @endsection
