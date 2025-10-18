@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,6 +11,8 @@ use Carbon\Carbon;
 
 class Inventory extends Model
 {
+    use HasFactory;
+
     /**
      * The table associated with the model.
      */
@@ -209,14 +212,14 @@ class Inventory extends Model
     }
 
     /**
-     * Scope a query to get available inventory (not currently rented).
-     * Note: This would need rental table implementation for full functionality.
+     * Scope a query to get available inventory (not currently rented and in good condition).
      */
     public function scopeAvailable(Builder $query): Builder
     {
-        // For now, we'll just return all inventory
-        // This would be enhanced when rental table is implemented
-        return $query;
+        return $query->where('condition', 'available')
+                    ->whereDoesntHave('rentals', function ($q) {
+                        $q->whereNull('return_date');
+                    });
     }
 
     // ===== ACCESSORS =====

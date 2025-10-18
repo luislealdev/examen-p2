@@ -56,6 +56,19 @@ class FilmController extends Controller
             $query->whereBetween('release_year', [$decade, $decade + 9]);
         }
 
+        // Filter by availability
+        if ($request->filled('availability')) {
+            if ($request->availability === 'available') {
+                $query->whereHas('inventory', function($q) {
+                    $q->available();
+                });
+            } elseif ($request->availability === 'unavailable') {
+                $query->whereDoesntHave('inventory', function($q) {
+                    $q->available();
+                });
+            }
+        }
+
         // Sorting
         $sortBy = $request->get('sort_by', 'title');
         $sortDirection = $request->get('sort_direction', 'asc');
