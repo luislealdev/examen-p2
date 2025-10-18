@@ -134,7 +134,24 @@ class InventoryController extends Controller
     {
         $inventory->load(['film.language', 'film.category', 'store']);
         
-        return view('inventories.show', compact('inventory'));
+        // Obtener historial de rentas para este item de inventario
+        $rentalHistory = \App\Models\Rental::where('inventory_id', $inventory->inventory_id)
+            ->with([
+                'customer:customer_id,first_name,last_name,email',
+                'staff:staff_id,first_name,last_name'
+            ])
+            ->orderBy('rental_date', 'desc')
+            ->get();
+        
+        // Obtener estadísticas del historial
+        $historyStats = [
+            'total_rentals' => $rentalHistory->count(),
+            'active_rentals' => $rentalHistory->whereNull('return_date')->count(),
+            'completed_rentals' => $rentalHistory->whereNotNull('return_date')->count(),
+            'total_revenue' => $rentalHistory->count() * ($inventory->film->rental_rate ?? 0),
+        ];
+        
+        return view('inventories.show', compact('inventory', 'rentalHistory', 'historyStats'));
     }
 
     /**
