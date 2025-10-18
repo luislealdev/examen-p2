@@ -232,16 +232,73 @@
                                                                         <div class="alert alert-info">
                                                                             <strong>Cliente:</strong> {{ $rental->customer->first_name }} {{ $rental->customer->last_name }}<br>
                                                                             <strong>Película:</strong> {{ $rental->inventory->film->title }}<br>
-                                                                            <strong>Rentada:</strong> {{ $rental->rental_date->format('d/m/Y H:i') }} ({{ $daysRented }} días)
+                                                                            <strong>Rentada:</strong> {{ $rental->rental_date->format('d/m/Y H:i') }} ({{ $daysRented }} días)<br>
+                                                                            <strong>Fecha límite:</strong> {{ $rental->rental_date->addDays($rental->inventory->film->rental_duration)->format('d/m/Y') }}
+                                                                            @if(now()->isAfter($rental->rental_date->addDays($rental->inventory->film->rental_duration)))
+                                                                                <br><span class="text-danger"><strong>VENCIDA</strong> - {{ $rental->rental_date->addDays($rental->inventory->film->rental_duration)->diffInDays(now()) }} día(s) de retraso</span>
+                                                                            @endif
+                                                                        </div>
+                                                                        
+                                                                        <!-- Cálculo de pagos -->
+                                                                        <div class="card mb-3" id="paymentCalculation{{ $rental->rental_id }}">
+                                                                            <div class="card-header">
+                                                                                <h6 class="mb-0"><i class="fas fa-calculator me-1"></i> Cálculo de Pagos</h6>
+                                                                            </div>
+                                                                            <div class="card-body">
+                                                                                <div class="row">
+                                                                                    <div class="col-md-6">
+                                                                                        <small class="text-muted">Tarifa de renta:</small>
+                                                                                        <div class="fw-bold">${{ number_format($rental->inventory->film->rental_rate, 2) }}</div>
+                                                                                    </div>
+                                                                                    <div class="col-md-6" id="lateFeeDisplay{{ $rental->rental_id }}">
+                                                                                        @php
+                                                                                            $dueDate = $rental->rental_date->addDays($rental->inventory->film->rental_duration);
+                                                                                            $isOverdue = now()->isAfter($dueDate);
+                                                                                            $daysLate = $isOverdue ? $dueDate->diffInDays(now()) : 0;
+                                                                                            $lateFee = $daysLate * 1.50;
+                                                                                        @endphp
+                                                                                        <small class="text-muted">Multa por retraso:</small>
+                                                                                        <div class="fw-bold text-{{ $isOverdue ? 'danger' : 'muted' }}">
+                                                                                            ${{ number_format($lateFee, 2) }}
+                                                                                            @if($isOverdue)
+                                                                                                ({{ $daysLate }} día(s) × $1.50)
+                                                                                            @endif
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="row mt-2">
+                                                                                    <div class="col-md-6" id="damageFeeDisplay{{ $rental->rental_id }}">
+                                                                                        <small class="text-muted">Cargo por daño/pérdida:</small>
+                                                                                        <div class="fw-bold" id="damageFeeAmount{{ $rental->rental_id }}">$0.00</div>
+                                                                                    </div>
+                                                                                    <div class="col-md-6">
+                                                                                        <small class="text-muted">Total a pagar:</small>
+                                                                                        <div class="fw-bold fs-5 text-primary" id="totalAmount{{ $rental->rental_id }}">
+                                                                                            ${{ number_format($rental->inventory->film->rental_rate + $lateFee, 2) }}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
                                                                         </div>
                                                                         
                                                                         <div class="mb-3">
                                                                             <label for="condition{{ $rental->rental_id }}" class="form-label">Estado de la película</label>
-                                                                            <select name="condition" id="condition{{ $rental->rental_id }}" class="form-select" required>
+                                                                            <select name="condition" id="condition{{ $rental->rental_id }}" class="form-select" required
+                                                                                    onchange="updatePaymentCalculation({{ $rental->rental_id }}, {{ $rental->inventory->film->replacement_cost }}, {{ $rental->inventory->film->rental_rate }}, {{ $lateFee }})">
                                                                                 <option value="available">Buenas condiciones (disponible para renta)</option>
                                                                                 <option value="damaged">Dañada (no disponible hasta reparación)</option>
                                                                                 <option value="lost">Perdida (no se devolvió)</option>
                                                                             </select>
+                                                                        </div>
+                                                                        
+                                                                        <div class="mb-3">
+                                                                            <div class="form-check">
+                                                                                <input class="form-check-input" type="checkbox" name="process_payment" value="1" id="processPayment{{ $rental->rental_id }}" checked>
+                                                                                <label class="form-check-label" for="processPayment{{ $rental->rental_id }}">
+                                                                                    <strong>Procesar pago ahora</strong>
+                                                                                    <small class="text-muted d-block">Si no se marca, quedará como pago pendiente</small>
+                                                                                </label>
+                                                                            </div>
                                                                         </div>
                                                                         
                                                                         <div class="mb-3">
@@ -314,5 +371,32 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Función para actualizar el cálculo de pagos
+function updatePaymentCalculation(rentalId, replacementCost, rentalRate, lateFee) {
+    const conditionSelect = document.getElementById('condition' + rentalId);
+    const damageFeeElement = document.getElementById('damageFeeAmount' + rentalId);
+    const totalElement = document.getElementById('totalAmount' + rentalId);
+    
+    let damageFee = 0;
+    
+    if (conditionSelect.value === 'damaged') {
+        damageFee = replacementCost * 0.10; // 10% del costo de reemplazo
+    } else if (conditionSelect.value === 'lost') {
+        damageFee = replacementCost; // Costo completo de reemplazo
+    }
+    
+    const total = rentalRate + lateFee + damageFee;
+    
+    damageFeeElement.textContent = '$' + damageFee.toFixed(2);
+    totalElement.textContent = '$' + total.toFixed(2);
+    
+    // Cambiar color del cargo por daño
+    if (damageFee > 0) {
+        damageFeeElement.className = 'fw-bold text-warning';
+    } else {
+        damageFeeElement.className = 'fw-bold text-muted';
+    }
+}
 </script>
 @endpush

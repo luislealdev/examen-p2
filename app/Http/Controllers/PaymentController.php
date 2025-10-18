@@ -6,6 +6,7 @@ use App\Models\Payment;
 use App\Models\Customer;
 use App\Models\Rental;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -277,5 +278,118 @@ class PaymentController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Pago procesado correctamente por $' . number_format((float)$payment->amount, 2));
+    }
+
+    /**
+     * Show form to create manual payments (for employees and admins)
+     */
+    public function create(Request $request): View
+    {
+        $customers = Customer::select('customer_id', 'first_name', 'last_name', 'email')
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->get();
+
+        // If a customer is specified, load their rentals
+        $customer = null;
+        $rentals = collect();
+        
+        if ($request->filled('customer_id')) {
+            $customer = Customer::find($request->customer_id);
+            if ($customer) {
+                $rentals = Rental::with(['film'])
+                    ->where('customer_id', $customer->customer_id)
+                    ->orderBy('rental_date', 'desc')
+                    ->limit(20)
+                    ->get();
+            }
+        }
+
+        return view('payments.create', compact('customers', 'customer', 'rentals'));
+    }
+
+    /**
+     * Store a manual payment (for employees and admins)
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'customer_id' => 'required|exists:customers,customer_id',
+            'amount' => 'required|numeric|min:0.01',
+            'payment_type' => 'required|in:rental,late_fee,damage,other',
+            'rental_id' => 'nullable|exists:rental,rental_id',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        // Verify the rental belongs to the customer if specified
+        if ($validated['rental_id']) {
+            $rental = Rental::where('rental_id', $validated['rental_id'])
+                          ->where('customer_id', $validated['customer_id'])
+                          ->first();
+            
+            if (!$rental) {
+                return redirect()->back()
+                    ->withErrors(['rental_id' => 'La renta seleccionada no pertenece al cliente especificado.'])
+                    ->withInput();
+            }
+        }
+
+        $staff = \App\Models\Staff::where('email', Auth::user()->email)->first();
+
+        $payment = Payment::create([
+            'customer_id' => $validated['customer_id'],
+            'staff_id' => $staff ? $staff->staff_id : 1,
+            'rental_id' => $validated['rental_id'],
+            'amount' => $validated['amount'],
+            'payment_date' => now(),
+            'payment_type' => $validated['payment_type'],
+            'notes' => $validated['notes'] ?: 'Pago manual agregado por ' . Auth::user()->name
+        ]);
+
+        return redirect()->route('payments.create')
+            ->with('success', 'Pago manual creado exitosamente por $' . number_format((float)$payment->amount, 2));
+    }
+
+    /**
+     * Show all payments for management (employees and admins only)
+     */
+    public function manage(Request $request): View
+    {
+        $query = Payment::with(['customer', 'staff', 'rental.film'])
+            ->orderBy('payment_date', 'desc');
+
+        // Apply filters
+        if ($request->filled('customer_search')) {
+            $search = $request->customer_search;
+            $query->whereHas('customer', function($q) use ($search) {
+                $q->where('first_name', 'like', '%' . $search . '%')
+                  ->orWhere('last_name', 'like', '%' . $search . '%')
+                  ->orWhere('email', 'like', '%' . $search . '%');
+            });
+        }
+
+        if ($request->filled('payment_type')) {
+            $query->where('payment_type', $request->payment_type);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('payment_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('payment_date', '<=', $request->date_to);
+        }
+
+        $payments = $query->paginate(20);
+
+        // Calculate statistics
+        $stats = [
+            'total_payments' => Payment::count(),
+            'total_amount' => Payment::sum('amount'),
+            'today_payments' => Payment::whereDate('payment_date', today())->count(),
+            'today_amount' => Payment::whereDate('payment_date', today())->sum('amount'),
+        ];
+
+        return view('payments.manage', compact('payments', 'stats'));
     }
 }

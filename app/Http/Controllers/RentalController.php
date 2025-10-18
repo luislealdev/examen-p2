@@ -85,6 +85,9 @@ class RentalController extends Controller
         $request->validate([
             'condition' => 'required|in:available,damaged,lost',
             'notes' => 'nullable|string|max:1000',
+            'process_payment' => 'boolean',
+            'payment_amount' => 'nullable|numeric|min:0',
+            'payment_type' => 'nullable|in:rental,late_fee,damage,other',
         ]);
 
         if ($rental->isReturned()) {
@@ -92,6 +95,11 @@ class RentalController extends Controller
                            ->with('error', 'Esta renta ya ha sido devuelta.');
         }
 
+        // Calculate payment details
+        $rental->load('film');
+        $paymentDetails = $this->calculatePaymentForReturn($rental, $request->condition);
+
+        // Process inventory return
         $inventoryService = app(InventoryManagementService::class);
         $result = $inventoryService->processReturn(
             $rental->rental_id,
@@ -100,8 +108,18 @@ class RentalController extends Controller
         );
 
         if ($result['success']) {
+            // Process payment if requested
+            if ($request->process_payment && $paymentDetails['total_amount'] > 0) {
+                $this->processReturnPayment($rental, $paymentDetails, $request);
+            }
+
+            $message = $result['message'];
+            if ($paymentDetails['total_amount'] > 0 && !$request->process_payment) {
+                $message .= ' Cantidad pendiente de pago: $' . number_format($paymentDetails['total_amount'], 2);
+            }
+
             return redirect()->back()
-                           ->with('success', $result['message']);
+                           ->with('success', $message);
         } else {
             return redirect()->back()
                            ->with('error', $result['message'])
@@ -331,5 +349,87 @@ class RentalController extends Controller
                 'is_blocked' => $isBlocked
             ];
         }));
+    }
+
+    /**
+     * Calculate payment details for a rental return
+     */
+    private function calculatePaymentForReturn(Rental $rental, string $condition): array
+    {
+        $rental->load('film');
+        $dueDate = $rental->rental_date->addDays($rental->film->rental_duration);
+        $returnDate = now();
+        
+        $details = [
+            'rental_fee' => (float) $rental->film->rental_rate,
+            'late_fee' => 0,
+            'damage_fee' => 0,
+            'total_amount' => 0,
+            'is_overdue' => $returnDate->isAfter($dueDate),
+            'days_late' => 0
+        ];
+
+        // Calculate late fee if overdue
+        if ($details['is_overdue']) {
+            $details['days_late'] = $dueDate->diffInDays($returnDate);
+            $details['late_fee'] = $details['days_late'] * 1.50; // $1.50 per day late
+        }
+
+        // Calculate damage fee
+        if ($condition === 'damaged') {
+            $details['damage_fee'] = (float) $rental->film->replacement_cost * 0.10; // 10% of replacement cost
+        } elseif ($condition === 'lost') {
+            $details['damage_fee'] = (float) $rental->film->replacement_cost; // Full replacement cost
+        }
+
+        $details['total_amount'] = $details['rental_fee'] + $details['late_fee'] + $details['damage_fee'];
+
+        return $details;
+    }
+
+    /**
+     * Process payment for a return
+     */
+    private function processReturnPayment(Rental $rental, array $paymentDetails, Request $request): void
+    {
+        $staff = \App\Models\Staff::where('email', Auth::user()->email)->first();
+        
+        // Create payments for each type
+        if ($paymentDetails['rental_fee'] > 0) {
+            \App\Models\Payment::create([
+                'customer_id' => $rental->customer_id,
+                'staff_id' => $staff ? $staff->staff_id : 1,
+                'rental_id' => $rental->rental_id,
+                'amount' => $paymentDetails['rental_fee'],
+                'payment_date' => now(),
+                'payment_type' => 'rental',
+                'notes' => 'Pago de renta al momento de devolución'
+            ]);
+        }
+
+        if ($paymentDetails['late_fee'] > 0) {
+            \App\Models\Payment::create([
+                'customer_id' => $rental->customer_id,
+                'staff_id' => $staff ? $staff->staff_id : 1,
+                'rental_id' => $rental->rental_id,
+                'amount' => $paymentDetails['late_fee'],
+                'payment_date' => now(),
+                'payment_type' => 'late_fee',
+                'notes' => "Multa por {$paymentDetails['days_late']} día(s) de retraso"
+            ]);
+        }
+
+        if ($paymentDetails['damage_fee'] > 0) {
+            $damageType = $request->condition === 'lost' ? 'pérdida' : 'daño';
+            \App\Models\Payment::create([
+                'customer_id' => $rental->customer_id,
+                'staff_id' => $staff ? $staff->staff_id : 1,
+                'rental_id' => $rental->rental_id,
+                'amount' => $paymentDetails['damage_fee'],
+                'payment_date' => now(),
+                'payment_type' => 'damage',
+                'notes' => "Cargo por {$damageType} de película"
+            ]);
+        }
     }
 }

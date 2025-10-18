@@ -101,6 +101,9 @@
                             <a class="nav-link" href="{{ route('rentals.index') }}">
                                 <i class="fas fa-handshake me-1"></i>Rentas
                             </a>
+                            <a class="nav-link" href="{{ route('payments.manage') }}">
+                                <i class="fas fa-money-bill-wave me-1"></i>Pagos
+                            </a>
                             <a class="nav-link" href="{{ route('inventories.index') }}">
                                 <i class="fas fa-boxes me-1"></i>Inventario
                             </a>

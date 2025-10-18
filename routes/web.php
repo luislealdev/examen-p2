@@ -109,6 +109,13 @@ Route::middleware(['auth', 'role:employee,admin'])->group(function () {
         Route::post('payments', [PaymentController::class, 'processPayment'])->name('process');
     });
 
+    // Gestión de pagos manuales (empleados y administradores)
+    Route::prefix('payments')->name('payments.')->group(function () {
+        Route::get('create', [PaymentController::class, 'create'])->name('create');
+        Route::post('store', [PaymentController::class, 'store'])->name('store');
+        Route::get('manage', [PaymentController::class, 'manage'])->name('manage');
+    });
+
     // Gestión de inventarios (empleados y administradores)
     Route::resource('inventories', InventoryController::class);
     Route::get('inventories-film/{film}', [InventoryController::class, 'byFilm'])->name('inventories.by-film');
